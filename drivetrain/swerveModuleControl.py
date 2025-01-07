@@ -183,9 +183,8 @@ class SwerveModuleControl:
             self.actualPosition.angle = self.actualState.angle
 
         # Optimize our incoming swerve command to minimize motion
-        self.optimizedDesiredState = SwerveModuleState.optimize(
-            self.desiredState, self.actualState.angle
-        )
+        self.optimizedDesiredState = self.desiredState
+        self.optimizedDesiredState.optimize(self.actualState.angle)
         
         # Use a PID controller to calculate the voltage for the azimuth motor
         self.azmthCtrl.setSetpoint(self.optimizedDesiredState.angle.degrees())  # type: ignore
@@ -214,6 +213,6 @@ class SwerveModuleControl:
             self.actualPosition.angle = self.actualState.angle
 
             # Wheel speed is slew-rate filtered to roughly simulate robot inertia
-            speed = self.wheelSimFilter.calculate(self.optimizedDesiredState.speed)
+            speed = self.wheelSimFilter.calculate(self.desiredState.speed)
             self.actualState.speed = speed + random.uniform(-0.0, 0.0)
             self.actualPosition.distance += self.actualState.speed * 0.02
