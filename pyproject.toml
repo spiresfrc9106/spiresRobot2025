@@ -14,11 +14,11 @@ robotpy_extras = [
     # "all"
     "apriltag",
     # "commands2"
-    # "cscore"
+    "cscore",
     # "navx"
     # "pathplannerlib"
-    "phoenix5",
-    # "phoenix6"
+    # "phoenix5",
+    "phoenix6",
     # "playingwithfusion"
     "rev",
     # "romi"
@@ -29,5 +29,6 @@ robotpy_extras = [
 requires = [
     "photonlibpy==2025.0.0b8",
     "debugpy==1.8.11",
-    "numpy==2.1.3"
+    "numpy==2.1.3",
+    "phoenix6==25.1.0"
 ]
