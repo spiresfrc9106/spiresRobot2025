@@ -1,3 +1,4 @@
+import inspect
 import sys
 import wpilib
 from dashboard import Dashboard
@@ -26,6 +27,7 @@ class MyRobot(wpilib.TimedRobot):
     #########################################################
     ## Common init/update for all modes
     def robotInit(self):
+        print(f"Entering {__name__}:{inspect.stack()[0][3]}", flush=True)
         # Since we're defining a bunch of new things here, tell pylint
         # to ignore these instantiations in a method.
         # pylint: disable=attribute-defined-outside-init
@@ -58,9 +60,12 @@ class MyRobot(wpilib.TimedRobot):
         self.addPeriodic(FaultWrangler().update, 0.2, 0.0)
 
         self.autoHasRun = False
+        print(f"Exit {__name__}:{inspect.stack()[0][3]}", flush=True)
+
 
 
     def robotPeriodic(self):
+        print(f"Entering {__name__}:{inspect.stack()[0][3]}", flush=True)
         self.stt.start()
 
         self.dInt.update()
@@ -81,10 +86,14 @@ class MyRobot(wpilib.TimedRobot):
 
         logUpdate()
         self.stt.end()
+        print(f"Exit {__name__}:{inspect.stack()[0][3]}", flush=True)
+
 
     #########################################################
     ## Autonomous-Specific init and update
     def autonomousInit(self):
+        print(f"Entering {__name__}:{inspect.stack()[0][3]}", flush=True)
+
 
         # Start up the autonomous sequencer
         self.autoSequencer.initialize()
@@ -94,20 +103,30 @@ class MyRobot(wpilib.TimedRobot):
 
         # Mark we at least started autonomous
         self.autoHasRun = True
+        print(f"Exiting {__name__}:{inspect.stack()[0][3]}", flush=True)
+
 
     def autonomousPeriodic(self):
+        print(f"Entering {__name__}:{inspect.stack()[0][3]}", flush=True)
+
 
         self.autoSequencer.update()
 
         # Operators cannot control in autonomous
         self.driveTrain.setManualCmd(DrivetrainCommand())
+        print(f"Exiting {__name__}:{inspect.stack()[0][3]}", flush=True)
+
 
     def autonomousExit(self):
+        print(f"Entering {__name__}:{inspect.stack()[0][3]}", flush=True)
         self.autoSequencer.end()
+        print(f"Exiting {__name__}:{inspect.stack()[0][3]}", flush=True)
+
 
     #########################################################
     ## Teleop-Specific init and update
     def teleopInit(self):
+        print(f"Entering {__name__}:{inspect.stack()[0][3]}", flush=True)
         # clear existing telemetry trajectory
         self.driveTrain.poseEst._telemetry.setCurAutoTrajectory(None)
 
@@ -117,9 +136,12 @@ class MyRobot(wpilib.TimedRobot):
             self.driveTrain.poseEst.setKnownPose(
                 Pose2d(1.0, 1.0, Rotation2d(0.0))
             )
+        print(f"Exiting {__name__}:{inspect.stack()[0][3]}", flush=True)
+
 
 
     def teleopPeriodic(self):
+        print(f"Entering {__name__}:{inspect.stack()[0][3]}", flush=True)
 
         # TODO - this is technically one loop delayed, which could induce lag
         # Probably not noticeable, but should be corrected.
@@ -148,30 +170,46 @@ class MyRobot(wpilib.TimedRobot):
 
         # No trajectory in Teleop
         Trajectory().setCmd(None)
+        print(f"Exiting {__name__}:{inspect.stack()[0][3]}", flush=True)
+
 
     #########################################################
     ## Disabled-Specific init and update
     def disabledPeriodic(self):
+        print(f"Entering {__name__}:{inspect.stack()[0][3]}", flush=True)
         self.autoSequencer.updateMode()
         Trajectory().trajHDC.updateCals()
+        print(f"Exiting {__name__}:{inspect.stack()[0][3]}", flush=True)
+
 
     def disabledInit(self):
+        print(f"Entering {__name__}:{inspect.stack()[0][3]}", flush=True)
         self.autoSequencer.updateMode(True)
+        print(f"Exiting {__name__}:{inspect.stack()[0][3]}", flush=True)
+
 
     #########################################################
     ## Test-Specific init and update
     def testInit(self):
+        print(f"Entering {__name__}:{inspect.stack()[0][3]}", flush=True)
         wpilib.LiveWindow.setEnabled(False)
+        print(f"Exiting {__name__}:{inspect.stack()[0][3]}", flush=True)
+
 
     def testPeriodic(self):
+        print(f"Entering {__name__}:{inspect.stack()[0][3]}", flush=True)
         pass
+        print(f"Exiting {__name__}:{inspect.stack()[0][3]}", flush=True)
 
     #########################################################
     ## Cleanup
     def endCompetition(self):
+        print(f"Entering {__name__}:{inspect.stack()[0][3]}", flush=True)
         self.rioMonitor.stopThreads()
         destroyAllSingletonInstances()
         super().endCompetition()
+        print(f"Exiting {__name__}:{inspect.stack()[0][3]}", flush=True)
+
 
 def remoteRIODebugSupport():
     if __debug__ and "run" in sys.argv:
