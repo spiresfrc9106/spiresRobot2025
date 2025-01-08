@@ -6,6 +6,7 @@ from jormungandr import choreo
 from AutoSequencerV2.command import Command
 from utils.allianceTransformUtils import transform
 
+#This takes the Choreo file and turns it into a drive path Command
 
 class DrivePathCommand(Command):
     def __init__(self, pathFile):
