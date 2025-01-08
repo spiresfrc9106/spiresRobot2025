@@ -1,9 +1,8 @@
 from phoenix6 import hardware, configs, signals, controls, StatusCode
 from wpilib import TimedRobot
-from utils.signalLogging import log
+from utils.signalLogging import addLog
 from utils.units import rev2Rad, rad2Rev, radPerSec2RPM, RPM2RadPerSec
 from utils.faults import Fault
-import time
 
 ## Wrappered WCP Kraken, Powered by Talon FX.
 # Wrappers their API's into a consistent set of API's for swappability with rev hardware
@@ -35,6 +34,23 @@ class WrapperedKraken:
 
         self._applyCurCfg()
 
+        self.desPos = 0
+        self.desVel = 0
+        self.desVolt = 0
+        self.actPos = 0
+        self.actVel = 0
+
+        addLog(self.name + "_outputCurrent", lambda: self.motorCurrentSig.value_as_double, "A")
+        addLog(self.name + "_desVolt", lambda: self.desVolt, "V")
+        addLog(self.name + "_desPos", lambda: self.desPos, "rad")
+        addLog(self.name + "_desVel", lambda: self.desVel, "RPM")
+        addLog(self.name + "_actPos", self.getMotorPositionRad, "rad")
+        addLog(self.name + "_actVel", lambda: (radPerSec2RPM(self.getMotorVelocityRadPerSec())), "RPM")
+
+        # Simulation Suport
+        self.simActPos = 0
+        
+
     def _applyCurCfg(self):
         # Retry config apply up to 5 times, report if failure
         status: StatusCode = StatusCode.STATUS_CODE_NOT_INITIALIZED
@@ -45,6 +61,10 @@ class WrapperedKraken:
                 break
 
         self.disconFault.set(not self.configSuccess)
+
+    def _refereshAllSigs(self):
+        self.motorCurrentSig.refresh()
+        self.motorPosSig.refresh()
 
     def setInverted(self, isInverted):
         if(isInverted):
@@ -68,14 +88,12 @@ class WrapperedKraken:
             arbFF (int, optional): _description_. Defaults to 0.
         """
         self.simActPos = posCmd
+        self.desPos = posCmd
         posCmdRev = rad2Rev(posCmd)
-
-        log(self.name + "_desPos", posCmd, "Rad")
-        log(self.name + "_cmdVoltage", arbFF, "V")
-
         self.ctrl.set_control(controls.PositionVoltage(posCmdRev).with_slot(0).with_feed_forward(arbFF))
 
-        log(self.name + "_supplyCurrent", self.motorCurrentSig.value_as_double, "A")
+
+
 
     def setVelCmd(self, velCmd, arbFF=0.0):
         """_summary_
@@ -85,21 +103,14 @@ class WrapperedKraken:
             arbFF (int, optional): _description_. Defaults to 0.
         """
         velCmdRPM = radPerSec2RPM(velCmd)
-        velCmdRPS = velCmdRPM/60.0
+        self.desVel = velCmdRPM
+        velCmdRotPS = velCmdRPM/60.0
+        self.ctrl.set_control(controls.VelocityVoltage(velCmdRotPS).with_slot(0).with_feed_forward(arbFF))
 
-        log(self.name + "_desVel", velCmdRPM, "RPM")
-        log(self.name + "_cmdVoltage", arbFF, "V")
-
-        self.ctrl.set_control(controls.VelocityVoltage(velCmdRPS).with_slot(0).with_feed_forward(arbFF))
-
-        log(self.name + "_supplyCurrent", self.motorCurrentSig.value_as_double, "A")
 
     def setVoltage(self, outputVoltageVolts):
-        log(self.name + "_cmdVoltage", outputVoltageVolts, "V")
-        
+        self.desVolt = outputVoltageVolts
         self.ctrl.set_control(controls.VoltageOut(outputVoltageVolts))
-
-        log(self.name + "_supplyCurrent", self.motorCurrentSig.value_as_double, "A")
 
     def getMotorPositionRad(self):
         if(TimedRobot.isSimulation()):
@@ -109,15 +120,12 @@ class WrapperedKraken:
                 pos = rev2Rad(self.motorPosSig.value_as_double)
             else:
                 pos = 0
-
-        log(self.name + "_actPos", pos, "rad")
-
         return pos
 
     def getMotorVelocityRadPerSec(self):
         if self.configSuccess:
+            self.motorVelSig.refresh()
             vel = self.motorVelSig.value_as_double*60.0
         else:
             vel = 0
-        log(self.name + "_motorActVel", vel, "RPM")
         return RPM2RadPerSec(vel)
