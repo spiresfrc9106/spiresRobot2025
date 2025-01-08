@@ -41,9 +41,9 @@ class WrapperedPulseWidthEncoder:
         self.freq = 0
         self.pulseTime = 0
 
-        #addLog(f"{self.name}_freq", lambda: self.freq, "Hz")
-        #addLog(f"{self.name}_pulseTime", lambda: self.pulseTime, "sec")
-        #addLog(f"{self.name}_angle", lambda: self.curAngleRad, "rad")
+        addLog(f"{self.name}_freq", lambda: self.freq, "Hz")
+        addLog(f"{self.name}_pulseTime", lambda: self.pulseTime, "sec")
+        addLog(f"{self.name}_angle", lambda: self.curAngleRad, "rad")
 
     def update(self):
         """Return the raw angle reading from the sensor in radians"""
@@ -75,7 +75,6 @@ class WrapperedPulseWidthEncoder:
                 rawAngle *= -1.0
 
             self.curAngleRad = wrapAngleRad(rawAngle - self.mountOffsetCal.get())
-
 
     def getAngleRad(self):
         return self.curAngleRad

@@ -4,6 +4,7 @@ from Autonomous.commands.driveForwardSlowCommand import DriveForwardSlowCommand
 from drivetrain.poseEstimation.drivetrainPoseEstimator import DrivetrainPoseEstimator
 from drivetrain.swerveModuleControl import SwerveModuleControl
 from drivetrain.swerveModuleGainSet import SwerveModuleGainSet
+#xyzzy MS figure out how to move our encoder offsets forward and INVERT_WHEEL_MOTOR
 from drivetrain.drivetrainPhysical import (
     FL_ENCODER_MOUNT_OFFSET_RAD,
     MAX_FWD_REV_SPEED_MPS,
