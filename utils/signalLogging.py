@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+#from dataclasses import dataclass
 from typing import Callable
 import wpilib
 import ntcore as nt
@@ -9,17 +9,32 @@ from utils.singleton import Singleton
 
 BASE_TABLE = "SmartDashboard"
 
-@dataclass
-class _LoggedVal():
+#@dataclass
+class Logger():
     """
     Container for holding a data source (a callable in our code)
     and all the places the data might go - NetworkTables for live publishing,
     or a file for later review. If writing files is not possible (USB drive not in?)
     the file publisher should be None
     """
-    valGetter:Callable[[], float]
+    valGetter:Callable[[], float]|None
     ntPublisher:nt.DoublePublisher
     filePublisher:wpilog.DoubleLogEntry|None
+
+    __slots__ = 'valGetter', 'ntPublisher', 'filePublisher'
+
+    def __init__(self,
+                 valGetter:Callable[[], float]|None,
+                 ntPublisher:nt.DoublePublisher,
+                 filePublisher:wpilog.DoubleLogEntry|None):
+        self.valGetter = valGetter
+        self.ntPublisher = ntPublisher
+        self.filePublisher = filePublisher
+        
+    def log(self, val):
+        def getter():
+            return val
+        self.valGetter = getter
 
 # Wrangler for coordinating the set of all signals
 class SignalWrangler(metaclass=Singleton):
@@ -28,7 +43,7 @@ class SignalWrangler(metaclass=Singleton):
     def __init__(self):
         # Default to publishing things under Shuffleboard, which makes things more available
         self.table = nt.NetworkTableInstance.getDefault().getTable(BASE_TABLE)
-        self.loggedValList:list[_LoggedVal] = []
+        self.loggedValList:list[Logger] = []
         self.time = int(0)
         self.log = None
     
@@ -42,35 +57,36 @@ class SignalWrangler(metaclass=Singleton):
     def update(self):
         curTime = nt._now()  # pylint: disable=W0212
         for lv in self.loggedValList:
-            val = lv.valGetter()
-            lv.ntPublisher.set(val, curTime)
-            if(lv.filePublisher is not None):
-                lv.filePublisher.append(val, curTime)
+            if lv.valGetter is not None:
+                val = lv.valGetter()
+                lv.ntPublisher.set(val, curTime)
+                if(lv.filePublisher is not None):
+                    lv.filePublisher.append(val, curTime)
 
 
-    def newLogVal(self, name:str, valGetter:Callable[[],float], units:str|None):
+    def newLogger(self, name:str, valGetter:Callable[[],float], units:str|None):
 
-            # Set up NT publishing
-            sigTopic = self.table.getDoubleTopic(name)
-            sigPub = sigTopic.publish(
-                nt.PubSubOptions(sendAll=True, keepDuplicates=True)
+        # Set up NT publishing
+        sigTopic = self.table.getDoubleTopic(name)
+        sigPub = sigTopic.publish(
+            nt.PubSubOptions(sendAll=True, keepDuplicates=True)
+        )
+        sigPub.setDefault(0)
+
+        if(units is not None):
+            sigTopic.setProperty("units", str(units))
+
+        # Set up log file publishing if enabled
+        if self.log is not None:
+            sigLog = wpilog.DoubleLogEntry(
+                log=self.log, name=sigNameToNT4TopicName(name)
             )
-            sigPub.setDefault(0)
+        else:
+            sigLog = None
 
-            if(units is not None):
-                sigTopic.setProperty("units", str(units))
-
-            # Set up log file publishing if enabled
-            if self.log is not None:
-                sigLog = wpilog.DoubleLogEntry(
-                    log=self.log, name=sigNameToNT4TopicName(name)
-                )
-            else:
-                sigLog = None
-
-            self.loggedValList.append(
-                _LoggedVal(valGetter,sigPub, sigLog)
-            )
+        self.loggedValList.append(
+            Logger(valGetter,sigPub, sigLog)
+        )
 
 
 
@@ -87,18 +103,31 @@ def logUpdate():
     """
     _singletonInst.update()
 
-def addLog(alias: str, value_getter: Callable[[], float], units=None) -> None:
+def addLog(alias: str, valueGetter: Callable[[], float], units:str|None=None) -> None:
     """
-    Register some value to be loggd
+    Register a callable getter to be logged at alias
 
     Parameters:
-    - alias: The name used to identify the log.
+    - alias: The name (str) used to identify the log.
     - value_getter: A function that returns the current value of the log. Lambda is acceptable here.
+    - units: The units (str) of the value_getter
     """
-    _singletonInst.newLogVal(alias, value_getter, units)
+    _singletonInst.newLogger(alias, valueGetter, units)
 
-def log(alias: str, value_getter, units=None) -> None:
-    addLog(alias, lambda value_getter: value_getter, units)
+#todo suggest removing this because it doesn't add value.
+def log(alias: str, valueGetter, units:str|None=None) -> None:
+    addLog(alias, valueGetter, units)
+
+def getLogger(alias: str, units:str|None=None) -> Logger:
+    """
+    Get a logger registered to an alias to log
+
+    Parameters:
+    - alias: The name (str) used to identify the log.
+    - units: The units (str) of the value_getter
+    """
+    logger = _singletonInst.newLogger(alias, None, units)
+    return logger
 
 def sigNameToNT4TopicName(name):
     return f"/{BASE_TABLE}/{name}"

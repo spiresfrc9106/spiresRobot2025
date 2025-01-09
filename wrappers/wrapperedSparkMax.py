@@ -60,7 +60,6 @@ class WrapperedSparkMax:
         self.disconFault.set(not self.configSuccess)
 
         addLog(self.name + "_outputCurrent", self.ctrl.getOutputCurrent, "A")
-        addLog(self.name + "_appliedOutput", self.ctrl.getAppliedOutput, "%")
         addLog(self.name + "_desVolt", lambda: self.desVolt, "V")
         addLog(self.name + "_desPos", lambda: self.desPos, "rad")
         addLog(self.name + "_desVel", lambda: self.desVel, "RPM")
@@ -70,16 +69,14 @@ class WrapperedSparkMax:
 
     def setInverted(self, isInverted):
         if self.configSuccess:
-            newCfg = SparkMaxConfig()
-            newCfg.inverted(isInverted)
-            self.ctrl.configure(self.cfg, 
+            self.cfg.inverted(isInverted)
+            self.ctrl.configure(self.cfg,
                                 SparkBase.ResetMode.kNoResetSafeParameters, 
                                 SparkBase.PersistMode.kPersistParameters)
 
     def setPID(self, kP, kI, kD, persist=SparkBase.PersistMode.kPersistParameters):
         if self.configSuccess:
-            newCfg = ClosedLoopConfig()
-            newCfg.pid(kP, kI, kD, ClosedLoopSlot.kSlot0)
+            self.cfg.closedLoop.pid(kP, kI, kD, ClosedLoopSlot.kSlot0)
             # Apply new configuration
             # but don't reset other parameters
             # Use the specified persist mode.
