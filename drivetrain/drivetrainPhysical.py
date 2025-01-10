@@ -31,7 +31,10 @@ BUMPER_THICKNESS_M = inchesToMeters(2.5)
 
 # Total mass includes robot, battery, and bumpers
 # more than the "weigh-in" weight
-ROBOT_MASS_KG = lbsToKg(60)
+if str(RobotIdentification().getRobotType()).startswith('Spires'):
+    ROBOT_MASS_KG = lbsToKg(robotDepConstants['MASS_LBS'])
+else:
+    ROBOT_MASS_KG = lbsToKg(60)
 
 # Model the robot's moment of intertia as a square slab
 # slightly bigger than wheelbase with axis through center
@@ -83,8 +86,11 @@ def dtMotorRotToLinear(rot):
 
 # Drivetrain Performance Mechanical limits
 # Nominal calculations (ideal)
-MAX_DT_MOTOR_SPEED_RPS = DCMotor.NEO(1).freeSpeed
-#MAX_DT_MOTOR_SPEED_RPS = DCMotor.neoVortex(1).freeSpeed
+if str(RobotIdentification().getRobotType()).startswith('Spires'):
+    MAX_DT_MOTOR_SPEED_RPS = robotDepConstants['SWERVE_WHEEL_MAX_SPEED_RPS']
+else:
+    MAX_DT_MOTOR_SPEED_RPS = DCMotor.NEO(1).freeSpeed
+    #MAX_DT_MOTOR_SPEED_RPS = DCMotor.neoVortex(1).freeSpeed
 MAX_DT_LINEAR_SPEED_MPS = MAX_DT_MOTOR_SPEED_RPS / WHEEL_GEAR_RATIO * in2m(WHEEL_RADIUS_IN)
 # Fudged max expected performance
 MAX_FWD_REV_SPEED_MPS = MAX_DT_LINEAR_SPEED_MPS * 0.98  # fudge factor due to gearbox losses
