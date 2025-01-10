@@ -1,4 +1,4 @@
-from wpimath.kinematics import ChassisSpeeds
+from wpimath.kinematics import ChassisSpeeds, SwerveModuleState
 from wpimath.geometry import Pose2d, Rotation2d
 from Autonomous.commands.driveForwardSlowCommand import DriveForwardSlowCommand
 from drivetrain.poseEstimation.drivetrainPoseEstimator import DrivetrainPoseEstimator
@@ -11,6 +11,12 @@ from drivetrain.drivetrainPhysical import (
     FR_ENCODER_MOUNT_OFFSET_RAD,
     BL_ENCODER_MOUNT_OFFSET_RAD,
     BR_ENCODER_MOUNT_OFFSET_RAD,
+    FL_INVERT_WHEEL_MOTOR,
+    FR_INVERT_WHEEL_MOTOR,
+    BL_INVERT_WHEEL_MOTOR,
+    BR_INVERT_WHEEL_MOTOR,
+    INVERT_AZMTH_MOTOR,
+    INVERT_AZMTH_ENCODER,
     kinematics,
 )
 from drivetrain.drivetrainCommand import DrivetrainCommand
@@ -40,20 +46,26 @@ class DrivetrainControl(metaclass=Singleton):
         self.modules = []
         self.modules.append(
             SwerveModuleControl("FL", DT_FL_WHEEL_CANID, DT_FL_AZMTH_CANID, DT_FL_AZMTH_ENC_PORT, 
-                                FL_ENCODER_MOUNT_OFFSET_RAD, True, True)
+                                FL_ENCODER_MOUNT_OFFSET_RAD,
+                                FL_INVERT_WHEEL_MOTOR, INVERT_AZMTH_MOTOR, INVERT_AZMTH_ENCODER)
         )
         self.modules.append(
             SwerveModuleControl("FR", DT_FR_WHEEL_CANID, DT_FR_AZMTH_CANID, DT_FR_AZMTH_ENC_PORT, 
-                                FR_ENCODER_MOUNT_OFFSET_RAD, True, True)
+                                FR_ENCODER_MOUNT_OFFSET_RAD,
+                                FR_INVERT_WHEEL_MOTOR, INVERT_AZMTH_MOTOR, INVERT_AZMTH_ENCODER)
         )
         self.modules.append(
             SwerveModuleControl("BL", DT_BL_WHEEL_CANID, DT_BL_AZMTH_CANID, DT_BL_AZMTH_ENC_PORT, 
-                                BL_ENCODER_MOUNT_OFFSET_RAD, False, True)
+                                BL_ENCODER_MOUNT_OFFSET_RAD,
+                                BL_INVERT_WHEEL_MOTOR, INVERT_AZMTH_MOTOR, INVERT_AZMTH_ENCODER)
         )
         self.modules.append(
             SwerveModuleControl("BR", DT_BR_WHEEL_CANID, DT_BR_AZMTH_CANID, DT_BR_AZMTH_ENC_PORT, 
-                                BR_ENCODER_MOUNT_OFFSET_RAD, False, True)
+                                BR_ENCODER_MOUNT_OFFSET_RAD,
+                                BR_INVERT_WHEEL_MOTOR, INVERT_AZMTH_MOTOR, INVERT_AZMTH_ENCODER)
         )
+
+        self.coastCmd = False
 
         self.desChSpd = ChassisSpeeds()
         self.curDesPose = Pose2d()
@@ -73,6 +85,10 @@ class DrivetrainControl(metaclass=Singleton):
             cmd (DrivetrainCommand): manual command input
         """
         self.curManCmd = cmd
+
+
+    def setCoastCmd(self, coast:bool):
+        self.coastCmd = coast
 
     def update(self):
         """
@@ -96,8 +112,21 @@ class DrivetrainControl(metaclass=Singleton):
         # Set the desired pose for telemetry purposes
         self.poseEst._telemetry.setDesiredPose(self.curCmd.desPose)
 
-        # Given the current desired chassis speeds, convert to module states
-        desModStates = kinematics.toSwerveModuleStates(self.desChSpd)
+
+        if (abs(self.desChSpd.vx) < 0.01 and
+            abs(self.desChSpd.vy) < 0.01 and
+            abs(self.desChSpd.omega) < 0.01 and
+            not self.coastCmd):
+
+            # When we're not moving, "toe in" the wheels to resist getting pushed around
+            flModState = SwerveModuleState(angle=Rotation2d.fromDegrees(45), speed=0)
+            frModState = SwerveModuleState(angle=Rotation2d.fromDegrees(-45), speed=0)
+            blModState = SwerveModuleState(angle=Rotation2d.fromDegrees(45), speed=0)
+            brModState = SwerveModuleState(angle=Rotation2d.fromDegrees(-45), speed=0)
+            desModStates = (flModState, frModState, blModState, brModState)
+        else:
+            # Given the current desired chassis speeds, convert to module states
+            desModStates = kinematics.toSwerveModuleStates(self.desChSpd)
 
         # Scale back commands if one corner of the robot is going too fast
         kinematics.desaturateWheelSpeeds(desModStates, MAX_FWD_REV_SPEED_MPS)

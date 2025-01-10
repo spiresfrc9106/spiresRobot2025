@@ -6,10 +6,9 @@ from wpimath.kinematics import SwerveDrive4Kinematics
 from utils.units import lbsToKg
 from utils.units import deg2Rad
 from utils.units import in2m
-from wrappers.wrapperedRevThroughBoreEncoder import WrapperedRevThroughBoreEncoder
 from utils.robotIdentification import RobotIdentification, RobotTypes
+from wrappers.wrapperedRevThroughBoreEncoder import WrapperedRevThroughBoreEncoder
 from drivetrain.robotDependentConstants import RobotDependentConstants
-from config import ROBOT_BUILD
 
 """
 Defines the physical dimensions and characteristics of the drivetrain
@@ -17,15 +16,15 @@ Defines the physical dimensions and characteristics of the drivetrain
 
 ###################################################################
 
-constants = RobotDependentConstants().get()[ROBOT_BUILD]
+robotDepConstants = RobotDependentConstants().get()[RobotIdentification().getRobotType()]
 
 ###################################################################
 # Physical dimensions and mass distribution
 
 # Wheel base half width: Distance from the center of the frame rail
 # out to the center of the "contact patch" where the wheel meets the ground
-WHEEL_BASE_HALF_WIDTH_M = inchesToMeters(constants["WIDTH"] / 2.0)
-WHEEL_BASE_HALF_LENGTH_M = inchesToMeters(constants["LENGTH"] / 2.0)
+WHEEL_BASE_HALF_WIDTH_M = inchesToMeters(robotDepConstants["WIDTH"] / 2.0)
+WHEEL_BASE_HALF_LENGTH_M = inchesToMeters(robotDepConstants["LENGTH"] / 2.0)
 
 # Additional distance from the wheel contact patch out to the edge of the bumper
 BUMPER_THICKNESS_M = inchesToMeters(2.5)
@@ -51,6 +50,8 @@ if RobotIdentification().getRobotType() == RobotTypes.Main:
     WHEEL_GEAR_RATIO = WHEEL_GEAR_RATIO_L3
 elif RobotIdentification().getRobotType() == RobotTypes.Practice:
     WHEEL_GEAR_RATIO = WHEEL_GEAR_RATIO_L2
+elif str(RobotIdentification().getRobotType()).startswith('Spires'):
+    WHEEL_GEAR_RATIO = robotDepConstants['SWERVE_WHEEL_GEAR_RATIO']
 else:
     WHEEL_GEAR_RATIO = WHEEL_GEAR_RATIO_L3
 
@@ -64,7 +65,7 @@ WHEEL_FUDGE_FACTOR = 0.9238
 
 # Nominal 4-inch diameter swerve drive wheels
 # https:#www.swervedrivespecialties.com/collections/mk4i-parts/products/billet-wheel-4d-x-1-5w-bearing-bore
-WHEEL_RADIUS_IN = constants["SWERVE_WHEEL_DIAMETER_IN"] / 2.0 * WHEEL_FUDGE_FACTOR
+WHEEL_RADIUS_IN = robotDepConstants["SWERVE_WHEEL_DIAMETER_IN"] / 2.0 * WHEEL_FUDGE_FACTOR
 
 
 # Utility conversion functions to go between drivetrain "linear" measurements and wheel motor rotational measurements
@@ -110,21 +111,28 @@ MAX_ROTATE_ACCEL_RAD_PER_SEC_2 = (
 # 3 - Using a square, twist the modules by hand until they are aligned with the robot's chassis
 # 4 - Read out the encoder readings for each module, put them here
 # 5 - Redeploy code, verify that the  encoder readings are correct as each module is manually rotated
-FL_ENCODER_MOUNT_OFFSET_RAD = deg2Rad(constants["FL_OFFSET"])
-FR_ENCODER_MOUNT_OFFSET_RAD = deg2Rad(constants["FR_OFFSET"])
-BL_ENCODER_MOUNT_OFFSET_RAD = deg2Rad(constants["BL_OFFSET"])
-BR_ENCODER_MOUNT_OFFSET_RAD = deg2Rad(constants["BR_OFFSET"])
-
-# Perhaps we invert the swerve module azimuth motor
-INVERT_AZMTH_MOTOR = False
-INVERT_AZMTH_ENCODER = True
 
 
-# Perhaps we invert the swerve module wheel motor drive direction
-FL_INVERT_WHEEL_MOTOR = False
-FR_INVERT_WHEEL_MOTOR = False
-BL_INVERT_WHEEL_MOTOR = False
-BR_INVERT_WHEEL_MOTOR = False
+if str(RobotIdentification().getRobotType()).startswith('Spires'):
+    # Perhaps we invert the swerve module azimuth motor
+    INVERT_AZMTH_MOTOR = False
+    INVERT_AZMTH_ENCODER = True
+
+    # Perhaps we invert the swerve module wheel motor drive direction
+    FL_INVERT_WHEEL_MOTOR = False
+    FR_INVERT_WHEEL_MOTOR = False
+    BL_INVERT_WHEEL_MOTOR = False
+    BR_INVERT_WHEEL_MOTOR = False
+else:
+    # Perhaps we invert the swerve module azimuth motor
+    INVERT_AZMTH_MOTOR = True
+    INVERT_AZMTH_ENCODER = False
+
+    # Perhaps we invert the swerve module wheel motor drive direction
+    FL_INVERT_WHEEL_MOTOR = True
+    FR_INVERT_WHEEL_MOTOR = True
+    BL_INVERT_WHEEL_MOTOR = False
+    BR_INVERT_WHEEL_MOTOR = False
 
 # todo they moved the configuration closer to the code.
 
@@ -133,6 +141,11 @@ if RobotIdentification().getRobotType() == RobotTypes.Main:
     FL_ENCODER_MOUNT_OFFSET_RAD = 0.2412
     BR_ENCODER_MOUNT_OFFSET_RAD = 1.259
     BL_ENCODER_MOUNT_OFFSET_RAD = 1.777
+elif str(RobotIdentification().getRobotType()).startswith('Spires'):
+    FL_ENCODER_MOUNT_OFFSET_RAD = deg2Rad(robotDepConstants["FL_OFFSET_DEG"])
+    FR_ENCODER_MOUNT_OFFSET_RAD = deg2Rad(robotDepConstants["FR_OFFSET_DEG"])
+    BL_ENCODER_MOUNT_OFFSET_RAD = deg2Rad(robotDepConstants["BL_OFFSET_DEG"])
+    BR_ENCODER_MOUNT_OFFSET_RAD = deg2Rad(robotDepConstants["BR_OFFSET_DEG"])
 else:
     FR_ENCODER_MOUNT_OFFSET_RAD = 0.8412
     FL_ENCODER_MOUNT_OFFSET_RAD = 0.2412

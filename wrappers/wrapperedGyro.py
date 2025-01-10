@@ -3,9 +3,10 @@ from wpilib import SPI
 from wpimath.geometry import Rotation2d
 import navx
 from drivetrain.robotDependentConstants import RobotDependentConstants
-from config import ROBOT_BUILD
 
-constants = RobotDependentConstants().get()[ROBOT_BUILD]
+from utils.robotIdentification import RobotIdentification
+
+robotDepConstants = RobotDependentConstants().get()[RobotIdentification().getRobotType()]
 
 class WrapperedNoGyro():
     def __init__(self):
@@ -44,13 +45,13 @@ class WrapperedAdis16470Imu(ADIS16470_IMU):
 
 def wrapperedGyro():
     result = None
-    if constants["GYRO"]=="NAVX":
-        print(f'GYRO is {constants["GYRO"]}')
+    if robotDepConstants["GYRO"]== "NAVX":
+        print(f'GYRO is {robotDepConstants["GYRO"]}')
         result = WrapperedNavx()
-    elif constants["GYRO"]=="ADIS16470_IMU":
-        print(f'GYRO is {constants["GYRO"]}')
+    elif robotDepConstants["GYRO"]== "ADIS16470_IMU":
+        print(f'GYRO is {robotDepConstants["GYRO"]}')
         result = WrapperedAdis16470Imu()
     else:
-        print(f'GYRO is {constants["GYRO"]}')
+        print(f'GYRO is {robotDepConstants["GYRO"]}')
         result = WrapperedNoGyro()
     return result

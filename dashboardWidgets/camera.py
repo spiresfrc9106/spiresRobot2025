@@ -1,12 +1,13 @@
 import wpilib
 from dashboardWidgets.widgetConfig import WidgetConfig
+from config import FRC_TEAM_NUMBER
 
 
 def getRIOStreamURL(port):
     if wpilib.RobotBase.isSimulation():
         return f"http://localhost:{port}"
     else:
-        return f"http://roborio-9106-frc.local:{port}"
+        return f"http://roborio-{FRC_TEAM_NUMBER}-frc.local:{port}"
 
 
 class Camera(WidgetConfig):
