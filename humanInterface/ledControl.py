@@ -1,7 +1,7 @@
 from wpilib import PWMMotorController
+from wpimath.filter import Debouncer
 from utils.constants import LED_STACK_LIGHT_CTRL_PWM
 from utils.singleton import Singleton
-from wpimath.filter import Debouncer
 
 BLINK = -1.0
 GREEN = 0.35

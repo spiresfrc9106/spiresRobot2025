@@ -51,5 +51,3 @@ class Dashboard:
         addLog("faultIconState",
                 lambda: (Icon.kBLINK_FAST if FaultWrangler().hasActiveFaults() else Icon.kOFF)
         )
-
-

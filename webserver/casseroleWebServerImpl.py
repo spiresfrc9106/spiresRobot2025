@@ -2,7 +2,6 @@ from http.server import SimpleHTTPRequestHandler
 import os
 import platform
 import sys
-import pathlib
 import json
 
 # These imports are mostly just to make sure we put versions on the webpage

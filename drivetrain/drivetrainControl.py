@@ -1,10 +1,9 @@
 from wpimath.kinematics import ChassisSpeeds, SwerveModuleState
 from wpimath.geometry import Pose2d, Rotation2d
-from Autonomous.commands.driveForwardSlowCommand import DriveForwardSlowCommand
+#from Autonomous.commands.driveForwardSlowCommand import DriveForwardSlowCommand
 from drivetrain.poseEstimation.drivetrainPoseEstimator import DrivetrainPoseEstimator
 from drivetrain.swerveModuleControl import SwerveModuleControl
 from drivetrain.swerveModuleGainSet import SwerveModuleGainSet
-#xyzzy MS figure out how to move our encoder offsets forward and INVERT_WHEEL_MOTOR
 from drivetrain.drivetrainPhysical import (
     FL_ENCODER_MOUNT_OFFSET_RAD,
     MAX_FWD_REV_SPEED_MPS,
@@ -112,8 +111,9 @@ class DrivetrainControl(metaclass=Singleton):
         # Set the desired pose for telemetry purposes
         self.poseEst._telemetry.setDesiredPose(self.curCmd.desPose)
 
-
-        if (abs(self.desChSpd.vx) < 0.01 and
+        # pylint: disable=condition-evals-to-constant
+        if (False and
+            abs(self.desChSpd.vx) < 0.01 and
             abs(self.desChSpd.vy) < 0.01 and
             abs(self.desChSpd.omega) < 0.01 and
             not self.coastCmd):

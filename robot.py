@@ -1,5 +1,6 @@
 import sys
 import wpilib
+from wpimath.geometry import Translation2d, Pose2d, Rotation2d
 from dashboard import Dashboard
 from drivetrain.controlStrategies.autoDrive import AutoDrive
 from drivetrain.controlStrategies.trajectory import Trajectory
@@ -18,8 +19,6 @@ from utils.singleton import destroyAllSingletonInstances
 from utils.powerMonitor import PowerMonitor
 from webserver.webserver import Webserver
 from AutoSequencerV2.autoSequencer import AutoSequencer
-from utils.powerMonitor import PowerMonitor
-from wpimath.geometry import Translation2d, Pose2d, Rotation2d
 
 class MyRobot(wpilib.TimedRobot):
 
@@ -93,7 +92,7 @@ class MyRobot(wpilib.TimedRobot):
         self.driveTrain.poseEst.setKnownPose(self.autoSequencer.getStartingPose())
 
         # Mark we at least started autonomous
-        self.autoHasRun = True
+        self.autoHasRun = True # pylint: disable=attribute-defined-outside-init
 
     def autonomousPeriodic(self):
 
@@ -183,4 +182,3 @@ def remoteRIODebugSupport():
         else:
             debugpy.listen(("0.0.0.0", 5678))
             debugpy.wait_for_client()
-

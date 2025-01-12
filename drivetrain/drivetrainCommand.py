@@ -1,5 +1,5 @@
-from wpimath.geometry import Pose2d
 from dataclasses import dataclass, field
+from wpimath.geometry import Pose2d
 
 
 
@@ -12,4 +12,5 @@ class DrivetrainCommand:
     velX:float = 0.0  # Field X velocity in meters/sec
     velY:float = 0.0  # Field Y velocity in meters/secS
     velT:float = 0.0  # Rotational speed in rad/sec
+    # pylint: disable=unnecessary-lambda
     desPose:Pose2d = field(default_factory = lambda: Pose2d())  # Current desired pose of the drivetrain
