@@ -18,6 +18,7 @@ from utils.signalLogging import addLog
 from drivetrain.drivetrainPhysical import dtMotorRotToLinear
 from drivetrain.drivetrainPhysical import dtLinearToMotorRot
 from drivetrain.drivetrainPhysical import MAX_FWD_REV_SPEED_MPS
+from drivetrain.drivetrainPhysical import wrapperedSwerveDriveAzmthEncoder
 
 
 class SwerveModuleControl:
@@ -49,8 +50,9 @@ class SwerveModuleControl:
         azmthMotorCanID:int,
         azmthEncoderPortIdx:int,
         azmthOffset:float,
-        invertWheel:bool,
-        invertAzmth:bool
+        invertWheelMotor:bool,
+        invertAzmthMotor:bool,
+        invertAzmthEncoder:bool
     ):
         """Instantiate one swerve drive module
 
@@ -60,8 +62,9 @@ class SwerveModuleControl:
             azmthMotorCanID (int): CAN Id for the azimuth motor for this module
             azmthEncoderPortIdx (int): RIO Port for the azimuth absolute encoder for this module
             azmthOffset (float): Mounting offset of the azimuth encoder in Radians.
-            invertWheel (bool): Inverts the drive direction of the wheel - needed since left/right sides are mirrored
-            invertAzmth (bool): Inverts the steering direction of the wheel - needed if motor is mounted upside
+            invertWheelMotor (bool): Inverts the drive direction of the wheel motor - needed since left/right sides are mirrored
+            invertAzmthMotor (bool): Inverts the steering direction of the azimuth motor - needed if motor is mounted upside down
+            invertAzmthEncoder (bool): Inverts the direction of the steering azimuth encoder
         """
         self.wheelMotor = WrapperedSparkMax(
             wheelMotorCanID, moduleName + "_wheel", False
@@ -73,12 +76,12 @@ class SwerveModuleControl:
         # Note the azimuth encoder inversion should be fixed, based on the physical design of the encoder itself,
         # plus the swerve module physical construction. It might need to be tweaked here though if we change 
         # module brands or sensor brands.
-        self.azmthEnc = WrapperedSRXMagEncoder(
-            azmthEncoderPortIdx, moduleName + "_azmthEnc", azmthOffset, False
+        self.azmthEnc = wrapperedSwerveDriveAzmthEncoder(
+            azmthEncoderPortIdx, moduleName + "_azmthEnc", azmthOffset, invertAzmthEncoder
         )
 
-        self.wheelMotor.setInverted(invertWheel)
-        self.azmthMotor.setInverted(invertAzmth)
+        self.wheelMotor.setInverted(invertWheelMotor)
+        self.azmthMotor.setInverted(invertAzmthMotor)
 
         self.wheelMotorFF = SimpleMotorFeedforwardMeters(0, 0, 0)
 
@@ -183,9 +186,8 @@ class SwerveModuleControl:
             self.actualPosition.angle = self.actualState.angle
 
         # Optimize our incoming swerve command to minimize motion
-        self.optimizedDesiredState = SwerveModuleState.optimize(
-            self.desiredState, self.actualState.angle
-        )
+        self.optimizedDesiredState = self.desiredState
+        self.optimizedDesiredState.optimize(self.actualState.angle)
         
         # Use a PID controller to calculate the voltage for the azimuth motor
         self.azmthCtrl.setSetpoint(self.optimizedDesiredState.angle.degrees())  # type: ignore
@@ -214,6 +216,6 @@ class SwerveModuleControl:
             self.actualPosition.angle = self.actualState.angle
 
             # Wheel speed is slew-rate filtered to roughly simulate robot inertia
-            speed = self.wheelSimFilter.calculate(self.optimizedDesiredState.speed)
+            speed = self.wheelSimFilter.calculate(self.desiredState.speed)
             self.actualState.speed = speed + random.uniform(-0.0, 0.0)
             self.actualPosition.distance += self.actualState.speed * 0.02

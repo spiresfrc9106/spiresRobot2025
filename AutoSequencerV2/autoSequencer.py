@@ -23,8 +23,9 @@ class AutoSequencer(metaclass=Singleton):
 
         # Create a list of every autonomous mode we want
         self.mainModeList = ModeList("Main")
-        self.mainModeList.addMode(DriveOut())
         self.mainModeList.addMode(DoNothingMode())
+        #right now, DriveOut is all commented out, so we don't need to add it to the list. 
+        #self.mainModeList.addMode(DriveOut())
 
         self.topLevelCmdGroup = SequentialCommandGroup()
         self.startPose = Pose2d()
