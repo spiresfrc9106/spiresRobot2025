@@ -59,6 +59,13 @@ class MyRobot(wpilib.TimedRobot):
 
         self.autoHasRun = False
 
+        self.diMarkName = self.stt.makePaddedMarkName("Driver Interface")
+        self.dtMarkName = self.stt.makePaddedMarkName("Drivetrain")
+        self.teMarkName = self.stt.makePaddedMarkName("Telemetry")
+        self.lcMarkName = self.stt.makePaddedMarkName("LED Ctrl")
+        self.luMarkName = self.stt.makePaddedMarkName("logUpdate")
+        self.enMarkName = self.stt.makePaddedMarkName("end")
+
         gc.freeze()
         self.count=0
 
@@ -69,23 +76,25 @@ class MyRobot(wpilib.TimedRobot):
         if self.count == 10:
             gc.freeze()
         self.dInt.update()
-        self.stt.mark("Driver Interface")
+        self.stt.mark(self.diMarkName)
 
         self.driveTrain.update()
-        self.stt.mark("Drivetrain")
+        self.stt.mark(self.dtMarkName)
 
         self.autodrive.updateTelemetry()
         self.driveTrain.poseEst._telemetry.setCurAutoDriveWaypoints(self.autodrive.getWaypoints())
         self.driveTrain.poseEst._telemetry.setCurObstacles(self.autodrive.rfp.getObstacleStrengths())
-        self.stt.mark("Telemetry")
+        self.stt.mark(self.teMarkName)
 
         self.ledCtrl.setAutoDrive(self.autodrive.isRunning())
         self.ledCtrl.setStuck(self.autodrive.rfp.isStuck())
         self.ledCtrl.update()
-        self.stt.mark("LED Ctrl")
+        self.stt.mark(self.lcMarkName)
 
+        self.stt.mark(self.luMarkName)
         logUpdate()
         self.count += 1
+        self.stt.mark(self.enMarkName)
         self.stt.end()
 
     #########################################################

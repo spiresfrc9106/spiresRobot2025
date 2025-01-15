@@ -84,9 +84,11 @@ class SignalWrangler(metaclass=Singleton):
         else:
             sigLog = None
 
+        logger = Logger(valGetter,sigPub, sigLog)
         self.loggedValList.append(
-            Logger(valGetter,sigPub, sigLog)
+            logger
         )
+        return logger
 
 
 
