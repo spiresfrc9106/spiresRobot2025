@@ -23,12 +23,13 @@ Before developing code on a new computer, perform the following:
 
 ```cmd
     python -m pip install --upgrade pip
-    python -m venv venv
+    python -m venv .venv
 ```
 
 `.\venv\bin\activate` or `.\venv\scripts\Activate`
 
 ```cmd
+    python -m pip install -r requirements_dev.txt
     python -m pip install robotpy
     robotpy sync
 ```
@@ -171,9 +172,9 @@ wpilib                    2023.4.3.0
 
 ## Useful commands:
 
-See network logs: `python -m netconsole roboRIO-9106-frc.local`
+See network logs: `python -m netconsole roboRIO-9106-frc.local` or `python -m netconsole 10.91.6.2`
 
-SSH into the robot: `ssh lvuser@roboRIO-9106-frc.local`
+SSH into the robot: `ssh lvuser@roboRIO-9106-frc.local` or `ssh lvuser@10.91.6.2`
 
 ## Roborio 2.0 image install
 

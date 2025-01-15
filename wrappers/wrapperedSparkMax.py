@@ -24,6 +24,7 @@ class WrapperedSparkMax:
         self.disconFault = Fault(f"Spark Max {name} ID {canID} disconnected")
         self.simActPos = 0
 
+        # pylint: disable= R0801
         self.desPos = 0
         self.desVel = 0
         self.desVolt = 0

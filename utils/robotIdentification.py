@@ -28,13 +28,15 @@ class RobotIdentification(metaclass=Singleton):
 
     def __init__(self):
         self.roboControl = wpilib.RobotController
-        self.robotType = RobotTypes.Main
+        self.robotType = None
         self.serialFault = Fault("RoboRIO serial number not recognized")
         self._configureValue()
 
     def _configureValue(self):
 
         self.serialFault.setNoFault()
+
+        print(f"self.roboControl.getSerialNumber()={self.roboControl.getSerialNumber()}")
 
         if self.roboControl.getSerialNumber() == "030e2cb0":
             #Test to see if the RoboRio serial number is the main/"Production" bot.
@@ -46,7 +48,7 @@ class RobotIdentification(metaclass=Singleton):
         elif self.roboControl.getSerialNumber() == "0316b37c":
             #Test to see if the RoboRio serial number is our testboard's serial number.
             self.robotType = RobotTypes.TestBoard
-        elif self.roboControl.getSerialNumber() == "00000000" \
+        elif self.roboControl.getSerialNumber() == "032430C5" \
                 or FRC_TEAM_NUMBER==9106 and wpilib.TimedRobot.isSimulation():
             self.robotType = RobotTypes.Spires2023
         elif self.roboControl.getSerialNumber() == "00000000":
@@ -57,8 +59,9 @@ class RobotIdentification(metaclass=Singleton):
             # If the Robo Rio's serial number is not equal to any of our known serial numbers, 
             # assume we are the main robot. But, throw a fault, since this is something software
             # team needs to fix.
-            self.robotType = RobotTypes.Main
+            self.robotType = RobotTypes.SpiresTestBoard
             self.serialFault.setFaulted()
+            assert False
 
     def _getRobotSerialNumber(self)->str:
         return self.roboControl.getSerialNumber()
@@ -67,5 +70,7 @@ class RobotIdentification(metaclass=Singleton):
         """
         Return which robot we're running on right now
         """
-        return self.robotType 
+        return self.robotType
 
+    def isSpiresRobot(self)->bool:
+        return str(self.robotType).startswith('RobotTypes.Spires')

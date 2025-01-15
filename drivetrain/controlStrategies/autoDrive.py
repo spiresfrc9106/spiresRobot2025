@@ -1,16 +1,15 @@
+import math
 from wpilib import Timer
 from wpimath.geometry import Pose2d, Translation2d
-from wpimath.trajectory import Trajectory
 from drivetrain.controlStrategies.holonomicDriveController import HolonomicDriveController
 from drivetrain.drivetrainCommand import DrivetrainCommand
+from drivetrain.drivetrainPhysical import MAX_DT_LINEAR_SPEED_MPS
 from navigation.obstacleDetector import ObstacleDetector
-from utils.signalLogging import addLog
-from utils.singleton import Singleton
 from navigation.repulsorFieldPlanner import RepulsorFieldPlanner
 from navigation.navConstants import GOAL_PICKUP, GOAL_SPEAKER
-from drivetrain.drivetrainPhysical import MAX_DT_LINEAR_SPEED_MPS
 from utils.allianceTransformUtils import transform
-import math
+from utils.signalLogging import addLog
+from utils.singleton import Singleton
 
 # Maximum speed that we'll attempt to path plan at. Needs to be at least 
 # slightly less than the maximum physical speed, so the robot can "catch up" 
@@ -28,8 +27,10 @@ class AutoDrive(metaclass=Singleton):
         self._olCmd = DrivetrainCommand()
         self._prevCmd:DrivetrainCommand|None = None
         self._plannerDur:float = 0.0
-        self.autoSpeakerPrevEnabled = False #This name might be a wee bit confusing. It just keeps track if we were in auto targeting the speaker last refresh.
-        self.autoPickupPrevEnabled = False #This name might be a wee bit confusing. It just keeps track if we were in auto targeting the speaker last refresh.
+        self.autoSpeakerPrevEnabled = False #This name might be a wee bit confusing. It just keeps track if we were in
+                                            # auto targeting the speaker last refresh.
+        self.autoPickupPrevEnabled = False  #This name might be a wee bit confusing. It just keeps track if we were in
+                                            # auto targeting the speaker last refresh.
         self.stuckTracker = 0 
         self.prevPose = Pose2d()
 
@@ -56,7 +57,7 @@ class AutoDrive(metaclass=Singleton):
         return self.rfp.getObstacleTransList()
     
     def isRunning(self)->bool:
-        return self.rfp.goal != None
+        return self.rfp.goal is not None
 
     def update(self, cmdIn: DrivetrainCommand, curPose: Pose2d) -> DrivetrainCommand:
         
@@ -111,7 +112,8 @@ class AutoDrive(metaclass=Singleton):
 
         #Set our curPos as the new old pose
         self.prevPose = curPose
-        #assume that we are either stuck or done if the counter reaches above 10. (sometimes it will get to like 4 when we are accelerating or taking a sharp turn)
+        #assume that we are either stuck or done if the counter reaches above 10.
+        # (sometimes it will get to like 4 when we are accelerating or taking a sharp turn)
         if self.stuckTracker >= 10:
             retCmd = cmdIn #set the returned cmd to the cmd that we were originally given.
             self._prevCmd = None

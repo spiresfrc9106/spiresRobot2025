@@ -31,7 +31,7 @@ BUMPER_THICKNESS_M = inchesToMeters(2.5)
 
 # Total mass includes robot, battery, and bumpers
 # more than the "weigh-in" weight
-if str(RobotIdentification().getRobotType()).startswith('Spires'):
+if RobotIdentification().isSpiresRobot():
     ROBOT_MASS_KG = lbsToKg(robotDepConstants['MASS_LBS'])
 else:
     ROBOT_MASS_KG = lbsToKg(60)
@@ -53,7 +53,7 @@ if RobotIdentification().getRobotType() == RobotTypes.Main:
     WHEEL_GEAR_RATIO = WHEEL_GEAR_RATIO_L3
 elif RobotIdentification().getRobotType() == RobotTypes.Practice:
     WHEEL_GEAR_RATIO = WHEEL_GEAR_RATIO_L2
-elif str(RobotIdentification().getRobotType()).startswith('Spires'):
+elif RobotIdentification().isSpiresRobot():
     WHEEL_GEAR_RATIO = robotDepConstants['SWERVE_WHEEL_GEAR_RATIO']
 else:
     WHEEL_GEAR_RATIO = WHEEL_GEAR_RATIO_L3
@@ -86,7 +86,7 @@ def dtMotorRotToLinear(rot):
 
 # Drivetrain Performance Mechanical limits
 # Nominal calculations (ideal)
-if str(RobotIdentification().getRobotType()).startswith('Spires'):
+if RobotIdentification().isSpiresRobot():
     MAX_DT_MOTOR_SPEED_RPS = robotDepConstants['SWERVE_WHEEL_MAX_SPEED_RPS']
 else:
     MAX_DT_MOTOR_SPEED_RPS = DCMotor.NEO(1).freeSpeed
@@ -119,7 +119,7 @@ MAX_ROTATE_ACCEL_RAD_PER_SEC_2 = (
 # 5 - Redeploy code, verify that the  encoder readings are correct as each module is manually rotated
 
 
-if str(RobotIdentification().getRobotType()).startswith('Spires'):
+if RobotIdentification().isSpiresRobot():
     # Perhaps we invert the swerve module azimuth motor
     INVERT_AZMTH_MOTOR = False
     INVERT_AZMTH_ENCODER = True
@@ -147,7 +147,7 @@ if RobotIdentification().getRobotType() == RobotTypes.Main:
     FL_ENCODER_MOUNT_OFFSET_RAD = 0.2412
     BR_ENCODER_MOUNT_OFFSET_RAD = 1.259
     BL_ENCODER_MOUNT_OFFSET_RAD = 1.777
-elif str(RobotIdentification().getRobotType()).startswith('Spires'):
+elif RobotIdentification().isSpiresRobot():
     FL_ENCODER_MOUNT_OFFSET_RAD = deg2Rad(robotDepConstants["FL_OFFSET_DEG"])
     FR_ENCODER_MOUNT_OFFSET_RAD = deg2Rad(robotDepConstants["FR_OFFSET_DEG"])
     BL_ENCODER_MOUNT_OFFSET_RAD = deg2Rad(robotDepConstants["BL_OFFSET_DEG"])

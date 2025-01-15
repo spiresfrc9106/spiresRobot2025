@@ -1,12 +1,9 @@
 from wpilib import ADIS16470_IMU
-from wpilib import SPI
 from wpimath.geometry import Rotation2d
 import navx
 from drivetrain.robotDependentConstants import RobotDependentConstants
 
 from utils.robotIdentification import RobotIdentification
-
-robotDepConstants = RobotDependentConstants().get()[RobotIdentification().getRobotType()]
 
 class WrapperedNoGyro():
     def __init__(self):
@@ -17,41 +14,33 @@ class WrapperedNoGyro():
 
     def isConnected(self):
         return False
+
 class WrapperedNavx(navx.AHRS):
     """
     Class to wrap a navx
     """
     def __init__(self):
-        """
-         5. __init__(self: navx._navx.AHRS,
-            spi_port_id: wpilib._wpilib.SPI.Port, spi_bitrate: int, update_rate_hz: int) -> None
+        super().__init__(comType=navx.AHRS.NavXComType.kMXP_SPI, updateRate=50)
 
-        :param port: SPI Port to use
-        :type port: :class:`.SPI.Port`
-        :param spi_bitrate: SPI bitrate (Maximum:  2,000,000)
-        :param update_rate_hz: Custom Update Rate (Hz)
-        """
-        super().__init__(spi_port_id=SPI.Port.kMXP, spi_bitrate=1000000, update_rate_hz=50)
-
-    def getGyroAngleRotation2d(self):
+    def getGyroAngleRotation2d(self)->Rotation2d:
         return self.getRotation2d()
-
-
 
 class WrapperedAdis16470Imu(ADIS16470_IMU):
 
-    def getGyroAngleRotation2d(self):
+    def getGyroAngleRotation2d(self)->Rotation2d:
         return Rotation2d().fromDegrees(self.getAngle(self.getYawAxis()))
 
 def wrapperedGyro():
     result = None
-    if robotDepConstants["GYRO"]== "NAVX":
+    if RobotIdentification().isSpiresRobot():
+        robotDepConstants = RobotDependentConstants().get()[RobotIdentification().getRobotType()]
         print(f'GYRO is {robotDepConstants["GYRO"]}')
-        result = WrapperedNavx()
-    elif robotDepConstants["GYRO"]== "ADIS16470_IMU":
-        print(f'GYRO is {robotDepConstants["GYRO"]}')
-        result = WrapperedAdis16470Imu()
+        if robotDepConstants["GYRO"] == "NAVX":
+            result = WrapperedNavx()
+        elif robotDepConstants["GYRO"] == "ADIS16470_IMU":
+            result = WrapperedAdis16470Imu()
+        else:
+            result = WrapperedNoGyro()
     else:
-        print(f'GYRO is {robotDepConstants["GYRO"]}')
-        result = WrapperedNoGyro()
+        result = WrapperedAdis16470Imu()
     return result

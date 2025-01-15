@@ -1,12 +1,13 @@
+from wpimath import applyDeadband
+from wpimath.filter import SlewRateLimiter
+from wpilib import XboxController
 from drivetrain.drivetrainCommand import DrivetrainCommand
 from drivetrain.drivetrainPhysical import MAX_FWD_REV_SPEED_MPS,MAX_STRAFE_SPEED_MPS,\
 MAX_ROTATE_SPEED_RAD_PER_SEC,MAX_TRANSLATE_ACCEL_MPS2,MAX_ROTATE_ACCEL_RAD_PER_SEC_2
 from utils.allianceTransformUtils import onRed
 from utils.faults import Fault
-from utils.signalLogging import addLog
-from wpimath import applyDeadband
-from wpimath.filter import SlewRateLimiter
-from wpilib import XboxController
+#from utils.signalLogging import addLog
+
 
 class DriverInterface:
     """Class to gather input from the driver of the robot"""
