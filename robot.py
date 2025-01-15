@@ -1,4 +1,5 @@
 import sys
+import gc
 import wpilib
 from wpimath.geometry import Translation2d, Pose2d, Rotation2d
 from dashboard import Dashboard
@@ -58,10 +59,15 @@ class MyRobot(wpilib.TimedRobot):
 
         self.autoHasRun = False
 
+        gc.freeze()
+        self.count=0
+
 
     def robotPeriodic(self):
         self.stt.start()
 
+        if self.count == 10:
+            gc.freeze()
         self.dInt.update()
         self.stt.mark("Driver Interface")
 
@@ -79,6 +85,7 @@ class MyRobot(wpilib.TimedRobot):
         self.stt.mark("LED Ctrl")
 
         logUpdate()
+        self.count += 1
         self.stt.end()
 
     #########################################################
