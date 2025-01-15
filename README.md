@@ -26,7 +26,7 @@ Before developing code on a new computer, perform the following:
     python -m venv .venv
 ```
 
-`.\venv\bin\activate` or `.\venv\scripts\Activate`
+`. .\.venv\bin\activate` or `.\.venv\scripts\Activate`
 
 ```cmd
     python -m pip install -r requirements_dev.txt
@@ -83,6 +83,15 @@ Any folder or file prefixed with a `.` will be skipped in the deploy. This is go
 
 `.pylintrc` contains configuration about what checks the linter runs, and what formatting it enforces
 
+
+to lint a specific directory:
+
+`pylint --rcfile=.pylintrc --source-roots=. utils\**\*.py`
+
+to lint a specific file:
+
+`pylint --rcfile=.pylintrc --source-roots=. drivetrain\poseEstimation\drivetrainPoseEstimator.py`
+
 ## Testing
 
 Run the `WPILib: Test Robot Code` task in VSCode's command palette.
@@ -90,6 +99,22 @@ Run the `WPILib: Test Robot Code` task in VSCode's command palette.
 OR
 
 `robotpy test`
+
+OR to get details of what is happening during the tests:
+
+`robotpy test -- --no-header -vvv -s`
+
+OR to run a specific test file from the '.\tests' directory:
+
+`robotpy test autoSequencer_test.py -- --no-header -vvv -s`
+
+OR to run a specific test file and test case from the '.\tests' directory:
+
+`robotpy test autoSequencer_test.py::test_parallel -- --no-header -vvv -s`
+
+OR to skip a specific test:
+
+`robotpy test -- -k 'not pyfrc_test.py'`
 
 ## Simulating
 
@@ -99,70 +124,7 @@ OR
 
 `robotpy sim`
 
-## RIO First-time Installation
 
-Follow [the robotpy instructions for setting up the RIO](https://robotpy.readthedocs.io/en/stable/install/robot.html)
-
-Then, install all packages specific to our repo, from `requirements_dev.txt`, following the
-[two step process for roboRIO package installer](https://robotpy.readthedocs.io/en/stable/install/packages.html)
-
-While on the internet:
-
-`python -m robotpy_installer download -r requirements_dev.txt`
-
-Then, while connected to the robot's network:
-
-```cmd
-python -m robotpy_installer install-python
-python -m robotpy_installer install robotpy
-python -m robotpy_installer list
-```
-
-To check what is installed:
-
-`python -m robotpy_installer list`
-
-example output:
-```cmd
-10:32:35:371 INFO    : robotpy.installer   : RobotPy Installer 2023.0.4
-10:32:35:371 INFO    : robotpy.installer   : -> caching files at C:\Users\MikeStitt\wpilib\2023\robotpy
-10:32:35:372 INFO    : robotpy.installer   : -> using existing config at 'C:\Users\MikeStitt\Documents\first\sw\spiresFrc9106\firstRoboPy\.installer_config'
-10:32:35:374 INFO    : robotpy.installer   : Finding robot for team 9106
-10:32:35:380 INFO    : robotpy.installer   : -> Robot is at 172.22.11.2
-10:32:35:380 INFO    : robotpy.installer   : Connecting to robot via SSH at 172.22.11.2
-10:32:35:495 INFO    : paramiko.transport  : Connected (version 2.0, client OpenSSH_8.3)
-10:32:35:599 INFO    : paramiko.transport  : Auth banner: b'NI Linux Real-Time (run mode)\n\nLog in with your NI-Auth credentials.\n\n'
-10:32:35:600 INFO    : paramiko.transport  : Authentication (password) successful!
-10:32:35:676 INFO    : robotpy.installer   : -> RoboRIO 2 image version: 2023_v3.2
-10:32:35:752 INFO    : robotpy.installer   : -> RoboRIO disk usage 584.0M/3.3G (17% full)
-Package                   Version
-------------------------- ----------
-debugpy                   1.8.0
-numpy                     1.24.2
-pip                       22.3.1
-pyntcore                  2023.4.3.0
-robotpy                   2023.4.3.1
-robotpy-apriltag          2023.4.3.0
-robotpy-commands-v2       2023.4.3.0
-robotpy-cscore            2023.4.3.0
-robotpy-ctre              2023.1.0
-robotpy-hal               2023.4.3.0
-robotpy-libgfortran5      12.1.0+r5
-robotpy-navx              2023.0.3
-robotpy-openblas          0.3.21+r2
-robotpy-opencv            4.6.0+r2
-robotpy-opencv-core       4.6.0+r2
-robotpy-pathplannerlib    2023.3.4.1
-robotpy-photonvision      2023.4.2
-robotpy-playingwithfusion 2023.1.0
-robotpy-rev               2023.1.3.2
-robotpy-wpilib-utilities  2023.1.0
-robotpy-wpimath           2023.4.3.0
-robotpy-wpinet            2023.4.3.0
-robotpy-wpiutil           2023.4.3.0
-setuptools                65.5.0
-wpilib                    2023.4.3.0
-```
 
 ## Dependency Management
 
