@@ -16,7 +16,7 @@ from drivetrain.swerveModuleGainSet import SwerveModuleGainSet
 from wrappers.wrapperedSparkMax import WrapperedSparkMax
 from dashboardWidgets.swerveState import getAzmthDesTopicName, getAzmthActTopicName
 from dashboardWidgets.swerveState import getSpeedDesTopicName, getSpeedActTopicName
-from utils.signalLogging import addLog
+from utils.signalLogging import addLog, getLogger
 from utils.units import rad2Deg
 
 
@@ -117,6 +117,8 @@ class SwerveModuleControl:
             lambda: ((self.actualState.speed) / MAX_FWD_REV_SPEED_MPS),
             "frac",
         )
+        self.loggerSpeedBefore = getLogger(f"DtModule_{moduleName}_speedBeforeDes", 'frac')
+        self.loggerVOut = getLogger(f"DtModule_{moduleName}_VAct", 'V')
 
 
         # Simulation Support Only
@@ -197,13 +199,15 @@ class SwerveModuleControl:
         # Scale speed by cosine of angle error. This scales down movement perpendicular to the desired
         # direction of travel that can occur when modules change directions. This results in smoother
         # driving.
+        self.loggerSpeedBefore.log(self.optimizedDesiredState.speed/ MAX_FWD_REV_SPEED_MPS)
+        self.loggerVOut.log(self.wheelMotor.ctrl.getAppliedOutput()*self.wheelMotor.ctrl.getBusVoltage())
         self.optimizedDesiredState.speed *= (self.optimizedDesiredState.angle - self.actualState.angle ).cos()
 
         # Send voltage and speed commands to the wheel motor
         motorDesSpd = dtLinearToMotorRot(self.optimizedDesiredState.speed)
         motorDesAccel = (motorDesSpd - self._prevMotorDesSpeed) / 0.02
         motorVoltageFF = self.wheelMotorFF.calculate(motorDesSpd, motorDesAccel)
-        self.wheelMotor.setVelCmd(motorDesSpd, motorVoltageFF)
+        self.wheelMotor.setVelCmd(motorDesSpd, 0)
 
         self._prevMotorDesSpeed = motorDesSpd  # save for next loop
 
