@@ -16,6 +16,7 @@ RobotTypes = Enum('RobotTypes', [
     'SpiresMain',
     'SpiresPractice',
     'SpiresTestBoard',
+    'SpiresRoboRioV1'
 ])
 
 class RobotIdentification(metaclass=Singleton):
@@ -51,10 +52,12 @@ class RobotIdentification(metaclass=Singleton):
         elif self.roboControl.getSerialNumber() == "032430C5" \
                 or FRC_TEAM_NUMBER==9106 and wpilib.TimedRobot.isSimulation():
             self.robotType = RobotTypes.Spires2023
-        elif self.roboControl.getSerialNumber() == "00000000":
+        elif self.roboControl.getSerialNumber() == "032B1F4B":
             self.robotType = RobotTypes.Spires2024
-        elif self.roboControl.getSerialNumber() == "00000000":
+        elif self.roboControl.getSerialNumber() == "032B1FBB":
             self.robotType = RobotTypes.SpiresTestBoard
+        elif self.roboControl.getSerialNumber() == "03057ab7":
+            self.robotType = RobotTypes.SpiresRoboRioV1
         else:
             # If the Robo Rio's serial number is not equal to any of our known serial numbers, 
             # assume we are the main robot. But, throw a fault, since this is something software
