@@ -8,17 +8,16 @@ from wpimath.geometry import Rotation2d
 from wpimath.filter import SlewRateLimiter
 from wpilib import TimedRobot
 
-
-from drivetrain.swerveModuleGainSet import SwerveModuleGainSet
-from wrappers.wrapperedSparkMax import WrapperedSparkMax
-from wrappers.wrapperedSRXMagEncoder import WrapperedSRXMagEncoder
-from dashboardWidgets.swerveState import getAzmthDesTopicName, getAzmthActTopicName
-from dashboardWidgets.swerveState import getSpeedDesTopicName, getSpeedActTopicName
-from utils.signalLogging import addLog
 from drivetrain.drivetrainPhysical import dtMotorRotToLinear
 from drivetrain.drivetrainPhysical import dtLinearToMotorRot
 from drivetrain.drivetrainPhysical import MAX_FWD_REV_SPEED_MPS
 from drivetrain.drivetrainPhysical import wrapperedSwerveDriveAzmthEncoder
+from drivetrain.swerveModuleGainSet import SwerveModuleGainSet
+from wrappers.wrapperedSparkMax import WrapperedSparkMax
+from dashboardWidgets.swerveState import getAzmthDesTopicName, getAzmthActTopicName
+from dashboardWidgets.swerveState import getSpeedDesTopicName, getSpeedActTopicName
+from utils.signalLogging import addLog
+from utils.units import rad2Deg
 
 
 class SwerveModuleControl:
@@ -62,10 +61,11 @@ class SwerveModuleControl:
             azmthMotorCanID (int): CAN Id for the azimuth motor for this module
             azmthEncoderPortIdx (int): RIO Port for the azimuth absolute encoder for this module
             azmthOffset (float): Mounting offset of the azimuth encoder in Radians.
-            invertWheelMotor (bool): Inverts the drive direction of the wheel motor - needed since left/right sides are mirrored
-            invertAzmthMotor (bool): Inverts the steering direction of the azimuth motor - needed if motor is mounted upside down
+            invertWheelMotor (bool): Inverts the drive direction of the wheel motor
+            invertAzmthMotor (bool): Inverts the steering direction of the azimuth motor
             invertAzmthEncoder (bool): Inverts the direction of the steering azimuth encoder
         """
+        print(f"{moduleName} azmthOffset={rad2Deg(azmthOffset):7.1f} deg")
         self.wheelMotor = WrapperedSparkMax(
             wheelMotorCanID, moduleName + "_wheel", False
         )

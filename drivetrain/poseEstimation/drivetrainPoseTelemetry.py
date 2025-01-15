@@ -2,11 +2,12 @@ import math
 
 import wpilib
 from wpimath.trajectory import Trajectory
-from wpimath.geometry import Pose2d, Pose3d, Transform2d, Rotation2d, Translation2d
+from wpimath.geometry import Pose2d, Pose3d, Transform2d, Rotation2d
 from ntcore import NetworkTableInstance
 
 from utils.allianceTransformUtils import transform
-from drivetrain.drivetrainPhysical import ROBOT_TO_FRONT_CAM, ROBOT_TO_LEFT_CAM, ROBOT_TO_RIGHT_CAM, robotToModuleTranslations
+from drivetrain.drivetrainPhysical import ROBOT_TO_FRONT_CAM, ROBOT_TO_LEFT_CAM, ROBOT_TO_RIGHT_CAM
+from drivetrain.drivetrainPhysical import  robotToModuleTranslations
 from wrappers.wrapperedPoseEstPhotonCamera import CameraPoseObservation
 
 
@@ -81,7 +82,9 @@ class DrivetrainPoseTelemetry:
         self.field.getObject("curObstaclesFixed").setPoses([Pose2d(x, Rotation2d()) for x in self.fixedObstacles])
         self.field.getObject("curObstaclesFull").setPoses([Pose2d(x, Rotation2d()) for x in self.fullObstacles])
         self.field.getObject("curObstaclesThird").setPoses([Pose2d(x, Rotation2d()) for x in self.thirdObstacles])
-        self.field.getObject("curObstaclesAlmostGone").setPoses([Pose2d(x, Rotation2d()) for x in self.almostGoneObstacles])
+        self.field.getObject("curObstaclesAlmostGone").setPoses(
+            [Pose2d(x, Rotation2d()) for x in self.almostGoneObstacles]
+        )
 
         self.field.getObject("visionObservations").setPoses(self.visionPoses)
         self.visionPoses = []

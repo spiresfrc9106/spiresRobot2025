@@ -5,5 +5,5 @@ networktables.json
 .simulationLogs
 # 9106 specific ignores
 /venv*
-/.venv
+/.venv*
 /.idea
