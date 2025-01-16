@@ -1,3 +1,5 @@
+# Main FRC Python Robot Programming Package
+robotpy
 # Development utilities - not needed on the RIO
 pylint==3.0.3
 black
