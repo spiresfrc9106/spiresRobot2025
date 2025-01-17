@@ -146,7 +146,7 @@ def getLogger(alias: str, units:str|None=None) -> Logger:
     return logger
 
 def getNowLogger(alias: str, units:str|None=None) -> Logger:
-    logger = _singletonInst.newLoggerSetup(alias, None, units)
+    logger = SignalWrangler().newLoggerSetup(alias, None, units)
     return logger
 
 def sigNameToNT4TopicName(name):
