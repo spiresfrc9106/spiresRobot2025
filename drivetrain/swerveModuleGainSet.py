@@ -19,12 +19,12 @@ class SwerveModuleGainSet:
             "Drivetrain Module Wheel kA", 0.000, "volts/radPerSecPerSec"
         )
         self.wheelV = Calibration(
-            "Drivetrain Module Wheel kV", 12.0 / RPM2RadPerSec(4700), "volts/radPerSec"
+            "Drivetrain Module Wheel kV", 0.0 / RPM2RadPerSec(4700), "volts/radPerSec"
         )
-        self.wheelS = Calibration("Drivetrain Module Wheel kS", 0.12, "volts")
-        self.azmthP = Calibration("Drivetrain Module Azmth kP", 0.115)
+        self.wheelS = Calibration("Drivetrain Module Wheel kS", 0.0, "volts")
+        self.azmthP = Calibration("Drivetrain Module Azmth kP", 0.22)
         self.azmthI = Calibration("Drivetrain Module Azmth kI", 0.0)
-        self.azmthD = Calibration("Drivetrain Module Azmth kD", 0.0000)
+        self.azmthD = Calibration("Drivetrain Module Azmth kD", 0.0001)
 
     def hasChanged(self)->bool:
         """
