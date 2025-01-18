@@ -140,10 +140,10 @@ class DriverInterface:
                 #dilemma: from 90 to 180
 
                 t = 0.9 #pathDistance/halfCircle
-                idealSpeed = (distanceLeft/t)*1.2+45
+                idealSpeed = (distanceLeft/t)+45
 
                 #bonus
-                idealSpeed = idealSpeed * (1+((abs(pathDistance)-90)/90*0.4))
+                idealSpeed = idealSpeed * (1+((abs(pathDistance)-45)/90*0.5))
 
                 # if ((idealSpeed-self.lastRotSpeed)>self.lastRotSpeed*0.5):
                 #     desiredSpeed = (self.lastRotSpeed + desiredSpeed)/2
@@ -163,10 +163,10 @@ class DriverInterface:
                     v_time = max(distanceLeft*10,0)
 
                 t_time = Timer.getFPGATimestamp()-self.startRotateTime
-                if distanceLeft >0.9:
-                    ##print(f'time={t_time}')
-                else:
-                    ##print(f'[almost] time={t_time}')
+                # if distanceLeft >0.9:
+                #     print(f'time={t_time}')
+                # else:
+                #     print(f'[almost] time={t_time}')
 
                 self.lastRotSpeed = v_time
                 self.v_time = v_time
