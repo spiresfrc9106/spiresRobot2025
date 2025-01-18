@@ -132,35 +132,38 @@ class DriverInterface:
                     ###print(f'time: {((min(abs(self.fullRotateDistance), fullCircle-abs(self.fullRotateDistance)))/halfCircle)}')
 
                 pathDistance = min(abs(self.fullRotateDistance), fullCircle-abs(self.fullRotateDistance))
-                currRotateDistance = gyroReading-idealReading
+                currRotateDistance = gyroReading-idealReading #-90
                 distanceLeft = min(abs(currRotateDistance), fullCircle - abs(currRotateDistance))
                 completedDist = pathDistance - distanceLeft
 
-                t = pathDistance/halfCircle
-                idealSpeed = (distanceLeft/t)+50
+                #dilemma: from 180 to 270
+                #dilemma: from 90 to 180
 
+                t = 0.9 #pathDistance/halfCircle
+                idealSpeed = (distanceLeft/t)*1.2+45
 
-
+                #bonus
+                idealSpeed = idealSpeed * (1+((abs(pathDistance)-90)/90*0.4))
 
                 # if ((idealSpeed-self.lastRotSpeed)>self.lastRotSpeed*0.5):
                 #     desiredSpeed = (self.lastRotSpeed + desiredSpeed)/2
-
-                if (idealSpeed-self.lastRotSpeed)>45:
-                    desiredSpeed = self.lastRotSpeed + 45
 
                 max_acc = 45
                 acc_diff = idealSpeed-self.lastRotSpeed
                 acc_diff_abs = abs(acc_diff)
                 sign = acc_diff/acc_diff_abs
-                selected_acc = min(acc_diff_abs,max_acc) * sign
+                selected_acc = abs(min(acc_diff,max_acc)) * sign
 
                 v_time = self.lastRotSpeed + selected_acc
 
                 if distanceLeft<3:
-                    v_time = max(distanceLeft*4,0)
+                    v_time = max(distanceLeft*10,0)
 
                 t_time = Timer.getFPGATimestamp()-self.startRotateTime
-                print(f'time={t_time}')
+                if distanceLeft >0.9:
+                    print(f'time={t_time}')
+                else:
+                    print(f'[almost] time={t_time}')
 
                 self.lastRotSpeed = v_time
                 self.v_time = v_time
@@ -225,7 +228,7 @@ class DriverInterface:
                 #     print("v max reached")
 
                 direction = 1.0
-                if self.fullRotateDistance>halfCircle:
+                if ((360+self.fullRotateDistance)%360)>halfCircle:
                     direction = -1.0
                 self.velTCmd = deg2Rad(direction * v_selected)
             else:
