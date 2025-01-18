@@ -164,9 +164,9 @@ class DriverInterface:
 
                 t_time = Timer.getFPGATimestamp()-self.startRotateTime
                 if distanceLeft >0.9:
-                    print(f'time={t_time}')
+                    ##print(f'time={t_time}')
                 else:
-                    print(f'[almost] time={t_time}')
+                    ##print(f'[almost] time={t_time}')
 
                 self.lastRotSpeed = v_time
                 self.v_time = v_time
