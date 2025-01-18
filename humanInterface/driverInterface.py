@@ -151,7 +151,10 @@ class DriverInterface:
                 max_acc = 45
                 acc_diff = idealSpeed-self.lastRotSpeed
                 acc_diff_abs = abs(acc_diff)
-                sign = acc_diff/acc_diff_abs
+                if acc_diff == 0:
+                    sign = 1
+                else:
+                    sign = acc_diff/acc_diff_abs
                 selected_acc = abs(min(acc_diff,max_acc)) * sign
 
                 v_time = self.lastRotSpeed + selected_acc
