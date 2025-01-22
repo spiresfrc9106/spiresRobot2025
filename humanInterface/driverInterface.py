@@ -128,6 +128,7 @@ class DriverInterface:
                     self.startRotateTime = Timer.getFPGATimestamp()
                     self.fullRotateDistance = gyroReading-idealReading
                     self.lastRotSpeed = 0
+                    self.predictedNextGyro = gyroReading
                     print("new path began")
                     ###print(f'time: {((min(abs(self.fullRotateDistance), fullCircle-abs(self.fullRotateDistance)))/halfCircle)}')
 
@@ -140,15 +141,15 @@ class DriverInterface:
                 #dilemma: from 90 to 180
 
                 t = 0.9 #pathDistance/halfCircle
-                idealSpeed = (distanceLeft/t)+45
+                idealSpeed = (0.9*(distanceLeft/t))+65 #originally 45
 
                 #bonus
-                idealSpeed = idealSpeed * (1+((abs(pathDistance)-45)/90*0.5))
+                idealSpeed = idealSpeed * (1+((abs(pathDistance)-45)/90*0.5)) * 1.3  #originally (1+((abs(pathDistance)-45)/90*0.5))
 
                 # if ((idealSpeed-self.lastRotSpeed)>self.lastRotSpeed*0.5):
                 #     desiredSpeed = (self.lastRotSpeed + desiredSpeed)/2
 
-                max_acc = 45
+                max_acc = 25 #originally 45
                 acc_diff = idealSpeed-self.lastRotSpeed
                 acc_diff_abs = abs(acc_diff)
                 if acc_diff == 0:
@@ -159,8 +160,12 @@ class DriverInterface:
 
                 v_time = self.lastRotSpeed + selected_acc
 
-                if distanceLeft<3:
-                    v_time = max(distanceLeft*10,0)
+                # 3 left, speed is 30, and 30/50 is 3/5 per second...
+                # 5 left, 6/5 is fine... 6/5
+                # 3 left, speed is 180/50, is 3.6/5
+
+                if distanceLeft<5:
+                    v_time = max(distanceLeft*10*6/5,0)
 
                 t_time = Timer.getFPGATimestamp()-self.startRotateTime
                 # if distanceLeft >0.9:
@@ -171,7 +176,7 @@ class DriverInterface:
                 self.lastRotSpeed = v_time
                 self.v_time = v_time
 
-
+                #print(f'{self.predictedNextGyro-gyroReading} needed')
 
                 #build a customizable function:
                 #x = a*b/3*pow(t*c,3)+i*t
@@ -216,7 +221,6 @@ class DriverInterface:
                 #-----------------------
                 v_selected = min(max(v_performance, v_time),(MAX_ROTATE_SPEED_RAD_PER_SEC/(3.142*2)*fullCircle))
 
-
                 # if (abs(idealReading-gyroReading)<fullCircle/360*5):
                 #     v_selected = 0
 
@@ -234,6 +238,9 @@ class DriverInterface:
                 if ((360+self.fullRotateDistance)%360)>halfCircle:
                     direction = -1.0
                 self.velTCmd = deg2Rad(direction * v_selected)
+
+                self.predictedNextGyro = gyroReading - (direction * v_selected * 0.02)
+
             else:
                 pass
 
