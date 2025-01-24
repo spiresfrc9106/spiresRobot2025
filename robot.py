@@ -184,7 +184,9 @@ class MyRobot(wpilib.TimedRobot):
     #########################################################
     ## Cleanup
     def endCompetition(self):
-        self.rioMonitor.stopThreads()
+        rioMonitor = getattr(self, "rioMonitor", None)
+        if rioMonitor is not None:
+            self.rioMonitor.stopThreads()
         destroyAllSingletonInstances()
         super().endCompetition()
 
