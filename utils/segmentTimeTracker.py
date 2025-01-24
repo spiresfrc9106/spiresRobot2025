@@ -1,6 +1,6 @@
 import wpilib
 
-from utils.signalLogging import addLog, getLogger
+from utils.signalLogging import addLog, getNowLogger
 from utils.timingHist import GeometricMean
 
 
@@ -32,9 +32,9 @@ class SegmentTimeTracker:
         addLog("LoopEndTime", lambda: (self.loopEndTime * 1000.0), "ms")
         addLog("LoopCount", lambda: (self.numLoops), "count")
         addLog("LoopCountMod", lambda: (self.numLoopsMod), "count")
-        self.loopDurationLogger = getLogger("LoopDuration", "ms")
-        self.loopOverRunCountLogger = getLogger("LoopOverRunCount", "count")
-        self.loopDurationSmoothLogger = getLogger("LoopDurationSmooth", "ms")
+        self.loopDurationLogger = getNowLogger("LoopDuration", "ms")
+        self.loopOverRunCountLogger = getNowLogger("LoopOverRunCount", "count")
+        self.loopDurationSmoothLogger = getNowLogger("LoopDurationSmooth", "ms")
 
     def start(self):
         """
@@ -127,6 +127,6 @@ class SegmentTimeTracker:
                 self.numOverRuns += 1
                 self.tracer.printEpochs()
             self.smoothLoopDurationMs.append(loopDurationMs)
-            self.loopDurationLogger.log(loopDurationMs)
-            self.loopOverRunCountLogger.log(self.numOverRuns)
-            self.loopDurationSmoothLogger.log(self.smoothLoopDurationMs.value)
+            self.loopDurationLogger.logNow(loopDurationMs)
+            self.loopOverRunCountLogger.logNow(self.numOverRuns)
+            self.loopDurationSmoothLogger.logNow(self.smoothLoopDurationMs.value)
