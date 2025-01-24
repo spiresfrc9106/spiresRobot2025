@@ -26,11 +26,10 @@ Before developing code on a new computer, perform the following:
     python -m venv .venv
 ```
 
-`. .\.venv\bin\activate` or `.\.venv\scripts\Activate`
+`. .\.venv\bin\activate` or `.\.venv\Scripts\activate`
 
 ```cmd
     python -m pip install -r requirements_dev.txt
-    python -m pip install robotpy
     robotpy sync
 ```
 
@@ -124,13 +123,28 @@ OR
 
 `robotpy sim`
 
-
-
 ## Dependency Management
 
-`requirements_dev.txt` is used to list dependencies that we only need on our development computers, not on the RoboRIO. This is tools like linting and formatting; they aren't mission critical (or even used) at runtime, but still very helpful to have.
+`requirements_dev.txt` is used to list dependencies that we only need on our development computers, not on the RoboRIO.
+Some tools like linting and formatting aren't mission-critical (or even used) at runtime, but still very helpful to
+have.
+`robotpy` is on this is on this list because it exists on the development computers, and by placing it on this list
+it removes an installation step.
 
-`pyproject.toml` defines the dependencies that are required to be installed on the RoboRIO for our code to successfully run. For tests and simulations you will also need these dependencies on your development machine. They are managed automatically via `robotpy sync`.
+`robotpy` then uses `pyproject.toml` to the dependencies that are required to be installed on the RoboRIO for our code
+to successfully run. For tests and simulations you will also need these dependencies on your development machine.
+They are managed automatically via `robotpy sync`.
+
+## To rebuild a '.venv' from scratch
+
+`. .\.venv\bin\activate` or `.\.venv\Scripts\activate`
+
+```cmd
+python -m pip freeze > temp.txt
+python -m pip uninstall -y -r temp.txt
+python -m pip install -r .\requirements_dev.txt
+robotpy sync
+```
 
 ## Useful commands:
 

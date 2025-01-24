@@ -1,4 +1,5 @@
 import random
+import math
 
 from wpimath.controller import SimpleMotorFeedforwardMeters
 from wpimath.controller import PIDController
@@ -152,9 +153,15 @@ class SwerveModuleControl:
         self.wheelMotor.setPID(
             gains.wheelP.get(), gains.wheelI.get(), gains.wheelD.get()
         )
-        self.wheelMotorFF = SimpleMotorFeedforwardMeters(
-            gains.wheelS.get(), gains.wheelV.get(), gains.wheelA.get()
-        )
+
+        if math.isclose(gains.wheelS.get(), 0) and \
+                math.isclose(gains.wheelV.get(), 0) and \
+                math.isclose(gains.wheelA.get(), 0):
+            self.wheelMotorFF = None
+        else:
+            self.wheelMotorFF = SimpleMotorFeedforwardMeters(
+                gains.wheelS.get(), gains.wheelV.get(), gains.wheelA.get()
+            )
         self.azmthCtrl.setPID(
             gains.azmthP.get(), gains.azmthI.get(), gains.azmthD.get()
         )
@@ -202,7 +209,10 @@ class SwerveModuleControl:
         # Send voltage and speed commands to the wheel motor
         motorDesSpd = dtLinearToMotorRot(self.optimizedDesiredState.speed)
         motorDesAccel = (motorDesSpd - self._prevMotorDesSpeed) / 0.02
-        motorVoltageFF = self.wheelMotorFF.calculate(motorDesSpd, motorDesAccel)
+        if self.wheelMotorFF is None:
+            motorVoltageFF = 0
+        else:
+            motorVoltageFF = self.wheelMotorFF.calculate(motorDesSpd, motorDesAccel)
         self.wheelMotor.setVelCmd(motorDesSpd, motorVoltageFF)
 
         self._prevMotorDesSpeed = motorDesSpd  # save for next loop
