@@ -1,6 +1,7 @@
 import sys
 import gc
 import wpilib
+import ntcore as nt
 from wpimath.geometry import Translation2d, Pose2d, Rotation2d
 from dashboard import Dashboard
 from drivetrain.controlStrategies.autoDrive import AutoDrive
@@ -11,7 +12,7 @@ from humanInterface.driverInterface import DriverInterface
 from humanInterface.ledControl import LEDControl
 from navigation.forceGenerators import PointObstacle
 from utils.segmentTimeTracker import SegmentTimeTracker
-from utils.signalLogging import logUpdate
+from utils.signalLogging import logUpdate, getNowLogger
 from utils.calibration import CalibrationWrangler
 from utils.faults import FaultWrangler
 from utils.crashLogger import CrashLogger
@@ -59,11 +60,17 @@ class MyRobot(wpilib.TimedRobot):
 
         self.autoHasRun = False
 
+        self.logger1 = getNowLogger('now1', 'sec')
+        self.logger2 = getNowLogger('now2', 'sec')
+        self.logger3 = getNowLogger('now3', 'sec')
+
         gc.freeze()
         self.count=0
 
 
     def robotPeriodic(self):
+        self.logger1.logNow(nt._now())
+
         self.stt.start()
 
         if self.count == 10:
@@ -79,6 +86,8 @@ class MyRobot(wpilib.TimedRobot):
         self.driveTrain.poseEst._telemetry.setCurObstacles(self.autodrive.rfp.getObstacleStrengths())
         self.stt.mark("Telemetry")
 
+        self.logger2.logNow(nt._now())
+
         self.ledCtrl.setAutoDrive(self.autodrive.isRunning())
         self.ledCtrl.setStuck(self.autodrive.rfp.isStuck())
         self.ledCtrl.update()
@@ -87,6 +96,7 @@ class MyRobot(wpilib.TimedRobot):
         logUpdate()
         self.count += 1
         self.stt.end()
+        self.logger3.logNow(nt._now())
 
     #########################################################
     ## Autonomous-Specific init and update
@@ -126,7 +136,6 @@ class MyRobot(wpilib.TimedRobot):
 
 
     def teleopPeriodic(self):
-
         # TODO - this is technically one loop delayed, which could induce lag
         # Probably not noticeable, but should be corrected.
         self.driveTrain.setManualCmd(self.dInt.getCmd())
