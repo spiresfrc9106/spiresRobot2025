@@ -31,11 +31,6 @@ class Logger():
         self.ntPublisher = ntPublisher
         self.filePublisher = filePublisher
         
-    def log(self, val):
-        def getter():
-            return val
-        self.valGetter = getter
-
     def logNow(self, val):
         curTime = nt._now()  # pylint: disable=W0212
         SignalWrangler.updateALoggerValue(self, val, curTime)
@@ -133,17 +128,6 @@ def addLog(alias: str, valueGetter: Callable[[], float], units:str|None=None) ->
 #todo suggest removing this because it doesn't add value.
 def log(alias: str, valueGetter, units:str|None=None) -> None:
     addLog(alias, valueGetter, units)
-
-def getLogger(alias: str, units:str|None=None) -> Logger:
-    """
-    Get a logger registered to an alias to log
-
-    Parameters:
-    - alias: The name (str) used to identify the log.
-    - units: The units (str) of the value_getter
-    """
-    logger = SignalWrangler().newLogger(alias, None, units)
-    return logger
 
 def getNowLogger(alias: str, units:str|None=None) -> Logger:
     logger = SignalWrangler().newLoggerSetup(alias, None, units)
