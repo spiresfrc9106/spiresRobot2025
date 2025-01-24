@@ -112,13 +112,12 @@ class SignalWrangler(metaclass=Singleton):
 # Public API
 ###########################################
 
-_singletonInst = SignalWrangler() # cache a reference
 def logUpdate():
     """
     Periodic call to sample and broadcast all logged values. Should happen once per 
     20ms loop.
     """
-    _singletonInst.update()
+    SignalWrangler().update()
 
 def addLog(alias: str, valueGetter: Callable[[], float], units:str|None=None) -> None:
     """
@@ -126,10 +125,10 @@ def addLog(alias: str, valueGetter: Callable[[], float], units:str|None=None) ->
 
     Parameters:
     - alias: The name (str) used to identify the log.
-    - value_getter: A function that returns the current value of the log. Lambda is acceptable here.
+    - valueGetter: A function that returns the current value of the log. Lambda is acceptable here.
     - units: The units (str) of the value_getter
     """
-    _singletonInst.newLogger(alias, valueGetter, units)
+    SignalWrangler().newLogger(alias, valueGetter, units)
 
 #todo suggest removing this because it doesn't add value.
 def log(alias: str, valueGetter, units:str|None=None) -> None:
@@ -143,7 +142,7 @@ def getLogger(alias: str, units:str|None=None) -> Logger:
     - alias: The name (str) used to identify the log.
     - units: The units (str) of the value_getter
     """
-    logger = _singletonInst.newLogger(alias, None, units)
+    logger = SignalWrangler().newLogger(alias, None, units)
     return logger
 
 def getNowLogger(alias: str, units:str|None=None) -> Logger:
