@@ -141,31 +141,51 @@ class DriverInterface:
                 #dilemma: from 90 to 180
 
                 t = 0.9 #pathDistance/halfCircle
-                idealSpeed = (0.9*(distanceLeft/t))+65 #originally 45
+                #idealSpeed = (0.9*(distanceLeft/t))+75 #originally 45
+
+
+                p = (pathDistance-distanceLeft)/pathDistance
+                a = -1828.57143
+                b = 1668.57143
+                c = 171.42857
+                v_for_ninety = a*pow(p,2)+b*p+c
+                idealSpeed = (v_for_ninety/90*min(pathDistance,((pathDistance-90)*0.2+90)))
+
+                idealSpeed=min(360,idealSpeed)
+
 
                 #bonus
-                idealSpeed = idealSpeed * (1+((abs(pathDistance)-45)/90*0.5)) * 1.3  #originally (1+((abs(pathDistance)-45)/90*0.5))
+                #idealSpeed = idealSpeed * (1+((abs(pathDistance)-45)/90*0.5)) * 2.5 #1.3  #originally (1+((abs(pathDistance)-45)/90*0.5))
 
                 # if ((idealSpeed-self.lastRotSpeed)>self.lastRotSpeed*0.5):
                 #     desiredSpeed = (self.lastRotSpeed + desiredSpeed)/2
 
-                max_acc = 25 #originally 45
-                acc_diff = idealSpeed-self.lastRotSpeed
-                acc_diff_abs = abs(acc_diff)
-                if acc_diff == 0:
-                    sign = 1
-                else:
-                    sign = acc_diff/acc_diff_abs
-                selected_acc = abs(min(acc_diff,max_acc)) * sign
+                # max_acc = 25 #originally 45
+                # acc_diff = idealSpeed-self.lastRotSpeed
+                # acc_diff_abs = abs(acc_diff)
+                # if acc_diff == 0:
+                #     sign = 1
+                # else:
+                #     sign = acc_diff/acc_diff_abs
+                # selected_acc = abs(min(acc_diff,max_acc)) * sign
+                #
+                # v_time = self.lastRotSpeed + selected_acc
 
-                v_time = self.lastRotSpeed + selected_acc
+                v_time = idealSpeed
+
 
                 # 3 left, speed is 30, and 30/50 is 3/5 per second...
                 # 5 left, 6/5 is fine... 6/5
                 # 3 left, speed is 180/50, is 3.6/5
 
-                if distanceLeft<5:
-                    v_time = max(distanceLeft*10*6/5,0)
+                if distanceLeft<10:
+                    v_time = max(distanceLeft*10,0) #14 is required
+                    if distanceLeft<1:
+                        v_time = 0
+                    print(f'in the 10: {v_time}')
+                else:
+                    print(v_time)
+
 
                 t_time = Timer.getFPGATimestamp()-self.startRotateTime
                 # if distanceLeft >0.9:
