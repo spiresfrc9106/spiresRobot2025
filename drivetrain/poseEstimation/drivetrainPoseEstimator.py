@@ -8,6 +8,7 @@ from drivetrain.drivetrainPhysical import (
     kinematics,
     ROBOT_TO_LEFT_CAM,
     ROBOT_TO_RIGHT_CAM,
+    ROBOT_TO_FRONT_CAM,
 )
 from drivetrain.poseEstimation.drivetrainPoseTelemetry import DrivetrainPoseTelemetry
 from utils.faults import Fault
@@ -46,6 +47,7 @@ class DrivetrainPoseEstimator:
         self.cams = [
             WrapperedPoseEstPhotonCamera("LEFT_CAM", ROBOT_TO_LEFT_CAM),
             WrapperedPoseEstPhotonCamera("RIGHT_CAM", ROBOT_TO_RIGHT_CAM),
+            WrapperedPoseEstPhotonCamera("FRONT_CAM", ROBOT_TO_FRONT_CAM),
         ]
         self._camTargetsVisible = False
         self._useAprilTags = True
