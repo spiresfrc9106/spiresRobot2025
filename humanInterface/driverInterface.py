@@ -43,7 +43,7 @@ class DriverInterface:
 
         self.lastIdealDir = None
         self.startRotateTime = None
-        self.fullRotateDistance = None
+        self.fullRotateDistance = 0
 
         # Logging
         #addLog("DI FwdRev Cmd", lambda: self.velXCmd, "mps")
@@ -179,15 +179,11 @@ class DriverInterface:
                 # 3 left, speed is 180/50, is 3.6/5
 
                 if distanceLeft<10:
-                    v_time = max(distanceLeft*10,0) #14 is required
+                    v_time = max(distanceLeft*15,0) #14 is required
                     if distanceLeft<1:
                         v_time = 0
-                    print(f'in the 10: {v_time}')
-                else:
-                    print(v_time)
 
-
-                t_time = Timer.getFPGATimestamp()-self.startRotateTime
+                #t_time = Timer.getFPGATimestamp() - self.startRotateTime
                 # if distanceLeft >0.9:
                 #     print(f'time={t_time}')
                 # else:
@@ -255,7 +251,7 @@ class DriverInterface:
                 #     print("v max reached")
 
                 direction = 1.0
-                if ((360+self.fullRotateDistance)%360)>halfCircle:
+                if ((360.0+self.fullRotateDistance)%360)>halfCircle:
                     direction = -1.0
                 self.velTCmd = deg2Rad(direction * v_selected)
 
