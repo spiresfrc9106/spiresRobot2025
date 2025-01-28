@@ -47,14 +47,16 @@ class ElevatorControl(metaclass=Singleton):
         self.maxV = Calibration(name="Elevator Max Vel", default=MAX_ELEV_VEL_MPS, units="mps")
         self.maxA = Calibration(name="Elevator Max Accel", default=MAX_ELEV_ACCEL_MPS2, units="mps2")
         self.profiler = TrapezoidProfile(TrapezoidProfile.Constraints(self.maxV.get(),self.maxA.get()))
+        #go to wpilib online documentation to learn more about the trapezoid (very cool)
 
         self.actualPos = 0
         self.stopped = True
 
-        # Limit switch code; bottom for resetting offset and ensuring it starts correctly, top for saftey to stop from spinning
-    
+        # Try to set a small current limit and decide when we're on the bottom using this, and turn off the motor when it doesn't need to spin anymore.  then up the current limit as needed
 
-        # Absolute Sensor mount offsets
+
+        # Absolute Sensor mount offsets: use laser range finders to measure distance? either sensor or revolution count
+
         # After mounting the sensor, these should be tweaked one time
         # in order to adjust whatever the sensor reads into the reference frame
         # of the mechanism
@@ -125,24 +127,15 @@ class ElevatorControl(metaclass=Singleton):
 
             motorPosCmd = self._heightToMotorRad(curState.position)
             motorVelCmd = self._heightVeltoMotorVel(curState.velocity)
-
+            # set our feed forward to 0 at the start so we're not throwing extra voltage into the motor, then see if their feed forward calc makes sense
             vFF = self.kV.get() * motorVelCmd  + self.kS.get() * sign(motorVelCmd) \
                 + self.kG.get()
 
             self.Rmotor.setPosCmd(motorPosCmd, vFF)
             self.LMotor.setFollow(self.Rmotor.ctrl, True)
 
-    # I think we should be able to pass 1 parameter for desired height position
-    def setHeightGoal(self, goL1, goL2, goL3, goL4, coralSafe):
+    # we're gonna make this height goal where we just set the height off the ground that we want the elevator pivot joint to be at
+    def setHeightGoal(self, height_in):
+        self.heightGoal = height_in
         self.desState = TrapezoidProfile.State(self.heightGoal,0)
-        if coralSafe:
-            if goL1:
-                self.heightGoal = self.L1_Height.get()
-            elif goL2:
-                self.heightGoal = self.L2_Height.get()
-            elif goL3:
-                self.heightGoal = self.L3_Height.get()
-            elif goL4:
-                self.heightGoal = self.L4_Height.get()
-        else:
-            self.heightGoal = self.actualPos
+
