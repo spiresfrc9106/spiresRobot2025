@@ -4,6 +4,7 @@ import wpilib
 import ntcore as nt
 from wpimath.geometry import Translation2d, Pose2d, Rotation2d
 from dashboard import Dashboard
+from Elevatorandmech.ElevatorControl import ElevatorControl
 from drivetrain.controlStrategies.autoDrive import AutoDrive
 from drivetrain.controlStrategies.trajectory import Trajectory
 from drivetrain.drivetrainCommand import DrivetrainCommand
@@ -50,6 +51,8 @@ class MyRobot(wpilib.TimedRobot):
 
         self.rioMonitor = RIOMonitor()
         self.pwrMon = PowerMonitor()
+
+        self.elev = ElevatorControl()
 
         # Normal robot code updates every 20ms, but not everything needs to be that fast.
         # Register slower-update periodic functions
@@ -160,6 +163,7 @@ class MyRobot(wpilib.TimedRobot):
                 self.autodrive.rfp.addObstacleObservation(obs)
 
         self.autodrive.setRequest(self.dInt.getNavToSpeaker(), self.dInt.getNavToPickup())
+        #self.elev.setHeightGoal(self.dInt.getL1(), self.dInt.getL2(), self.dInt.getL3(), self.dInt.getL4(), kylefunciton)
 
         # No trajectory in Teleop
         Trajectory().setCmd(None)
