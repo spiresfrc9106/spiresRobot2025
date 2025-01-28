@@ -5,6 +5,7 @@ import ntcore as nt
 from wpimath.geometry import Translation2d, Pose2d, Rotation2d
 from dashboard import Dashboard
 from Elevatorandmech.ElevatorControl import ElevatorControl
+from Elevatorandmech.ArmControl import ArmControl
 from drivetrain.controlStrategies.autoDrive import AutoDrive
 from drivetrain.controlStrategies.trajectory import Trajectory
 from drivetrain.drivetrainCommand import DrivetrainCommand
@@ -53,6 +54,7 @@ class MyRobot(wpilib.TimedRobot):
         self.pwrMon = PowerMonitor()
 
         self.elev = ElevatorControl()
+        self.arm = ArmControl()
 
         # Normal robot code updates every 20ms, but not everything needs to be that fast.
         # Register slower-update periodic functions
