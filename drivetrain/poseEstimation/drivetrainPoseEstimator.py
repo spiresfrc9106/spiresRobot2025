@@ -14,7 +14,7 @@ from drivetrain.poseEstimation.drivetrainPoseTelemetry import DrivetrainPoseTele
 from utils.faults import Fault
 from utils.signalLogging import addLog
 from wrappers.wrapperedPoseEstPhotonCamera import WrapperedPoseEstPhotonCamera
-from wrappers.wrapperedGyro import wrapperedGyro
+from sensors.limelight import Limelight
 
 # Convienent abreviations for the types that we'll be passing around here.
 # This is primarily driven by wpilib's conventions:
@@ -30,14 +30,14 @@ StateTupleType = Tuple[SwerveModuleState,SwerveModuleState,SwerveModuleState,Swe
 class DrivetrainPoseEstimator:
     """Wrapper class for all sensors and logic responsible for estimating where the robot is on the field"""
 
-    def __init__(self, initialModulePositions:PosTupleType):
+    def __init__(self, initialModulePositions:PosTupleType, gyro):
 
         # Represents our current best-guess as to our location on the field.
         self._curEstPose = Pose2d()
 
         # Gyroscope - measures our rotational velocity.
         # Fairly accurate and trustworthy, but not a full pose estimate
-        self._gyro = wrapperedGyro()
+        self._gyro = gyro
         self._gyroDisconFault = Fault("Gyroscope not sending data")
         self._curRawGyroAngle = Rotation2d()
 
@@ -69,6 +69,8 @@ class DrivetrainPoseEstimator:
         # to produce a reasonable-looking simulated gyroscope.
         self._simPose = Pose2d()
 
+        self.limelight = Limelight(ROBOT_TO_FRONT_CAM, "limelight-three")
+
     def setKnownPose(self, knownPose:Pose2d):
         """Reset the robot's estimated pose to some specific position. This is useful if we know with certanty
         we are at some specific spot (Ex: start of autonomous)
@@ -96,6 +98,8 @@ class DrivetrainPoseEstimator:
         self._camTargetsVisible = False
 
         if(self._useAprilTags):
+            self.limelight.update() # TODO xyzzy get this to support multiple limelights
+            #print(f"limelight.botpose={self.limelight.botpose}")  # The first six list items are a normal bot pose in degrees
             for cam in self.cams:
                 cam.update(self._curEstPose)
                 observations = cam.getPoseEstimates()
