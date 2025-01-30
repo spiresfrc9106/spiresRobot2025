@@ -71,6 +71,10 @@ class DrivetrainPoseEstimator:
 
         self.limelight = Limelight(ROBOT_TO_FRONT_CAM, "limelight-three")
 
+        #figure out navigation around the field
+        #figure out how to architect the limelight
+        #based on the other cameras in the system, how can we handle the hand-off on the alignment to get it close to the final positioning
+
     def setKnownPose(self, knownPose:Pose2d):
         """Reset the robot's estimated pose to some specific position. This is useful if we know with certanty
         we are at some specific spot (Ex: start of autonomous)
