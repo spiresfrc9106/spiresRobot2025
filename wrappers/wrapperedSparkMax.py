@@ -30,6 +30,7 @@ class WrapperedSparkMax:
         self.desVolt = 0
         self.actPos = 0
         self.actVel = 0
+        self.actVolt = -2
 
         self.cfg = SparkMaxConfig()
         self.cfg.signals.appliedOutputPeriodMs(200)
@@ -56,6 +57,7 @@ class WrapperedSparkMax:
                 self.configSuccess = False
             else:
                 # Only attempt other communication if we're able to successfully configure
+                print(f"Successfully connected to {name} motor")
                 self.configSuccess = True
             time.sleep(0.1)
         
@@ -65,6 +67,7 @@ class WrapperedSparkMax:
         addLog(self.name + "_desVolt", lambda: self.desVolt, "V")
         addLog(self.name + "_desPos", lambda: self.desPos, "rad")
         addLog(self.name + "_desVel", lambda: self.desVel, "RPM")
+        addLog(self.name + "_actVolt", lambda: self.actVolt, "V")
         addLog(self.name + "_actPos", lambda: self.actPos, "rad")
         addLog(self.name + "_actVel", lambda: self.actVel, "RPM")
 
@@ -145,6 +148,18 @@ class WrapperedSparkMax:
         self.desVolt = outputVoltageVolts
         if self.configSuccess:
             self.ctrl.setVoltage(outputVoltageVolts)
+
+    def getAppliedOutput(self):
+        if self.configSuccess:
+            output = self.ctrl.getAppliedOutput()
+            print(output)
+        else:
+            output = -1
+            self.actVolt = output
+            return output
+        output = 12 * output
+        self.actVolt = output
+        return output
 
     def getMotorPositionRad(self):
         if(TimedRobot.isSimulation()):

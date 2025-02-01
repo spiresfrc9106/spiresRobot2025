@@ -15,7 +15,7 @@ from rev import SparkLowLevel
 from wpimath.trajectory import TrapezoidProfile
 from wpilib import Timer
 
-ELEV_LM_CANID = 20
+ELEV_LM_CANID = 23
 ELEV_RM_CANID = 21
 ELEV_TOF_CANID = 22
 

@@ -68,8 +68,8 @@ class DriverInterface:
             #slowMult = 1.0
 
             # Shape velocity command
-            velCmdXRaw = vXJoyWithDeadband * MAX_STRAFE_SPEED_MPS * slowMult
-            velCmdYRaw = vYJoyWithDeadband * MAX_FWD_REV_SPEED_MPS * slowMult
+            velCmdXRaw = vXJoyWithDeadband * -1
+            velCmdYRaw = vYJoyWithDeadband
             velCmdRotRaw = vRotJoyWithDeadband * MAX_ROTATE_SPEED_RAD_PER_SEC
 
             # Slew rate limiter
@@ -98,12 +98,16 @@ class DriverInterface:
 
 
 
+    def getMotorTestPower(self):
+        max_rotations_per_sec = 6
+        rpms = 500
+        return self.velXCmd * rpms
 
     def getCmd(self) -> DrivetrainCommand:
         retval = DrivetrainCommand()
-        retval.velX = self.velXCmd
-        retval.velY = self.velYCmd
-        retval.velT = self.velTCmd
+        retval.velX = 0.0 #self.velXCmd
+        retval.velY = 0.0 #self.velYCmd
+        retval.velT = 0.0 #self.velTCmd
         return retval
 
     def getNavToSpeaker(self) -> bool:

@@ -6,6 +6,7 @@ from wpimath.geometry import Translation2d, Pose2d, Rotation2d
 from dashboard import Dashboard
 from Elevatorandmech.ElevatorControl import ElevatorControl
 from Elevatorandmech.ArmControl import ArmControl
+from testingMotors.motorCtrl import MotorControl
 from drivetrain.controlStrategies.autoDrive import AutoDrive
 from drivetrain.controlStrategies.trajectory import Trajectory
 from drivetrain.drivetrainCommand import DrivetrainCommand
@@ -55,6 +56,7 @@ class MyRobot(wpilib.TimedRobot):
 
         self.elev = ElevatorControl()
         self.arm = ArmControl()
+        self.motorCtrlFun = MotorControl()
 
         # Normal robot code updates every 20ms, but not everything needs to be that fast.
         # Register slower-update periodic functions
@@ -144,6 +146,9 @@ class MyRobot(wpilib.TimedRobot):
         # TODO - this is technically one loop delayed, which could induce lag
         # Probably not noticeable, but should be corrected.
         self.driveTrain.setManualCmd(self.dInt.getCmd())
+
+        self.motorCtrlFun.update(self.dInt.getMotorTestPower())
+        #print(f'driving motor at {round(self.dInt.getMotorTestPower()*100)/100} RPM  ({round(self.dInt.getMotorTestPower()/60*100)/100} rps)')
 
         if self.dInt.getGyroResetCmd():
             self.driveTrain.resetGyro()
