@@ -68,6 +68,8 @@ class DrivetrainPoseEstimator:
         # Using just inverse kinematics, no kalman filter. This is used only
         # to produce a reasonable-looking simulated gyroscope.
         self._simPose = Pose2d()
+        self.lastCamEstRobotPos = Pose2d()
+
 
         self.limelight = Limelight(ROBOT_TO_FRONT_CAM, "limelight-three")
 
@@ -112,6 +114,7 @@ class DrivetrainPoseEstimator:
                         observation.estFieldPose, observation.time,
                         (observation.xyStdDev, observation.xyStdDev, observation.rotStdDev)
                     )
+                    self.lastCamEstRobotPos = observation.estFieldPose
                     self._camTargetsVisible = True
                 self._telemetry.addVisionObservations(observations)
 

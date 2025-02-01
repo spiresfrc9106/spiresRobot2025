@@ -6,6 +6,7 @@ from photonlibpy.photonCamera import PhotonCamera
 from photonlibpy.photonCamera import setVersionCheckEnabled
 from utils.fieldTagLayout import FieldTagLayout
 from utils.faults import Fault
+from ntcore import NetworkTableInstance
 
 # Describes one on-field pose estimate from the a camera at a specific time.
 @dataclass
@@ -29,6 +30,12 @@ class WrapperedPoseEstPhotonCamera:
         self.timeoutSec = 1.0
         self.poseEstimates:list[CameraPoseObservation] = []
         self.robotToCam = robotToCam
+
+        self.CamPublisher = (
+            NetworkTableInstance.getDefault()
+            .getStructTopic("/positionby"+camName, Pose2d)
+            .publish()
+        )
 
     def update(self, prevEstPose:Pose2d):
 
@@ -104,6 +111,7 @@ class WrapperedPoseEstPhotonCamera:
                         self.poseEstimates.append(
                             CameraPoseObservation(obsTime, bestCandidate)
                         )
+                        self.CamPublisher.set(bestCandidate)
 
     def getPoseEstimates(self):
         return self.poseEstimates
