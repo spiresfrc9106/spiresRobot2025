@@ -152,7 +152,6 @@ class WrapperedSparkMax:
     def getAppliedOutput(self):
         if self.configSuccess:
             output = self.ctrl.getAppliedOutput()
-            print(output)
         else:
             output = -1
             self.actVolt = output

@@ -11,6 +11,7 @@ from drivetrain.controlStrategies.autoDrive import AutoDrive
 from drivetrain.controlStrategies.trajectory import Trajectory
 from drivetrain.drivetrainCommand import DrivetrainCommand
 from drivetrain.drivetrainControl import DrivetrainControl
+from drivetrain.robotDependentConstants import RobotDependentConstants
 from humanInterface.driverInterface import DriverInterface
 from humanInterface.ledControl import LEDControl
 from navigation.forceGenerators import PointObstacle
@@ -20,10 +21,16 @@ from utils.calibration import CalibrationWrangler
 from utils.faults import FaultWrangler
 from utils.crashLogger import CrashLogger
 from utils.rioMonitor import RIOMonitor
+from utils.robotIdentification import RobotIdentification, RobotTypes
 from utils.singleton import destroyAllSingletonInstances
 from utils.powerMonitor import PowerMonitor
+
 from webserver.webserver import Webserver
 from AutoSequencerV2.autoSequencer import AutoSequencer
+
+
+# TODO Refactor this so that it is more DRY.
+robotDepConstants = RobotDependentConstants().get()[RobotIdentification().getRobotType()]
 
 class MyRobot(wpilib.TimedRobot):
 
@@ -39,7 +46,9 @@ class MyRobot(wpilib.TimedRobot):
         wpilib.LiveWindow.disableAllTelemetry()
         self.webserver = Webserver()
 
-        self.driveTrain = DrivetrainControl()
+        print(f"HAS_DRIVETRAIN={robotDepConstants['HAS_DRIVETRAIN']}")
+        if robotDepConstants['HAS_DRIVETRAIN']:
+            self.driveTrain = DrivetrainControl()
         self.autodrive = AutoDrive()
 
         self.stt = SegmentTimeTracker()      
@@ -85,12 +94,14 @@ class MyRobot(wpilib.TimedRobot):
         self.dInt.update()
         self.stt.mark("Driver Interface")
 
-        self.driveTrain.update()
-        self.stt.mark("Drivetrain")
+        if robotDepConstants['HAS_DRIVETRAIN']:
+            self.driveTrain.update()
+            self.stt.mark("Drivetrain")
 
         self.autodrive.updateTelemetry()
-        self.driveTrain.poseEst._telemetry.setCurAutoDriveWaypoints(self.autodrive.getWaypoints())
-        self.driveTrain.poseEst._telemetry.setCurObstacles(self.autodrive.rfp.getObstacleStrengths())
+        if robotDepConstants['HAS_DRIVETRAIN']:
+            self.driveTrain.poseEst._telemetry.setCurAutoDriveWaypoints(self.autodrive.getWaypoints())
+            self.driveTrain.poseEst._telemetry.setCurObstacles(self.autodrive.rfp.getObstacleStrengths())
         self.stt.mark("Telemetry")
 
         self.logger2.logNow(nt._now())
@@ -112,8 +123,9 @@ class MyRobot(wpilib.TimedRobot):
         # Start up the autonomous sequencer
         self.autoSequencer.initialize()
 
-        # Use the autonomous rouines starting pose to init the pose estimator
-        self.driveTrain.poseEst.setKnownPose(self.autoSequencer.getStartingPose())
+        if robotDepConstants['HAS_DRIVETRAIN']:
+            # Use the autonomous rouines starting pose to init the pose estimator
+            self.driveTrain.poseEst.setKnownPose(self.autoSequencer.getStartingPose())
 
         # Mark we at least started autonomous
         self.autoHasRun = True # pylint: disable=attribute-defined-outside-init
@@ -123,7 +135,8 @@ class MyRobot(wpilib.TimedRobot):
         self.autoSequencer.update()
 
         # Operators cannot control in autonomous
-        self.driveTrain.setManualCmd(DrivetrainCommand())
+        if robotDepConstants['HAS_DRIVETRAIN']:
+            self.driveTrain.setManualCmd(DrivetrainCommand())
 
     def autonomousExit(self):
         self.autoSequencer.end()
@@ -132,42 +145,47 @@ class MyRobot(wpilib.TimedRobot):
     ## Teleop-Specific init and update
     def teleopInit(self):
         # clear existing telemetry trajectory
-        self.driveTrain.poseEst._telemetry.setCurAutoTrajectory(None)
+        if robotDepConstants['HAS_DRIVETRAIN']:
+            self.driveTrain.poseEst._telemetry.setCurAutoTrajectory(None)
 
         # If we're starting teleop but haven't run auto, set a nominal default pose
         # This is needed because initial pose is usually set by the autonomous routine
-        if not self.autoHasRun:
-            self.driveTrain.poseEst.setKnownPose(
-                Pose2d(1.0, 1.0, Rotation2d(0.0))
-            )
+        if robotDepConstants['HAS_DRIVETRAIN']:
+            if not self.autoHasRun:
+                self.driveTrain.poseEst.setKnownPose(
+                    Pose2d(1.0, 1.0, Rotation2d(0.0))
+                )
 
 
     def teleopPeriodic(self):
         # TODO - this is technically one loop delayed, which could induce lag
         # Probably not noticeable, but should be corrected.
-        self.driveTrain.setManualCmd(self.dInt.getCmd())
+        if robotDepConstants['HAS_DRIVETRAIN']:
+            self.driveTrain.setManualCmd(self.dInt.getCmd())
 
         self.motorCtrlFun.update(self.dInt.getMotorTestPower())
         #print(f'driving motor at {round(self.dInt.getMotorTestPower()*100)/100} RPM  ({round(self.dInt.getMotorTestPower()/60*100)/100} rps)')
 
         if self.dInt.getGyroResetCmd():
-            self.driveTrain.resetGyro()
+            if robotDepConstants['HAS_DRIVETRAIN']:
+                self.driveTrain.resetGyro()
 
         if self.dInt.getCreateObstacle():
-            # For test purposes, inject a series of obstacles around the current pose
-            ct = self.driveTrain.poseEst.getCurEstPose().translation()
-            tfs = [
-                #Translation2d(1.7, -0.5),
-                #Translation2d(0.75, -0.75),
-                #Translation2d(1.7, 0.5),
-                Translation2d(0.75, 0.75),
-                Translation2d(2.0, 0.0),
-                Translation2d(0.0, 1.0),
-                Translation2d(0.0, -1.0),
-            ]
-            for tf in tfs:
-                obs = PointObstacle(location=(ct+tf), strength=0.5)
-                self.autodrive.rfp.addObstacleObservation(obs)
+            if robotDepConstants['HAS_DRIVETRAIN']:
+                # For test purposes, inject a series of obstacles around the current pose
+                ct = self.driveTrain.poseEst.getCurEstPose().translation()
+                tfs = [
+                    #Translation2d(1.7, -0.5),
+                    #Translation2d(0.75, -0.75),
+                    #Translation2d(1.7, 0.5),
+                    Translation2d(0.75, 0.75),
+                    Translation2d(2.0, 0.0),
+                    Translation2d(0.0, 1.0),
+                    Translation2d(0.0, -1.0),
+                ]
+                for tf in tfs:
+                    obs = PointObstacle(location=(ct+tf), strength=0.5)
+                    self.autodrive.rfp.addObstacleObservation(obs)
 
         self.autodrive.setRequest(self.dInt.getNavToSpeaker(), self.dInt.getNavToPickup())
         #self.elev.setHeightGoal(self.dInt.getL1(), self.dInt.getL2(), self.dInt.getL3(), self.dInt.getL4(), kylefunciton)
