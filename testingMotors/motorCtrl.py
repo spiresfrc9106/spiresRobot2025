@@ -27,12 +27,13 @@ class MotorControl(metaclass=Singleton):
 
 
 
-    def update(self, desiredSpeed):
-        if desiredSpeed!=0:
+    def update(self, desiredSpeedRpm):
+        if desiredSpeedRpm!=0:
             #rpm -> rps
             #rpm to rad per minute *2*3.14/60
-            self.Rmotor.setVelCmd(desiredSpeed *2*3.14/60,1)
+            self.Rmotor.setVelCmd(desiredSpeedRpm *2*3.14/60,0)
         else:
+            self.Rmotor.setVelCmd(0,0)
             self.Rmotor.setVoltage(0.0)
         self.Rmotor.getMotorVelocityRadPerSec()
         self.Rmotor.getAppliedOutput()

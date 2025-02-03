@@ -147,7 +147,7 @@ class MyRobot(wpilib.TimedRobot):
         # Probably not noticeable, but should be corrected.
         self.driveTrain.setManualCmd(self.dInt.getCmd())
 
-        self.motorCtrlFun.update(self.dInt.getMotorTestPower())
+        self.motorCtrlFun.update(self.dInt.getMotorTestPowerRpm())
         #print(f'driving motor at {round(self.dInt.getMotorTestPower()*100)/100} RPM  ({round(self.dInt.getMotorTestPower()/60*100)/100} rps)')
 
         if self.dInt.getGyroResetCmd():

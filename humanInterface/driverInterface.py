@@ -35,6 +35,7 @@ class DriverInterface:
 
         # Utility - reset to zero-angle at the current pose
         self.gyroResetCmd = False
+        self.motorTestCmd = 0
 
         # Logging
         #addLog("DI FwdRev Cmd", lambda: self.velXCmd, "mps")
@@ -68,8 +69,8 @@ class DriverInterface:
             #slowMult = 1.0
 
             # Shape velocity command
-            velCmdXRaw = vXJoyWithDeadband * -1
-            velCmdYRaw = vYJoyWithDeadband
+            velCmdXRaw = vXJoyWithDeadband * MAX_STRAFE_SPEED_MPS * slowMult
+            velCmdYRaw = vYJoyWithDeadband * MAX_FWD_REV_SPEED_MPS * slowMult
             velCmdRotRaw = vRotJoyWithDeadband * MAX_ROTATE_SPEED_RAD_PER_SEC
 
             # Slew rate limiter
@@ -82,6 +83,8 @@ class DriverInterface:
             self.autoDriveToSpeaker = self.ctrl.getBButton()
             self.autoDriveToPickup = self.ctrl.getXButton()
             self.createDebugObstacle = self.ctrl.getYButtonPressed()
+
+            self.motorTestCmd = self.ctrl.getLeftTriggerAxis()
 
             self.connectedFault.setNoFault()
 
@@ -98,16 +101,15 @@ class DriverInterface:
 
 
 
-    def getMotorTestPower(self):
-        max_rotations_per_sec = 6
+    def getMotorTestPowerRpm(self):
         rpms = 500
-        return self.velXCmd * rpms
+        return self.motorTestCmd * rpms
 
     def getCmd(self) -> DrivetrainCommand:
         retval = DrivetrainCommand()
-        retval.velX = 0.0 #self.velXCmd
-        retval.velY = 0.0 #self.velYCmd
-        retval.velT = 0.0 #self.velTCmd
+        retval.velX = self.velXCmd
+        retval.velY = self.velYCmd
+        retval.velT = self.velTCmd
         return retval
 
     def getNavToSpeaker(self) -> bool:
