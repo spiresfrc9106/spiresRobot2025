@@ -7,7 +7,7 @@ class RobotDependentConstants:
                 "SWERVE_WHEEL_GEAR_RATIO": 5.50,   # Base Low
                 #"SWERVE_WHEEL_GEAR_RATIO": 5.08,  # Base Medium
                 #"SWERVE_WHEEL_GEAR_RATIO": 4.71,  # Base High
-                "SWERVE_WHEEL_DIAMETER_IN": 3.0,
+                "SWERVE_WHEEL_DIAMETER_IN": 3.0 * 1.0631079716,
                 "SWERVE_WHEEL_MAX_SPEED_RPS": DCMotor.NEO(1).freeSpeed,
                 "WIDTH": 16.5,
                 "LENGTH": 26.5,
