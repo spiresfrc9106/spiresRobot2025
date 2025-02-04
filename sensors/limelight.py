@@ -56,6 +56,8 @@ class Limelight:
         self.botpose: list[float] = [0,0,0,0,0,0,0,0,0,0,0]
         self.targetpose: Pose3d = Pose3d(Translation3d(0, 0, 0), Rotation3d(0, 0, 0))
         self.cam_pos_moving: bool = False
+        self.set_pipeline_mode(LimelightPipeline.neural)
+        #self.set_led_mode(limelight_led_mode["force_on"])
 
     def init(self):
         self.set_cam_pose(self.origin_offset)
@@ -424,6 +426,9 @@ class Limelight:
         self.set_cam_pose(new_pose)
         self.cam_pos_moving = False
 
+    def isConnected(self):
+        return True
+
 
 class LimelightController():
     def __init__(self, limelight_list: list[Limelight], gyro, mega_tag2: bool = True):
@@ -496,3 +501,6 @@ class LimelightController():
     def set_pipeline_mode(self, mode: LimelightPipeline) -> None:
         for limelight in self.limelights:
             limelight.set_pipeline_mode(mode)
+
+
+

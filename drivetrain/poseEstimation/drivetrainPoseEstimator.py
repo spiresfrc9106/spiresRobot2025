@@ -15,6 +15,7 @@ from utils.faults import Fault
 from utils.signalLogging import addLog
 from wrappers.wrapperedPoseEstPhotonCamera import WrapperedPoseEstPhotonCamera
 from sensors.limelight import Limelight
+from wrappers.wrapperedLimelightCamera import WrapperedPoseEstLimelight
 
 # Convienent abreviations for the types that we'll be passing around here.
 # This is primarily driven by wpilib's conventions:
@@ -48,6 +49,7 @@ class DrivetrainPoseEstimator:
             WrapperedPoseEstPhotonCamera("LEFT_CAM", ROBOT_TO_LEFT_CAM),
             WrapperedPoseEstPhotonCamera("RIGHT_CAM", ROBOT_TO_RIGHT_CAM),
             WrapperedPoseEstPhotonCamera("FRONT_CAM", ROBOT_TO_FRONT_CAM),
+            WrapperedPoseEstLimelight("limelight-three", ROBOT_TO_FRONT_CAM)
         ]
         self._camTargetsVisible = False
         self._useAprilTags = True
@@ -69,9 +71,6 @@ class DrivetrainPoseEstimator:
         # to produce a reasonable-looking simulated gyroscope.
         self._simPose = Pose2d()
         self.lastCamEstRobotPos = Pose2d()
-
-
-        self.limelight = Limelight(ROBOT_TO_FRONT_CAM, "limelight-three")
 
         #figure out navigation around the field
         #figure out how to architect the limelight
@@ -104,7 +103,6 @@ class DrivetrainPoseEstimator:
         self._camTargetsVisible = False
 
         if(self._useAprilTags):
-            self.limelight.update() # TODO xyzzy get this to support multiple limelights
             #print(f"limelight.botpose={self.limelight.botpose}")  # The first six list items are a normal bot pose in degrees
             for cam in self.cams:
                 cam.update(self._curEstPose)
