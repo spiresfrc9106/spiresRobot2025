@@ -65,10 +65,11 @@ else:
 # and adjusting this factor till the measured distance matches known
 # Might have to be different for colson wheels?
 WHEEL_FUDGE_FACTOR = 0.9238
+NOAH_AND_BENJAMIN_ERR_CORRECTION = 1.0631079716
 
 # Nominal 4-inch diameter swerve drive wheels
 # https:#www.swervedrivespecialties.com/collections/mk4i-parts/products/billet-wheel-4d-x-1-5w-bearing-bore
-WHEEL_RADIUS_IN = robotDepConstants["SWERVE_WHEEL_DIAMETER_IN"] / 2.0 * WHEEL_FUDGE_FACTOR
+WHEEL_RADIUS_IN = robotDepConstants["SWERVE_WHEEL_DIAMETER_IN"] * NOAH_AND_BENJAMIN_ERR_CORRECTION / 2.0 * WHEEL_FUDGE_FACTOR
 
 
 # Utility conversion functions to go between drivetrain "linear" measurements and wheel motor rotational measurements
