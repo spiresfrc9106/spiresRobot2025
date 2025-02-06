@@ -55,6 +55,15 @@ class WrapperedPoseEstLimelight:
             .publish()
         )
 
+        self.MetaTag2CamPublisher = (
+            NetworkTableInstance.getDefault()
+            .getStructTopic("/TESTINGposbyLL" + camName, Pose2d)
+            .publish()
+        )
+
+        self.targetLength = 0
+        addLog("test_targets_seen_limelight", lambda: self.targetLength, "")
+
     def update(self, prevEstPose:Pose2d):
         self.cam.update()
 
@@ -75,14 +84,19 @@ class WrapperedPoseEstLimelight:
         self.disconFault.setNoFault()
 
         if self.cam.april_tag_exists():
+            #metatag2 is horrible, angles don't seem to work, sometimes jumps across field. using default.
             bestCandidate = self._toPose2d(botpose=self.cam.botpose)
             self.poseEstimates.append(LimelightCameraPoseObservation(obsTime, bestCandidate))
             self.CamPublisher.set(bestCandidate)
-            print(bestCandidate)
+        self.targetLength = self.cam.get_april_length()
 
-    def _toPose2d(self, botpose:list):
-        return Pose3d(Translation3d(botpose[0]+9, botpose[1]+4.5, botpose[2]),Rotation3d(botpose[3], botpose[4], math.radians(botpose[5])),).toPose2d()
-        #return Pose2d(botpose[0], botpose[1], Rotation2d(botpose[5]))
+
+    def _toPose2d(self, botpose:list): #init: +9.0, +4.5
+        #CAUSES WILD OSCILATION BETWEEN 180 and -180 or wtv:
+        # return Pose3d(Translation3d(botpose[0], botpose[1], botpose[2]),Rotation3d(botpose[3], botpose[4], math.radians(botpose[5])),).toPose2d()
+
+        return Pose2d(botpose[0], botpose[1], Rotation2d(math.radians(botpose[5])))
+
 
     def getPoseEstimates(self):
         return self.poseEstimates

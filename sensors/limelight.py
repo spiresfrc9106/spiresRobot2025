@@ -54,6 +54,7 @@ class Limelight:
         self.botpose_red: list[float] = [0,0,0,0,0,0,0,0,0,0,0]
         self.botpose_red_l: float = 0.0
         self.botpose: list[float] = [0,0,0,0,0,0,0,0,0,0,0]
+        self.botposemeta2: list[float] = [0,0,0,0,0,0,0,0,0,0,0]
         self.targetpose: Pose3d = Pose3d(Translation3d(0, 0, 0), Rotation3d(0, 0, 0))
         self.cam_pos_moving: bool = False
         self.set_pipeline_mode(LimelightPipeline.neural)
@@ -239,13 +240,15 @@ class Limelight:
         Updates botpose values from the limelight network table
         calling this in the main event loop will only update botpose values
         '''
-        botpose = 'botpose'
+        botpose = 'botpose_wpiblue' #changed from botpose to botpose_wpiblue to get proper coordinates
         botpose_red = 'botpose_wpired'
         botpose_blue = 'botpose_wpiblue'
         if megatag2:
             botpose = 'botpose_orb'
             botpose_red = 'botpose_orb_wpired'
             botpose_blue = 'botpose_orb_wpiblue'
+
+        botposemeta2 = 'botpose_orb'
         
         # self.botpose_red = self.table.getNumberArray(
         #     botpose_red, [0, 0, 0, 0, 0, 0, 0, 0, 0,0,0]
@@ -288,6 +291,7 @@ class Limelight:
         # average tag area (percentage of image)
 
         self.botpose = self.table.getNumberArray(botpose, [0, 0, 0, 0, 0, 0, 0, 0, 0,0,0])
+        self.botposemeta2 = self.table.getNumberArray(botposemeta2, [0, 0, 0, 0, 0, 0, 0, 0, 0,0,0])
         self.targetpose = self.table.getNumberArray("botpose_targetspace", [0, 0, 0, 0, 0, 0])
 
     def set_robot_orientation(self, yaw_degrees: float, yaw_rate_degrees_per_second: float,
@@ -320,6 +324,10 @@ class Limelight:
 
         self.tv = self.table.getNumber("tv", 0)
         return self.tv > 0.0
+
+    def get_april_length(self):
+        temporary_check = self.table.getNumberArray('rawfiducials', [])
+        return len(temporary_check)/7
 
     def april_tag_exists(self) -> bool:
         """

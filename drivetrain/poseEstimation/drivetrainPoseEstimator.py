@@ -28,6 +28,21 @@ from wrappers.wrapperedLimelightCamera import WrapperedPoseEstLimelight
 PosTupleType = Tuple[SwerveModulePosition,SwerveModulePosition,SwerveModulePosition,SwerveModulePosition]
 StateTupleType = Tuple[SwerveModuleState,SwerveModuleState,SwerveModuleState,SwerveModuleState]
 
+
+
+#### FOR Fun April Tag Testing Experiment:
+##
+##  variables to watch:
+#       test_targets_seen_limelight
+#       test_targets_seen_photon
+#       test_strafe_speed_level
+#       test_rotate_speed_level
+#       positionbyLLlimelight (Pose2d)
+#       positionbyFRONT_CAM (Pose2d)
+##
+##
+##
+
 class DrivetrainPoseEstimator:
     """Wrapper class for all sensors and logic responsible for estimating where the robot is on the field"""
 
@@ -49,7 +64,7 @@ class DrivetrainPoseEstimator:
             WrapperedPoseEstPhotonCamera("LEFT_CAM", ROBOT_TO_LEFT_CAM),
             WrapperedPoseEstPhotonCamera("RIGHT_CAM", ROBOT_TO_RIGHT_CAM),
             WrapperedPoseEstPhotonCamera("FRONT_CAM", ROBOT_TO_FRONT_CAM),
-            WrapperedPoseEstLimelight("limelight-three", ROBOT_TO_FRONT_CAM)
+            WrapperedPoseEstLimelight("limelight", ROBOT_TO_FRONT_CAM) #limelight-three
         ]
         self._camTargetsVisible = False
         self._useAprilTags = True
