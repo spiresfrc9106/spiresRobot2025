@@ -63,6 +63,8 @@ class WrapperedSparkMax:
         
         self.disconFault.set(not self.configSuccess)
 
+        self.outputV = 0
+
         addLog(self.name + "_outputCurrent", self.ctrl.getOutputCurrent, "A")
         addLog(self.name + "_desVolt", lambda: self.desVolt, "V")
         addLog(self.name + "_desPos", lambda: self.desPos, "rad")
@@ -70,6 +72,7 @@ class WrapperedSparkMax:
         addLog(self.name + "_actVolt", lambda: self.actVolt, "V")
         addLog(self.name + "_actPos", lambda: self.actPos, "rad")
         addLog(self.name + "_actVel", lambda: self.actVel, "RPM")
+        addLog(self.name + "_outputV", lambda: self.outputV, "V")
 
     def setFollow(self, leaderCanID, invert=False):
         self.cfg.follow(leaderCanID, invert)
@@ -178,3 +181,10 @@ class WrapperedSparkMax:
             vel = 0
         self.actVel = vel
         return RPM2RadPerSec(vel)
+
+    def getAppliedOutput(self):
+        self.outputV = self.ctrl.getAppliedOutput() * 12
+        return self.outputV
+
+    def setSmartCurrentLimit(self, curLimitA: int):
+        self.ctrl.setSmartCurrentLimit(curLimitA)

@@ -6,7 +6,7 @@ from drivetrain.drivetrainPhysical import MAX_FWD_REV_SPEED_MPS,MAX_STRAFE_SPEED
 MAX_ROTATE_SPEED_RAD_PER_SEC,MAX_TRANSLATE_ACCEL_MPS2,MAX_ROTATE_ACCEL_RAD_PER_SEC_2
 from utils.allianceTransformUtils import onRed
 from utils.faults import Fault
-#from utils.signalLogging import addLog
+from utils.signalLogging import addLog
 
 
 class DriverInterface:
@@ -38,12 +38,13 @@ class DriverInterface:
         self.motorTestCmd = 0
 
         # Logging
-        #addLog("DI FwdRev Cmd", lambda: self.velXCmd, "mps")
-        #addLog("DI Strafe Cmd", lambda: self.velYCmd, "mps")
-        #addLog("DI Rot Cmd", lambda: self.velTCmd, "radps")
-        #addLog("DI gyroResetCmd", lambda: self.gyroResetCmd, "bool")
-        #addLog("DI autoDriveToSpeaker", lambda: self.autoDriveToSpeaker, "bool")
-        #addLog("DI autoDriveToPickup", lambda: self.autoDriveToPickup, "bool")
+        addLog("DI FwdRev Cmd", lambda: self.velXCmd, "mps")
+        addLog("DI Strafe Cmd", lambda: self.velYCmd, "mps")
+        addLog("DI Rot Cmd", lambda: self.velTCmd, "radps")
+        addLog("DI gyroResetCmd", lambda: self.gyroResetCmd, "bool")
+        addLog("DI autoDriveToSpeaker", lambda: self.autoDriveToSpeaker, "bool")
+        addLog("DI autoDriveToPickup", lambda: self.autoDriveToPickup, "bool")
+        addLog("DI motorTestCmd", lambda: self.motorTestCmd, "frac")
 
     def update(self):
         # value of contoller buttons
@@ -84,7 +85,7 @@ class DriverInterface:
             self.autoDriveToPickup = self.ctrl.getXButton()
             self.createDebugObstacle = self.ctrl.getYButtonPressed()
 
-            self.motorTestCmd = self.ctrl.getLeftTriggerAxis()
+            self.motorTestCmd = self.ctrl.getLeftTriggerAxis() - self.ctrl.getRightTriggerAxis()
 
             self.connectedFault.setNoFault()
 

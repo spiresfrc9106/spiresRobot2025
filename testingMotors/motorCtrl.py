@@ -7,7 +7,7 @@ from Elevatorandmech.ElevatorandMechConstants import ELEV_HEIGHT, MAX_ELEV_ACCEL
     ELEV_GEARBOX_GEAR_RATIO, ELEV_SPOOL_RADIUS_M
 from utils.calibration import Calibration
 from utils.units import sign
-from utils.signalLogging import log
+from utils.signalLogging import log, getNowLogger
 # from utils.constants import ELEV_LM_CANID, ELEV_RM_CANID, ELEV_TOF_CANID
 from utils.singleton import Singleton
 from wrappers.wrapperedSparkMax import WrapperedSparkMax
@@ -20,10 +20,11 @@ class MotorControl(metaclass=Singleton):
     def __init__(self):
 
         # Elevator Motors
-        self.Rmotor = WrapperedSparkMax(TEST_MOTOR_CANID, "Test_Motor", brakeMode=True)
+        self.Rmotor = WrapperedSparkMax(TEST_MOTOR_CANID, "Test_Motor", brakeMode=False, currentLimitA=5)
 
         # Set P gain on motor
-        self.Rmotor.setPID(0.05, 0.0, 0.0)
+        self.Rmotor.setPID(0.00005, 0.0, 0.0)
+        self.motorRpmLogger = getNowLogger(f"Test_Motor_DesRpm", "rpm")
 
 
 
@@ -35,6 +36,7 @@ class MotorControl(metaclass=Singleton):
         else:
             self.Rmotor.setVelCmd(0,0)
             self.Rmotor.setVoltage(0.0)
+        self.motorRpmLogger.logNow(desiredSpeedRpm)
         self.Rmotor.getMotorVelocityRadPerSec()
         self.Rmotor.getAppliedOutput()
 
