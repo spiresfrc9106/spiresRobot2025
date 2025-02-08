@@ -12,6 +12,7 @@ from wpimath.filter import SlewRateLimiter
 from wpilib import XboxController
 from drivetrain.drivetrainControl import DrivetrainControl
 
+
 class DriverInterface:
     """Class to gather input from the driver of the robot"""
 
@@ -144,8 +145,10 @@ class DriverInterface:
                 self.velTCmd = self.moveToDesiredAngle(180)
                 print(self.degreesTillDesiredGyro(180))
             if self.ctrl.getYButton():
-                self.velTCmd = self.moveToDesiredAngle(270)
-                print(self.degreesTillDesiredGyro(270))
+                # self.velTCmd = self.moveToDesiredAngle(270)
+                # print(self.degreesTillDesiredGyro(270))
+                pass
+
 
 
             #----------------------------------------------------------------------------------------------------------------

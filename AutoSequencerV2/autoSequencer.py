@@ -5,6 +5,7 @@ from AutoSequencerV2.builtInModes.doNothingMode import DoNothingMode
 from AutoSequencerV2.builtInModes.waitMode import WaitMode
 from AutoSequencerV2.sequentialCommandGroup import SequentialCommandGroup
 from Autonomous.modes.driveOut import DriveOut
+from Autonomous.modes.burger import Burger
 
 from utils.singleton import Singleton
 from utils.allianceTransformUtils import onRed
@@ -24,8 +25,9 @@ class AutoSequencer(metaclass=Singleton):
         # Create a list of every autonomous mode we want
         self.mainModeList = ModeList("Main")
         self.mainModeList.addMode(DoNothingMode())
-        #right now, DriveOut is all commented out, so we don't need to add it to the list. 
-        #self.mainModeList.addMode(DriveOut())
+        #right now, DriveOut is all commented out, so we don't need to add it to the list.
+        self.mainModeList.addMode(Burger())
+        self.mainModeList.addMode(DriveOut())
 
         self.topLevelCmdGroup = SequentialCommandGroup()
         self.startPose = Pose2d()
