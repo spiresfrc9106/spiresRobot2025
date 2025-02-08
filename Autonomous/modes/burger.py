@@ -15,11 +15,9 @@ class Burger(Mode):
     def getCmdGroup(self):
         # Just return the path command normally, since we're only doing one path. 
         # When changing to the return self.pathCmd, get rid of the pass
-        #return self.pathCmd
-        pass
+        return self.pathCmd
 
 
     def getInitialDrivetrainPose(self):
         # Use the path command to specify the starting pose, using getInitialPose()
-        #return self.pathCmd.path.getInitialPose()
-        pass
+        return self.pathCmd.path.getInitialPose()
