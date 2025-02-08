@@ -41,8 +41,8 @@ class DriverInterface:
         self.processedRotate = 0
 
 
-        addLog("test_strafe_speed_level", lambda: self.processedStrafe, "")
-        addLog("test_rotate_speed_level", lambda: self.processedRotate, "")
+        addLog("ytest_speed_strafe_level", lambda: self.processedStrafe, "")
+        addLog("ytest_speed_rotate_level", lambda: self.processedRotate, "")
 
         # Logging
         #addLog("DI FwdRev Cmd", lambda: self.velXCmd, "mps")

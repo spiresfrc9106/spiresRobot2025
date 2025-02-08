@@ -62,7 +62,7 @@ class WrapperedPoseEstLimelight:
         )
 
         self.targetLength = 0
-        addLog("test_targets_seen_limelight", lambda: self.targetLength, "")
+        addLog("ytest_targets_limelight_seen", lambda: self.targetLength, "")
 
     def update(self, prevEstPose:Pose2d):
         self.cam.update()
@@ -97,6 +97,8 @@ class WrapperedPoseEstLimelight:
 
         return Pose2d(botpose[0], botpose[1], Rotation2d(math.radians(botpose[5])))
 
+    def getPoseEstFormatted(self):
+        return self._toPose2d(botpose=self.cam.botpose)
 
     def getPoseEstimates(self):
         return self.poseEstimates

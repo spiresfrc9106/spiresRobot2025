@@ -16,6 +16,7 @@ from utils.signalLogging import addLog
 from wrappers.wrapperedPoseEstPhotonCamera import WrapperedPoseEstPhotonCamera
 from sensors.limelight import Limelight
 from wrappers.wrapperedLimelightCamera import WrapperedPoseEstLimelight
+from ytests.logging import YTestForPosition
 
 # Convienent abreviations for the types that we'll be passing around here.
 # This is primarily driven by wpilib's conventions:
@@ -28,20 +29,17 @@ from wrappers.wrapperedLimelightCamera import WrapperedPoseEstLimelight
 PosTupleType = Tuple[SwerveModulePosition,SwerveModulePosition,SwerveModulePosition,SwerveModulePosition]
 StateTupleType = Tuple[SwerveModuleState,SwerveModuleState,SwerveModuleState,SwerveModuleState]
 
-
-
-#### FOR Fun April Tag Testing Experiment:
-##
 ##  variables to watch:
-#       test_targets_seen_limelight
-#       test_targets_seen_photon
-#       test_strafe_speed_level
-#       test_rotate_speed_level
+#       ytest_speed_strafe_level
+#       ytest_speed_rotate_level
+#       ytest_targets_limelight_seen
+#       ytest_targets_photon_seen
+#       ytest_position_[name]_[orientation]
+#
+#   not used but cool:
 #       positionbyLLlimelight (Pose2d)
 #       positionbyFRONT_CAM (Pose2d)
-##
-##
-##
+#
 
 class DrivetrainPoseEstimator:
     """Wrapper class for all sensors and logic responsible for estimating where the robot is on the field"""
@@ -57,15 +55,22 @@ class DrivetrainPoseEstimator:
         self._gyroDisconFault = Fault("Gyroscope not sending data")
         self._curRawGyroAngle = Rotation2d()
 
-        # Cameras - measure our position on the field from apriltags
-        # Generally accurate, but slow and laggy. Might need to be disabled
-        # if the robot isn't flat on the ground for some reason.
+
+        ####CRUCIAL: the index of these lists must match for a given cam
         self.cams = [
             WrapperedPoseEstPhotonCamera("LEFT_CAM", ROBOT_TO_LEFT_CAM),
             WrapperedPoseEstPhotonCamera("RIGHT_CAM", ROBOT_TO_RIGHT_CAM),
             WrapperedPoseEstPhotonCamera("FRONT_CAM", ROBOT_TO_FRONT_CAM),
             WrapperedPoseEstLimelight("limelight", ROBOT_TO_FRONT_CAM) #limelight-three
         ]
+        # don't include "_"
+        self.posEstLogs = [
+            YTestForPosition("photonL"),
+            YTestForPosition("photonR"),
+            YTestForPosition("photonF"),
+            YTestForPosition("limeli1")
+        ]
+
         self._camTargetsVisible = False
         self._useAprilTags = True
 
@@ -76,9 +81,10 @@ class DrivetrainPoseEstimator:
         )
         self._lastModulePositions = initialModulePositions
 
-        # Logging and Telemetry
-        addLog("PE Vision Targets Seen", lambda: self._camTargetsVisible, "bool")
+        # unnecessary becasue we have better testing infrastructure now.
+        #addLog("PE Vision Targets Seen", lambda: self._camTargetsVisible, "bool")
         #addLog("PE Gyro Angle", self._curRawGyroAngle.degrees, "deg")
+
         self._telemetry = DrivetrainPoseTelemetry()
 
         # Simulation Only - maintain a rough estimate of pose from velocities
@@ -87,9 +93,6 @@ class DrivetrainPoseEstimator:
         self._simPose = Pose2d()
         self.lastCamEstRobotPos = Pose2d()
 
-        #figure out navigation around the field
-        #figure out how to architect the limelight
-        #based on the other cameras in the system, how can we handle the hand-off on the alignment to get it close to the final positioning
 
     def setKnownPose(self, knownPose:Pose2d):
         """Reset the robot's estimated pose to some specific position. This is useful if we know with certanty
@@ -118,7 +121,8 @@ class DrivetrainPoseEstimator:
         self._camTargetsVisible = False
 
         if(self._useAprilTags):
-            #print(f"limelight.botpose={self.limelight.botpose}")  # The first six list items are a normal bot pose in degrees
+            # uses sloppy way to test. don't judge
+            index = 0
             for cam in self.cams:
                 cam.update(self._curEstPose)
                 observations = cam.getPoseEstimates()
@@ -130,9 +134,10 @@ class DrivetrainPoseEstimator:
                     self.lastCamEstRobotPos = observation.estFieldPose
                     self._camTargetsVisible = True
                 self._telemetry.addVisionObservations(observations)
+                self.posEstLogs[index].update(cam.getPoseEstFormatted())
+                index = index + 1
 
 
-        # Read the gyro angle
         self._gyroDisconFault.set(not self._gyro.isConnected())
         if wpilib.TimedRobot.isSimulation():
             # Simulated Gyro
