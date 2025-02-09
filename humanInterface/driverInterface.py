@@ -103,7 +103,7 @@ class DriverInterface:
 
 
     def getMotorTestPowerRpm(self):
-        rpms = 500
+        rpms = 2000
         return self.motorTestCmd * rpms
 
     def getCmd(self) -> DrivetrainCommand:

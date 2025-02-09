@@ -30,7 +30,7 @@ class WrapperedSparkMax:
         self.desVolt = 0
         self.actPos = 0
         self.actVel = 0
-        self.actVolt = -2
+        self.actVolt = 0
 
         self.cfg = SparkMaxConfig()
         self.cfg.signals.appliedOutputPeriodMs(200)
@@ -38,7 +38,8 @@ class WrapperedSparkMax:
         self.cfg.signals.primaryEncoderPositionPeriodMs(20)
         self.cfg.signals.primaryEncoderVelocityPeriodMs(200)
         self.cfg.setIdleMode(SparkBaseConfig.IdleMode.kBrake if brakeMode else SparkBaseConfig.IdleMode.kCoast)
-        self.cfg.smartCurrentLimit(round(currentLimitA))
+        self.cfg.smartCurrentLimit(round(currentLimitA),0,5700)
+        #self.ctrl.setSmartCurrentLimit(round(currentLimitA))
 
         # Perform motor configuration, tracking errors and retrying until we have success
         # Clear previous configuration, and persist anything set in this config.
@@ -63,8 +64,6 @@ class WrapperedSparkMax:
         
         self.disconFault.set(not self.configSuccess)
 
-        self.outputV = 0
-
         addLog(self.name + "_outputCurrent", self.ctrl.getOutputCurrent, "A")
         addLog(self.name + "_desVolt", lambda: self.desVolt, "V")
         addLog(self.name + "_desPos", lambda: self.desPos, "rad")
@@ -72,7 +71,6 @@ class WrapperedSparkMax:
         addLog(self.name + "_actVolt", lambda: self.actVolt, "V")
         addLog(self.name + "_actPos", lambda: self.actPos, "rad")
         addLog(self.name + "_actVel", lambda: self.actVel, "RPM")
-        addLog(self.name + "_outputV", lambda: self.outputV, "V")
 
     def setFollow(self, leaderCanID, invert=False):
         self.cfg.follow(leaderCanID, invert)
@@ -152,17 +150,6 @@ class WrapperedSparkMax:
         if self.configSuccess:
             self.ctrl.setVoltage(outputVoltageVolts)
 
-    def getAppliedOutput(self):
-        if self.configSuccess:
-            output = self.ctrl.getAppliedOutput()
-        else:
-            output = -1
-            self.actVolt = output
-            return output
-        output = 12 * output
-        self.actVolt = output
-        return output
-
     def getMotorPositionRad(self):
         if(TimedRobot.isSimulation()):
             pos = self.simActPos
@@ -183,8 +170,8 @@ class WrapperedSparkMax:
         return RPM2RadPerSec(vel)
 
     def getAppliedOutput(self):
-        self.outputV = self.ctrl.getAppliedOutput() * 12
-        return self.outputV
+        self.actVolt = self.ctrl.getAppliedOutput() * 12
+        return self.actVolt
 
     def setSmartCurrentLimit(self, curLimitA: int):
         self.ctrl.setSmartCurrentLimit(curLimitA)

@@ -20,7 +20,7 @@ class MotorControl(metaclass=Singleton):
     def __init__(self):
 
         # Elevator Motors
-        self.Rmotor = WrapperedSparkMax(TEST_MOTOR_CANID, "Test_Motor", brakeMode=False, currentLimitA=5)
+        self.Rmotor = WrapperedSparkMax(TEST_MOTOR_CANID, "Test_Motor", brakeMode=False, currentLimitA=20)
 
         # Set P gain on motor
         self.Rmotor.setPID(0.00005, 0.0, 0.0)
