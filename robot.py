@@ -49,6 +49,9 @@ class MyRobot(wpilib.TimedRobot):
         print(f"HAS_DRIVETRAIN={robotDepConstants['HAS_DRIVETRAIN']}")
         if robotDepConstants['HAS_DRIVETRAIN']:
             self.driveTrain = DrivetrainControl()
+        if  robotDepConstants['HAS_ELEVATOR']:
+            self.elev= ElevatorControl()
+
         self.autodrive = AutoDrive()
 
         self.stt = SegmentTimeTracker()      
@@ -63,7 +66,6 @@ class MyRobot(wpilib.TimedRobot):
         self.rioMonitor = RIOMonitor()
         self.pwrMon = PowerMonitor()
 
-        self.elev = ElevatorControl()
         self.arm = ArmControl()
         self.motorCtrlFun = MotorControl()
 
@@ -103,7 +105,9 @@ class MyRobot(wpilib.TimedRobot):
             self.driveTrain.poseEst._telemetry.setCurAutoDriveWaypoints(self.autodrive.getWaypoints())
             self.driveTrain.poseEst._telemetry.setCurObstacles(self.autodrive.rfp.getObstacleStrengths())
         self.stt.mark("Telemetry")
-
+        if robotDepConstants['HAS_ELEVATOR']:
+            self.elev.update()
+            self.stt.mark("Elevator")
         self.logger2.logNow(nt._now())
 
         self.ledCtrl.setAutoDrive(self.autodrive.isRunning())
