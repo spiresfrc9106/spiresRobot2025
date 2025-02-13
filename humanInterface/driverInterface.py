@@ -127,7 +127,7 @@ class DriverInterface:
 
 
             #self.gyroResetCmd = self.ctrl.getAButton()
-            #self.autoDriveToSpeaker = self.ctrl.getBButton()
+            self.autoDriveToSpeaker = self.ctrl.getBButton()
             #self.autoDriveToPickup = self.ctrl.getXButton()
             #self.createDebugObstacle = self.ctrl.getYButtonPressed()
             self.connectedFault.setNoFault()
@@ -135,9 +135,9 @@ class DriverInterface:
             #------------------------------------------------------------------------------------------------------
             #Noah's Work :D
 
-            if self.ctrl.getBButton():
-                self.velTCmd = self.moveToDesiredAngle(0)
-                print(self.degreesTillDesiredGyro(0))
+            # if self.ctrl.getBButton():
+            #     self.velTCmd = self.moveToDesiredAngle(0)
+            #     print(self.degreesTillDesiredGyro(0))
             if self.ctrl.getAButton():
                 self.velTCmd = self.moveToDesiredAngle(90)
                 print(self.degreesTillDesiredGyro(90))
