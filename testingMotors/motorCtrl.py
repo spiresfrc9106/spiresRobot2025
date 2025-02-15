@@ -3,8 +3,7 @@
 # It is definitely buggy and untested, but it gives us a great framework on how to control an elevator.
 
 
-from Elevatorandmech.ElevatorandMechConstants import ELEV_HEIGHT, MAX_ELEV_ACCEL_MPS2, MAX_ELEV_VEL_MPS, \
-    ELEV_GEARBOX_GEAR_RATIO, ELEV_SPOOL_RADIUS_M
+from Elevatorandmech.ElevatorandMechConstants import ELEV_HEIGHT, MAX_ELEV_ACCEL_MPS2, MAX_ELEV_VEL_MPS
 from utils.calibration import Calibration
 from utils.units import sign
 from utils.signalLogging import log, getNowLogger

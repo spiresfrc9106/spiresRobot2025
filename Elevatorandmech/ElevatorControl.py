@@ -2,9 +2,8 @@
 
 # It is definitely buggy and untested, but it gives us a great framework on how to control an elevator.
 
-
+from enum import Enum
 from playingwithfusion import TimeOfFlight
-from Elevatorandmech.ElevatorandMechConstants import MAX_ELEV_ACCEL_MPS2, MAX_ELEV_VEL_MPS, ELEV_GEARBOX_GEAR_RATIO, ELEV_SPOOL_RADIUS_M, ElevatorLevelCmd
 from utils.calibration import Calibration
 from utils.units import sign
 from utils.signalLogging import  addLog
@@ -15,15 +14,28 @@ from rev import SparkLowLevel
 from wpimath.trajectory import TrapezoidProfile
 from wpilib import Timer
 
+ELEV_GEARBOX_GEAR_RATIO = 5.0/1.0
+ELEV_SPOOL_RADIUS_IN = 1.92/2.0
+
+MAX_ELEV_VEL_INPS = 20
+MAX_ELEV_ACCEL_INPS2 = 4
+
 REEF_L1_HEIGHT_M = 0.5842
 REEF_L2_HEIGHT_M = 0.9398
 REEF_L3_HEIGHT_M = 1.397 
 REEF_L4_HEIGHT_M = 2.159 
 ELEV_MIN_HEIGHT_M = REEF_L1_HEIGHT_M  # TODO - is elevator's bottom position actually L1?
 
-ELEV_LM_CANID = 23
-ELEV_RM_CANID = 21
+ELEV_RM_CANID = 20
+ELEV_LM_CANID = 21
 ELEV_TOF_CANID = 22
+
+class ElevatorStates(Enum):
+    ELEVATOR_INITIALIZING = 0
+    ELEVATOR_STOPPED = 1
+    ELEVATOR_CMD = 2
+    ELEVATOR_NO_CMD = -1
+
 
 class ElevatorControl(metaclass=Singleton):
     def __init__(self):
@@ -36,37 +48,36 @@ class ElevatorControl(metaclass=Singleton):
 
         self.manAdjMaxVoltage = Calibration(name="Elevator Manual Adj Max Voltage", default=1.0, units="V")
 
-        self.curHeightGoal = ElevatorLevelCmd.NO_CMD
-        self.heightGoal = self.L1_Height.get()
+        self.heightGoalIn = 0.0
         self.coralSafe = True
         self.manualAdjCmd = 0.0
 
-        self.desState = TrapezoidProfile.State(self.heightGoal,0)
+        # See: https://docs.wpilib.org/en/stable/docs/software/advanced-controls/controllers/trapezoidal-profiles.html
+        self.desTrapPState = TrapezoidProfile.State(self.heightGoalIn,0)
 
         # Elevator Motors
-        self.Rmotor = WrapperedSparkMax(ELEV_RM_CANID, "ElevatorMotorRight", brakeMode=True)
-        self.LMotor = WrapperedSparkMax(ELEV_LM_CANID, "ElevatorMotorLeft", brakeMode=True)
-        #we don't know if we want to invert LMotor (left) or not when we follow RMotor (right), automatically assumed False
-        self.LMotor.setFollow(ELEV_RM_CANID)
+        self.Rmotor = WrapperedSparkMax(ELEV_RM_CANID, "ElevatorMotorRight", brakeMode=True, currentLimitA=10)
+        self.LMotor = WrapperedSparkMax(ELEV_LM_CANID, "ElevatorMotorLeft", brakeMode=True, currentLimitA=10)
+        self.LMotor.setFollow(ELEV_RM_CANID, True)
 
 
         # FF and proportional gain constants
         self.kV = Calibration(name="Elevator kV", default=0.02, units="V/rps")
         self.kS = Calibration(name="Elevator kS", default=0.1, units="V")
         self.kG = Calibration(name="Elevator kG", default=0.25, units="V")
-        self.kP = Calibration(name="Elevator kP", default=0.05, units="V/rad error")
+        self.kP = Calibration(name="Elevator kP", default=0.05, units="V/rad error") # Per 0.001 seconds
 
         # Set P gain on motor
         self.Rmotor.setPID(self.kP.get(), 0.0, 0.0)
 
         # Profiler
-        self.maxV = Calibration(name="Elevator Max Vel", default=MAX_ELEV_VEL_MPS, units="mps")
-        self.maxA = Calibration(name="Elevator Max Accel", default=MAX_ELEV_ACCEL_MPS2, units="mps2")
-        self.profiler = TrapezoidProfile(TrapezoidProfile.Constraints(self.maxV.get(),self.maxA.get()))
-        self.curState = self.profiler.State()
+        self.maxV = Calibration(name="Elevator Max Vel", default=MAX_ELEV_VEL_INPS, units="inps")
+        self.maxA = Calibration(name="Elevator Max Accel", default=MAX_ELEV_ACCEL_INPS2, units="inps2")
+        self.trapProfiler = TrapezoidProfile(TrapezoidProfile.Constraints(self.maxV.get(),self.maxA.get()))
+        self.curTrapPState = self.trapProfiler.State()
         #go to wpilib online documentation to learn more about the trapezoid (very cool)
 
-        self.actualPos = 0
+        self.actualPosIn = 0
         self.stopped = False
 
         # Try to set a small current limit and decide when we're on the bottom using this, and turn off the motor when it doesn't need to spin anymore.  then up the current limit as needed
@@ -85,33 +96,32 @@ class ElevatorControl(metaclass=Singleton):
         # These variables store an offset which is calculated from the absolute sensors
         # to make sure the relative sensors inside the encoders accurately reflect
         # the actual position of the mechanism
-        self.relEncOffsetM = 0.0
+        self.relEncOffsetRad = 0.0
         # Create a motion profile with the given maximum velocity and maximum
         # acceleration constraints for the next setpoint.
 
-        self.heightGoal = self.L1_Height.get()
+        self.heightGoalIn = 0.0
 
-        addLog("Elevator Goal Height", lambda: self.heightGoal, "m")
+        addLog("Elevator Goal Height", lambda: self.heightGoalIn, "in")
         addLog("Elevator Stopped", lambda: self.stopped, "bool")
-        addLog("Elevator Profiled Height", lambda: self.curState.position, "m")
+        addLog("Elevator Profiled Height", lambda: self.curTrapPState.position, "in")
 
         self.profiledPos = 0.0
         self.curUnprofiledPosCmd = 0.0
 
-        # See: https://docs.wpilib.org/en/stable/docs/software/advanced-controls/controllers/trapezoidal-profiles.html
-        self.desState = TrapezoidProfile.State(self.heightGoal,0)
 
-    def _RmotorRadToHeight(self, RmotorRad: float) -> float:
-        return RmotorRad * 1/ELEV_GEARBOX_GEAR_RATIO * (ELEV_SPOOL_RADIUS_M) - self.relEncOffsetM
+    def _RmotorRadToHeightIn(self, RmotorRad: float) -> float:
+        #return RmotorRad * 1/ELEV_GEARBOX_GEAR_RATIO * (ELEV_SPOOL_RADIUS_M) - self.relEncOffsetM
+        return  (RmotorRad-self.relEncOffsetRad) * (1/ELEV_GEARBOX_GEAR_RATIO) * ELEV_SPOOL_RADIUS_IN
+
+    def _heightInToMotorRad(self, elevHeightIn: float) -> float:
+        return (elevHeightIn / ELEV_SPOOL_RADIUS_IN) * ELEV_GEARBOX_GEAR_RATIO + self.relEncOffsetRad
     
-    def _heightToMotorRad(self, elevLin: float) -> float:
-        return ((elevLin + self.relEncOffsetM)*1/(ELEV_SPOOL_RADIUS_M) * ELEV_GEARBOX_GEAR_RATIO)
+    def _heightVelInpsToMotorVelRadps(self, elevVelInps: float) -> float:
+        return (elevVelInps / ELEV_SPOOL_RADIUS_IN) * ELEV_GEARBOX_GEAR_RATIO
     
-    def _heightVeltoMotorVel(self, elevLinVel: float) -> float:
-        return (elevLinVel *1/(ELEV_SPOOL_RADIUS_M) * ELEV_GEARBOX_GEAR_RATIO)
-    
-    def getHeightM(self) -> float:
-        return self._RmotorRadToHeight(self.Rmotor.getMotorPositionRad()) 
+    def getHeightIn(self) -> float:
+        return self._RmotorRadToHeightIn(self.Rmotor.getMotorPositionRad())
     
     #return the height of the elevator as measured by the absolute sensor in meters
     def _getAbsHeight(self) -> float:
@@ -126,38 +136,41 @@ class ElevatorControl(metaclass=Singleton):
         self.relEncOffsetM = 0.0
 
         # New Offset = real height - what height says?? 
-        self.relEncOffsetM = self._getAbsHeight() - self.getHeightM()
+        self.relEncOffsetM = self._getAbsHeight() - self.getHeightIn()
 
     def update(self) -> None:
-        self.actualPos = self.getHeightM()
+        self.actualPosIn = self.getHeightIn()
+
+        self.desTrapPState = TrapezoidProfile.State(self.heightGoalIn,0)
 
         # Update motor closed-loop calibration
-        if(self.kP.isChanged()):
+        if self.kP.isChanged():
             self.Rmotor.setPID(self.kP.get(), 0.0, 0.0)
 
-        if(self.stopped):
+        if self.stopped:
             # Handle stopped by just holding mechanism in place with gravity offset, no closed loop.
             # TODO - do we need a more gentle stop here?
             manAdjVoltage = self.manAdjMaxVoltage.get() * self.manualAdjCmd
 
             self.Rmotor.setVoltage(self.kG.get() + manAdjVoltage)
-            self.curState = TrapezoidProfile.State(self.actualPos,0)
+            self.curTrapPState = TrapezoidProfile.State(self.actualPosIn,0)
         else:
-            self.curState = self.profiler.calculate(0.02, self.curState, self.desState)
+            self.curTrapPState = self.trapProfiler.calculate(0.02, self.curTrapPState, self.desTrapPState)
 
-            motorPosCmd = self._heightToMotorRad(self.curState.position)
-            motorVelCmd = self._heightVeltoMotorVel(self.curState.velocity)
+            motorPosCmdRad = self._heightInToMotorRad(self.curTrapPState.position)
+            motorVelCmdRadps = self._heightVelInpsToMotorVelRadps(self.curTrapPState.velocity)
 
             # set our feed forward to 0 at the start so we're not throwing extra voltage into the motor, then see if their feed forward calc makes sense
-            vFF = self.kV.get() * motorVelCmd  + self.kS.get() * sign(motorVelCmd) \
-                + self.kG.get()
+            #vFF = self.kV.get() * motorVelCmdRadps  + self.kS.get() * sign(motorVelCmdRadps) \
+            #    + self.kG.get()
 
-            self.Rmotor.setPosCmd(motorPosCmd, vFF)
-            self.LMotor.setFollow(self.Rmotor.ctrl, True)
+            vFF = 0
+
+            self.Rmotor.setPosCmd(motorPosCmdRad, vFF)
 
     # API to set current height goal
-    def setHeightGoal(self, presetHeightCmd:ElevatorLevelCmd) -> None:
-        self.curHeightGoal = presetHeightCmd
+    def setHeightGoal(self, heightGoalIn:float) -> None:
+        self.heightGoalIn = heightGoalIn
 
     # API to confirm we are oK to be at a height other than L1
     def setSafeToLeaveL1(self, safe:bool) -> None:

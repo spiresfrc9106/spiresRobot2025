@@ -13,6 +13,7 @@ from drivetrain.drivetrainCommand import DrivetrainCommand
 from drivetrain.drivetrainControl import DrivetrainControl
 from drivetrain.robotDependentConstants import RobotDependentConstants
 from humanInterface.driverInterface import DriverInterface
+from humanInterface.operatorInterface import OperatorInterface
 from humanInterface.ledControl import LEDControl
 from navigation.forceGenerators import PointObstacle
 from utils.segmentTimeTracker import SegmentTimeTracker
@@ -46,10 +47,9 @@ class MyRobot(wpilib.TimedRobot):
         wpilib.LiveWindow.disableAllTelemetry()
         self.webserver = Webserver()
 
-        print(f"HAS_DRIVETRAIN={robotDepConstants['HAS_DRIVETRAIN']}")
         if robotDepConstants['HAS_DRIVETRAIN']:
             self.driveTrain = DrivetrainControl()
-        if  robotDepConstants['HAS_ELEVATOR']:
+        if robotDepConstants['HAS_ELEVATOR']:
             self.elev= ElevatorControl()
 
         self.autodrive = AutoDrive()
@@ -57,6 +57,7 @@ class MyRobot(wpilib.TimedRobot):
         self.stt = SegmentTimeTracker()      
 
         self.dInt = DriverInterface()
+        self.oInt = OperatorInterface()
         self.ledCtrl = LEDControl()
 
         self.autoSequencer = AutoSequencer()
@@ -67,7 +68,9 @@ class MyRobot(wpilib.TimedRobot):
         self.pwrMon = PowerMonitor()
 
         self.arm = ArmControl()
-        self.motorCtrlFun = MotorControl()
+
+        if robotDepConstants['HAS_MOTOR_TEST']:
+            self.motorCtrlFun = MotorControl()
 
         # Normal robot code updates every 20ms, but not everything needs to be that fast.
         # Register slower-update periodic functions
@@ -94,6 +97,8 @@ class MyRobot(wpilib.TimedRobot):
         if self.count == 10:
             gc.freeze()
         self.dInt.update()
+        self.stt.mark("Driver Interface")
+        self.oInt.update()
         self.stt.mark("Driver Interface")
 
         if robotDepConstants['HAS_DRIVETRAIN']:
@@ -167,8 +172,8 @@ class MyRobot(wpilib.TimedRobot):
         if robotDepConstants['HAS_DRIVETRAIN']:
             self.driveTrain.setManualCmd(self.dInt.getCmd())
 
-        self.motorCtrlFun.update(self.dInt.getMotorTestPowerRpm())
-        #print(f'driving motor at {round(self.dInt.getMotorTestPower()*100)/100} RPM  ({round(self.dInt.getMotorTestPower()/60*100)/100} rps)')
+        if robotDepConstants['HAS_MOTOR_TEST']:
+            self.motorCtrlFun.update(self.dInt.getMotorTestPowerRpm())
 
         if self.dInt.getGyroResetCmd():
             if robotDepConstants['HAS_DRIVETRAIN']:
@@ -193,6 +198,9 @@ class MyRobot(wpilib.TimedRobot):
 
         self.autodrive.setRequest(self.dInt.getNavToSpeaker(), self.dInt.getNavToPickup())
         #self.elev.setHeightGoal(self.dInt.getL1(), self.dInt.getL2(), self.dInt.getL3(), self.dInt.getL4(), kylefunciton)
+
+        if robotDepConstants['HAS_ELEVATOR']:
+            self.elev.setHeightGoal(self.oInt.getDesElevatorPosIn())
 
         # No trajectory in Teleop
         Trajectory().setCmd(None)
