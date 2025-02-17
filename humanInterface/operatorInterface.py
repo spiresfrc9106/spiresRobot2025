@@ -51,5 +51,5 @@ class OperatorInterface:
 
 
     def getDesElevatorPosIn(self)->float:
-        elevatorRangeIn = 5.0
+        elevatorRangeIn = 6.0
         return (elevatorRangeIn/2.0) * (1.0 + self.elevatorPosYCmd)

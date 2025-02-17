@@ -31,9 +31,9 @@ ELEV_LM_CANID = 21
 ELEV_TOF_CANID = 22
 
 class ElevatorStates(Enum):
-    ELEVATOR_INITIALIZING = 0
-    ELEVATOR_STOPPED = 1
-    ELEVATOR_CMD = 2
+    ELEVATOR_UNINITIALIZED = 0
+    ELEVATOR_SEARCH_DOWN = 1
+    ELEVATOR_OPERATING = 2
     ELEVATOR_NO_CMD = -1
 
 
@@ -56,10 +56,10 @@ class ElevatorControl(metaclass=Singleton):
         self.desTrapPState = TrapezoidProfile.State(self.heightGoalIn,0)
 
         # Elevator Motors
-        self.Rmotor = WrapperedSparkMax(ELEV_RM_CANID, "ElevatorMotorRight", brakeMode=False, currentLimitA=20)
+        self.Rmotor = WrapperedSparkMax(ELEV_RM_CANID, "ElevatorMotorRight", brakeMode=False, currentLimitA=5)
         rMotorIsInverted = True
         self.Rmotor.setInverted(rMotorIsInverted)
-        self.LMotor = WrapperedSparkMax(ELEV_LM_CANID, "ElevatorMotorLeft", brakeMode=False, currentLimitA=20)
+        self.LMotor = WrapperedSparkMax(ELEV_LM_CANID, "ElevatorMotorLeft", brakeMode=False, currentLimitA=5)
         self.LMotor.setFollow(ELEV_RM_CANID, True)
 
 
@@ -75,6 +75,11 @@ class ElevatorControl(metaclass=Singleton):
         # Profiler
         self.maxVelocityIps = Calibration(name="Elevator Max Vel", default=MAX_ELEV_VEL_INPS, units="inps")
         self.maxAccelerationIps2 = Calibration(name="Elevator Max Accel", default=MAX_ELEV_ACCEL_INPS2, units="inps2")
+
+        self.searchMaxVelocityIps = Calibration(name="Elevator Max Vel", default=4, units="inps")
+        self.searchMaxAccelerationIps2 = Calibration(name="Elevator Max Accel", default=4, units="inps2")
+
+
         self.trapProfiler = TrapezoidProfile(TrapezoidProfile.Constraints(self.maxVelocityIps.get(), self.maxAccelerationIps2.get()))
         self.actTrapPState = self.trapProfiler.State()
         self.curTrapPState = self.trapProfiler.State()
@@ -103,6 +108,8 @@ class ElevatorControl(metaclass=Singleton):
         # acceleration constraints for the next setpoint.
 
         self.heightGoalIn = 0.0
+
+        self.state = ElevatorStates.ELEVATOR_UNINITIALIZED
 
         addLog("Elevator Goal Height", lambda: self.heightGoalIn, "in")
         addLog("Elevator Stopped", lambda: self.stopped, "bool")
@@ -154,7 +161,85 @@ class ElevatorControl(metaclass=Singleton):
         # New Offset = real height - what height says?? 
         self.relEncOffsetM = self._getAbsHeight() - self.getHeightIn()
 
+
     def update(self) -> None:
+        match self.state:
+            case ElevatorStates.ELEVATOR_UNINITIALIZED:
+                self._updateUninitialized()
+            case ElevatorStates.ELEVATOR_SEARCH_DOWN:
+                self._updateSearchDown()
+            case ElevatorStates.ELEVATOR_OPERATING:
+                self._updateOperating()
+            case _:
+                pass
+
+    def _updateUninitialized(self) -> None:
+        self.trapProfiler = TrapezoidProfile(TrapezoidProfile.Constraints(self.searchMaxVelocityIps.get(), self.searchMaxAccelerationIps2.get()))
+        self.lastStoppedTimeS = 0
+        self.lowestHeightIn = 1000.0
+        self.forceStartAtHeightZeroIn()
+        motorPosCmdRad = self._heightInToMotorRad(0)
+        motorVelCmdRadps = self._heightVelInpsToMotorVelRadps(0)
+
+        # set our feed forward to 0 at the start so we're not throwing extra voltage into the motor, then see if their feed forward calc makes sense
+        # vFF = self.kV.get() * motorVelCmdRadps  + self.kS.get() * sign(motorVelCmdRadps) \
+        #    + self.kG.get()
+
+        vFF = 0
+
+        self.Rmotor.setPosCmd(motorPosCmdRad, vFF)
+        self.state = ElevatorStates.ELEVATOR_SEARCH_DOWN
+
+
+    def _updateSearchDown(self) -> None:
+        self.currentUpdateTimeS = Timer.getFPGATimestamp()
+        self.actualVelInps = self.getVelocityInps()
+        if self.previousUpdateTimeS is not None:
+            currentPeriodS = self.currentUpdateTimeS - self.previousUpdateTimeS
+            self.actAccLogger.logNow((self.actualVelInps - self.previousVelInps) / currentPeriodS)
+
+        self.oldActTrapPState = self.actTrapPState
+        self.actTrapPState = TrapezoidProfile.State(self.getHeightIn(), self.actualVelInps)
+
+        if (self.actTrapPState.position >=  self.lowestHeightIn) and (self.currentUpdateTimeS - self.lastStoppedTimeS > 1.0):
+
+            # Stop the motor where it is at
+            self.Rmotor.setPosCmd(self._heightInToMotorRad(self.actTrapPState.position), 0)
+
+            # Prepare for the operating state
+            self.state = ElevatorStates.ELEVATOR_OPERATING
+            self.forceStartAtHeightZeroIn()
+            self.trapProfiler = TrapezoidProfile(TrapezoidProfile.Constraints(self.maxVelocityIps.get(), self.maxAccelerationIps2.get()))
+            self.actTrapPState = self.trapProfiler.State()
+            self.curTrapPState = self.trapProfiler.State()
+            self.Rmotor.setSmartCurrentLimit(20)
+        else:
+            if self.actTrapPState.position < self.lowestHeightIn:
+                self.lowestHeightIn = self.actTrapPState.position
+                self.lastStoppedTimeS = self.currentUpdateTimeS
+
+            self.desTrapPState = TrapezoidProfile.State(-100000,0)
+
+            oldVelocityInps = self.curTrapPState.velocity
+            self.curTrapPState = self.trapProfiler.calculate(0.02, self.curTrapPState, self.desTrapPState)
+
+            self.curTrapPAccLogger.logNow((self.curTrapPState.velocity - oldVelocityInps) / 0.02)
+
+            motorPosCmdRad = self._heightInToMotorRad(self.curTrapPState.position)
+            motorVelCmdRadps = self._heightVelInpsToMotorVelRadps(self.curTrapPState.velocity)
+
+            # set our feed forward to 0 at the start so we're not throwing extra voltage into the motor, then see if their feed forward calc makes sense
+            # vFF = self.kV.get() * motorVelCmdRadps  + self.kS.get() * sign(motorVelCmdRadps) \
+            #    + self.kG.get()
+
+            vFF = 0
+
+            self.Rmotor.setPosCmd(motorPosCmdRad, vFF)
+
+            self.previousVelInps = self.actualVelInps
+            self.previousUpdateTimeS = self.currentUpdateTimeS
+
+    def _updateOperating(self) -> None:
         self.currentUpdateTimeS = Timer.getFPGATimestamp()
         self.actualVelInps = self.getVelocityInps()
         if self.previousUpdateTimeS is not None:

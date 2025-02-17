@@ -41,7 +41,7 @@ class WrapperedSparkMax:
         self.cfg.setIdleMode(SparkBaseConfig.IdleMode.kBrake if brakeMode else SparkBaseConfig.IdleMode.kCoast)
         self.cfg.smartCurrentLimit(round(currentLimitA),0,5700)
 
-        self._sparkmax_config(retries=10, resetMode=SparkBase.ResetMode.kResetSafeParameters, persistMode=SparkBase.PersistMode.kPersistParameters)
+        self._sparkmax_config(retries=10, resetMode=SparkBase.ResetMode.kResetSafeParameters, persistMode=SparkBase.PersistMode.kPersistParameters, step="Initial Config")
 
         addLog(self.name + "_outputCurrent", self.ctrl.getOutputCurrent, "A")
         addLog(self.name + "_desVolt", lambda: self.desVolt, "V")
@@ -51,26 +51,30 @@ class WrapperedSparkMax:
         addLog(self.name + "_actPos", lambda: self.actPosRad, "rad")
         addLog(self.name + "_actVel", lambda: RPM2RadPerSec(self.encoder.getVelocity()), "radps")
 
-    def _sparkmax_config(self, retries, resetMode, persistMode):
+    def _sparkmax_config(self, retries, resetMode, persistMode, printResults=True, step=""):
         # Perform motor configuration, tracking errors and retrying until we have success
         # Clear previous configuration, and persist anything set in this config.
         retryCounter = 0
-        while not self.configSuccess and retryCounter < retries:
+        success=False
+        while not success and retryCounter < retries:
             retryCounter += 1
             err = self.ctrl.configure(self.cfg, resetMode, persistMode)
 
             # Check if any operation triggered an error
             if err != REVLibError.kOk:
-                print(
-                    f"Failure configuring Spark Max {self.name} CAN ID {self.canID}, retrying..."
-                )
-                self.configSuccess = False
+                if printResults:
+                    print(
+                        f"{step} Failure configuring Spark Max {self.name} CAN ID {self.canID}, retrying..."
+                    )
             else:
                 # Only attempt other communication if we're able to successfully configure
-                print(f"Successfully connected to {self.name} motor")
-                self.configSuccess = True
+                if printResults:
+                    print(f"{step} Successfully connected to {self.name} motor")
+                success = True
             if retryCounter < retries:
                 time.sleep(0.1)
+
+        self.configSuccess = success
 
         self.disconFault.set(not self.configSuccess)
 
@@ -178,4 +182,4 @@ class WrapperedSparkMax:
 
     def setSmartCurrentLimit(self, currentLimitA: int):
         self.cfg.smartCurrentLimit(round(currentLimitA),0,5700)
-        self._sparkmax_config(retries=10, resetMode=SparkBase.ResetMode.kNoResetSafeParameters, persistMode=SparkBase.PersistMode.kPersistParameters)
+        self._sparkmax_config(retries=4, resetMode=SparkBase.ResetMode.kNoResetSafeParameters, persistMode=SparkBase.PersistMode.kNoPersistParameters, printResults=True, step="Current Limit")
