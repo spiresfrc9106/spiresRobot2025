@@ -8,8 +8,8 @@ from utils.units import wrapAngleRad
 
 class WrapperedPulseWidthEncoder:
     """
-    Wrappers any absolute-angle externalAbsoluteEncoder which encodes angle into pulse width
-    Assumes the externalAbsoluteEncoder has been connected to a DIO port on the RoboRIO
+    Wrappers any absolute-angle encoder which encodes angle into pulse width
+    Assumes the encoder has been connected to a DIO port on the RoboRIO
     Reads the absolute angle via pulse duration
     Includes logging and handling fault detection
     """

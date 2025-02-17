@@ -2,9 +2,9 @@
 from wrappers.wrapperedPulseWidthEncoder import WrapperedPulseWidthEncoder
 
 """ 
-Wrappers a CTRE SRX Magnetic absolute externalAbsoluteEncoder
+Wrappers a CTRE SRX Magnetic absolute encoder
 https://store.ctr-electronics.com/srx-mag-encoder/
-Assumes the absolute-angle signal from the externalAbsoluteEncoder has 
+Assumes the absolute-angle signal from the encoder has 
 been connected to a DIO port on the RoboRIO.
 """
 

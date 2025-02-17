@@ -18,7 +18,7 @@ class WrapperedSparkMax:
     def __init__(self, canID, name, brakeMode=False, currentLimitA=40):
         self.ctrl = SparkMax(canID, SparkMax.MotorType.kBrushless)
         self.closedLoopCtrl = self.ctrl.getClosedLoopController()
-        self.externalAbsoluteEncoder = self.ctrl.getEncoder()
+        self.encoder = self.ctrl.getEncoder()
         self.name = name
         self.configSuccess = False
         self.disconFault = Fault(f"Spark Max {name} ID {canID} disconnected")
@@ -26,11 +26,11 @@ class WrapperedSparkMax:
         self.canID = canID
 
         # pylint: disable= R0801
-        self.desPos = 0
-        self.desVel = 0
+        self.desPosRad = 0
+        self.desVelRadps = 0
         self.desVolt = 0
-        self.externalAbsoluteEncoderPos = 0
-        self.actVel = 0
+        self.actPosRad = 0
+        self.actVelRadps = 0
         self.actVolt = 0
 
         self.cfg = SparkMaxConfig()
@@ -45,12 +45,11 @@ class WrapperedSparkMax:
 
         addLog(self.name + "_outputCurrent", self.ctrl.getOutputCurrent, "A")
         addLog(self.name + "_desVolt", lambda: self.desVolt, "V")
-        addLog(self.name + "_desPos", lambda: self.desPos, "rad")
-        addLog(self.name + "_desVel", lambda: self.desVel, "RPM")
+        addLog(self.name + "_desPos", lambda: self.desPosRad, "rad")
+        addLog(self.name + "_desVel", lambda: self.desVelRadps, "radps")
         addLog(self.name + "_actVolt", lambda: self.actVolt, "V")
-        addLog(self.name + "_externalAbsoluteEncoderPos", lambda: self.externalAbsoluteEncoderPos, "rad")
-        addLog(self.name + "_encoderPos", lambda: self.externalAbsoluteEncoder.getPosition(), "tbd")
-        addLog(self.name + "_externalAbsoluteEncoderVel", lambda: RPM2RadPerSec(self.externalAbsoluteEncoder.getVelocity()), "RPM")
+        addLog(self.name + "_actPos", lambda: self.actPosRad, "rad")
+        addLog(self.name + "_actVel", lambda: RPM2RadPerSec(self.encoder.getVelocity()), "radps")
 
     def _sparkmax_config(self, retries, resetMode, persistMode):
         # Perform motor configuration, tracking errors and retrying until we have success
@@ -111,7 +110,7 @@ class WrapperedSparkMax:
         self.simActPos = posCmd
         posCmdRev = rad2Rev(posCmd)
 
-        self.desPos = posCmd
+        self.desPosRad = posCmd
         self.desVolt = arbFF
 
         if self.configSuccess:
@@ -135,12 +134,13 @@ class WrapperedSparkMax:
             arbFF (int, optional): _description_. Defaults to 0.
         """
 
-        self.desVel = radPerSec2RPM(velCmd)
+        self.desVelRadps = velCmd
+        desVelRPM = radPerSec2RPM(velCmd)
         self.desVolt = arbFF
 
         if self.configSuccess:
             err = self.closedLoopCtrl.setReference(
-                self.desVel,
+                desVelRPM,
                 SparkMax.ControlType.kVelocity,
                 ClosedLoopSlot.kSlot0,
                 arbFF,
@@ -153,24 +153,24 @@ class WrapperedSparkMax:
         if self.configSuccess:
             self.ctrl.setVoltage(outputVoltageVolts)
 
-    def getExternalAbsoluteEncoderRad(self):
+    def getMotorPositionRad(self):
         if(TimedRobot.isSimulation()):
             pos = self.simActPos
         else:
             if self.configSuccess:
-                pos = rev2Rad(self.externalAbsoluteEncoder.getPosition())
+                pos = rev2Rad(self.encoder.getPosition())
             else:
                 pos = 0
-        self.externalAbsoluteEncoderPos = pos
+        self.actPosRad = pos
         return pos
 
-    def getExternalAbsoluteEncoderVelocityRadPerSec(self):
+    def getMotorVelocityRadPerSec(self):
         if self.configSuccess:
-            vel = self.externalAbsoluteEncoder.getVelocity()
+            vel = self.encoder.getVelocity()
         else:
             vel = 0
-        self.actVel = vel
-        return RPM2RadPerSec(vel)
+        self.actVelRadps = RPM2RadPerSec(vel)
+        return self.actVelRadps
 
     def getAppliedOutput(self):
         self.actVolt = self.ctrl.getAppliedOutput() * 12
