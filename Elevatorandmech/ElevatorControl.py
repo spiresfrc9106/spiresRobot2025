@@ -17,8 +17,8 @@ from wpilib import Timer
 ELEV_GEARBOX_GEAR_RATIO = 5.0/1.0
 ELEV_SPOOL_RADIUS_IN = 1.92/2.0
 
-MAX_ELEV_VEL_INPS = 20
-MAX_ELEV_ACCEL_INPS2 = 4
+MAX_ELEV_VEL_INPS = 20 # Could be 80
+MAX_ELEV_ACCEL_INPS2 = 4 # Could be 160
 
 REEF_L1_HEIGHT_M = 0.5842
 REEF_L2_HEIGHT_M = 0.9398
@@ -56,10 +56,10 @@ class ElevatorControl(metaclass=Singleton):
         self.desTrapPState = TrapezoidProfile.State(self.heightGoalIn,0)
 
         # Elevator Motors
-        self.Rmotor = WrapperedSparkMax(ELEV_RM_CANID, "ElevatorMotorRight", brakeMode=False, currentLimitA=10)
+        self.Rmotor = WrapperedSparkMax(ELEV_RM_CANID, "ElevatorMotorRight", brakeMode=False, currentLimitA=20)
         rMotorIsInverted = True
         self.Rmotor.setInverted(rMotorIsInverted)
-        self.LMotor = WrapperedSparkMax(ELEV_LM_CANID, "ElevatorMotorLeft", brakeMode=False, currentLimitA=10)
+        self.LMotor = WrapperedSparkMax(ELEV_LM_CANID, "ElevatorMotorLeft", brakeMode=False, currentLimitA=20)
         self.LMotor.setFollow(ELEV_RM_CANID, True)
 
 
@@ -67,7 +67,8 @@ class ElevatorControl(metaclass=Singleton):
         self.kV = Calibration(name="Elevator kV", default=0.02, units="V/rps")
         self.kS = Calibration(name="Elevator kS", default=0.1, units="V")
         self.kG = Calibration(name="Elevator kG", default=0.25, units="V")
-        self.kP = Calibration(name="Elevator kP", default=0.05, units="V/rad error") # Per 0.001 seconds
+        self.kP = Calibration(name="Elevator kP", default=0.4, units="V/rad error") # Per 0.001 seconds
+        #self.kP = Calibration(name="Elevator kP", default=0.05, units="V/rad error") # Per 0.001 seconds
 
         # Set P gain on motor
         self.Rmotor.setPID(self.kP.get(), 0.0, 0.0)
@@ -107,15 +108,15 @@ class ElevatorControl(metaclass=Singleton):
 
         addLog("Elevator Goal Height", lambda: self.heightGoalIn, "in")
         addLog("Elevator Stopped", lambda: self.stopped, "bool")
-        addLog("Elevator Profiled actPosIn", lambda: self.actualPosIn, "in")
-        addLog("Elevator Profiled Height", lambda: self.actTrapPState.position, "in")
-        addLog("Elevator Profiled Velocity", lambda: self.actTrapPState.velocity, "inps")
-        addLog("Elevator Next Height", lambda: self.curTrapPState.position, "in")
-        addLog("Elevator Next Velocity", lambda: self.curTrapPState.velocity, "inps")
+        addLog("Elevator actPosIn", lambda: self.actualPosIn, "in")
+        addLog("Elevator act Height", lambda: self.actTrapPState.position, "in")
+        addLog("Elevator act Velocity", lambda: self.actTrapPState.velocity, "inps")
+        addLog("Elevator curProfile Height", lambda: self.curTrapPState.position, "in")
+        addLog("Elevator curProfile Velocity", lambda: self.curTrapPState.velocity, "inps")
         addLog("Elevator Desired Height", lambda: self.desTrapPState.position, "in")
         addLog("Elevator Desired Velocity", lambda: self.desTrapPState.velocity, "inps")
-        self.actProfiledAccLogger = getNowLogger("Elevator Profiled Acceleration", "inps2")
-        self.actDesiredAccLogger = getNowLogger("Elevator Desired Acceleration", "inps2")
+        self.actAccLogger = getNowLogger("Elevator act Acceleration", "inps2")
+        self.curTrapPAccLogger = getNowLogger("Elevator curProfile Acceleration", "inps2")
         addLog("Elevator Height Error", lambda: self.actTrapPState.position-self.curTrapPState.position, "in")
         addLog("Elevator Velocity Error", lambda: self.actTrapPState.velocity-self.curTrapPState.velocity, "in")
 
@@ -124,10 +125,12 @@ class ElevatorControl(metaclass=Singleton):
         self.curUnprofiledPosCmd = 0.0
         self.previousUpdateTimeS = None
 
+    def _offsetFreeRmotorRadToHeightIn(self, RmotorRad: float) -> float:
+        #return RmotorRad * 1/ELEV_GEARBOX_GEAR_RATIO * (ELEV_SPOOL_RADIUS_M) - self.relEncOffsetM
+        return  RmotorRad * (1/ELEV_GEARBOX_GEAR_RATIO) * ELEV_SPOOL_RADIUS_IN
 
     def _RmotorRadToHeightIn(self, RmotorRad: float) -> float:
-        #return RmotorRad * 1/ELEV_GEARBOX_GEAR_RATIO * (ELEV_SPOOL_RADIUS_M) - self.relEncOffsetM
-        return  (RmotorRad-self.relEncOffsetRad) * (1/ELEV_GEARBOX_GEAR_RATIO) * ELEV_SPOOL_RADIUS_IN
+        return  self._offsetFreeRmotorRadToHeightIn(RmotorRad-self.relEncOffsetRad)
 
     def _heightInToMotorRad(self, elevHeightIn: float) -> float:
         return (elevHeightIn / ELEV_SPOOL_RADIUS_IN) * ELEV_GEARBOX_GEAR_RATIO + self.relEncOffsetRad
@@ -141,7 +144,7 @@ class ElevatorControl(metaclass=Singleton):
 
 
     def getVelocityInps(self) -> float:
-        return self._RmotorRadToHeightIn(self.Rmotor.getExternalAbsoluteEncoderVelocityRadPerSec())
+        return self._offsetFreeRmotorRadToHeightIn(self.Rmotor.getExternalAbsoluteEncoderVelocityRadPerSec())
     
     #return the height of the elevator as measured by the absolute sensor in meters
     def _getAbsHeight(self) -> float:
@@ -163,7 +166,7 @@ class ElevatorControl(metaclass=Singleton):
         self.actualVelInps = self.getVelocityInps()
         if self.previousUpdateTimeS is not None:
             currentPeriodS = self.currentUpdateTimeS - self.previousUpdateTimeS
-            self.actProfiledAccLogger.logNow((self.actualVelInps-self.previousVelInps)/currentPeriodS)
+            self.actAccLogger.logNow((self.actualVelInps - self.previousVelInps) / currentPeriodS)
 
         self.actualPosIn = self.getHeightIn()
 
@@ -183,9 +186,10 @@ class ElevatorControl(metaclass=Singleton):
             self.Rmotor.setVoltage(self.kG.get() + manAdjVoltage)
             self.curTrapPState = TrapezoidProfile.State(self.actualPosIn, 0)
         else:
+            oldVelocityInps = self.curTrapPState.velocity
             self.curTrapPState = self.trapProfiler.calculate(0.02, self.curTrapPState, self.desTrapPState)
 
-            self.actDesiredAccLogger.logNow((self.desTrapPState.velocity-self.actTrapPState.velocity)/0.02)
+            self.curTrapPAccLogger.logNow((self.curTrapPState.velocity - oldVelocityInps) / 0.02)
 
             motorPosCmdRad = self._heightInToMotorRad(self.curTrapPState.position)
             motorVelCmdRadps = self._heightVelInpsToMotorVelRadps(self.curTrapPState.velocity)
@@ -197,6 +201,7 @@ class ElevatorControl(metaclass=Singleton):
             vFF = 0
 
             self.Rmotor.setPosCmd(motorPosCmdRad, vFF)
+
         self.previousVelInps = self.actualVelInps
         self.previousUpdateTimeS = self.currentUpdateTimeS
 
