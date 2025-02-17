@@ -36,7 +36,7 @@ class MotorControl(metaclass=Singleton):
             self.Rmotor.setVelCmd(0,0)
             self.Rmotor.setVoltage(0.0)
         self.motorRpmLogger.logNow(desiredSpeedRpm)
-        self.Rmotor.getMotorVelocityRadPerSec()
+        self.Rmotor.getExternalAbsoluteEncoderVelocityRadPerSec()
         self.Rmotor.getAppliedOutput()
 
 

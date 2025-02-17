@@ -60,11 +60,11 @@ class SwerveModuleControl:
             moduleName (str): Name Prefix for the module (IE, "FL", or "BR"). For logging purposes mostly
             wheelMotorCanID (int): CAN Id for the wheel motor for this module
             azmthMotorCanID (int): CAN Id for the azimuth motor for this module
-            azmthEncoderPortIdx (int): RIO Port for the azimuth absolute encoder for this module
-            azmthOffset (float): Mounting offset of the azimuth encoder in Radians.
+            azmthEncoderPortIdx (int): RIO Port for the azimuth absolute externalAbsoluteEncoder for this module
+            azmthOffset (float): Mounting offset of the azimuth externalAbsoluteEncoder in Radians.
             invertWheelMotor (bool): Inverts the drive direction of the wheel motor
             invertAzmthMotor (bool): Inverts the steering direction of the azimuth motor
-            invertAzmthEncoder (bool): Inverts the direction of the steering azimuth encoder
+            invertAzmthEncoder (bool): Inverts the direction of the steering azimuth externalAbsoluteEncoder
         """
         print(f"{moduleName} azmthOffset={rad2Deg(azmthOffset):7.1f} deg")
         self.wheelMotor = WrapperedSparkMax(
@@ -74,7 +74,7 @@ class SwerveModuleControl:
             azmthMotorCanID, moduleName + "_azmth", True
         )
 
-        # Note the azimuth encoder inversion should be fixed, based on the physical design of the encoder itself,
+        # Note the azimuth externalAbsoluteEncoder inversion should be fixed, based on the physical design of the externalAbsoluteEncoder itself,
         # plus the swerve module physical construction. It might need to be tweaked here though if we change 
         # module brands or sensor brands.
         self.azmthEnc = wrapperedSwerveDriveAzmthEncoder(
@@ -177,7 +177,7 @@ class SwerveModuleControl:
     def update(self):
         """Main update function, call every 20ms"""
 
-        # Read from the azimuth angle sensor (encoder)
+        # Read from the azimuth angle sensor (externalAbsoluteEncoder)
         self.azmthEnc.update()
 
         if TimedRobot.isReal():
@@ -185,10 +185,10 @@ class SwerveModuleControl:
             # Update this module's actual state with measurements from the sensors
             self.actualState.angle = Rotation2d(self.azmthEnc.getAngleRad())
             self.actualState.speed = dtMotorRotToLinear(
-                self.wheelMotor.getMotorVelocityRadPerSec()
+                self.wheelMotor.getExternalAbsoluteEncoderVelocityRadPerSec() # todo xyzzy Mike this confuses me
             )
             self.actualPosition.distance = dtMotorRotToLinear(
-                self.wheelMotor.getMotorPositionRad()
+                self.wheelMotor.getExternalAbsoluteEncoderRad() # todo xyzzy Mike this confuses me
             )
             self.actualPosition.angle = self.actualState.angle
 

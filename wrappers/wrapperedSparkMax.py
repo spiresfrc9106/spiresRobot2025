@@ -18,7 +18,7 @@ class WrapperedSparkMax:
     def __init__(self, canID, name, brakeMode=False, currentLimitA=40):
         self.ctrl = SparkMax(canID, SparkMax.MotorType.kBrushless)
         self.closedLoopCtrl = self.ctrl.getClosedLoopController()
-        self.encoder = self.ctrl.getEncoder()
+        self.externalAbsoluteEncoder = self.ctrl.getEncoder()
         self.name = name
         self.configSuccess = False
         self.disconFault = Fault(f"Spark Max {name} ID {canID} disconnected")
@@ -29,7 +29,7 @@ class WrapperedSparkMax:
         self.desPos = 0
         self.desVel = 0
         self.desVolt = 0
-        self.actPos = 0
+        self.externalAbsoluteEncoderPos = 0
         self.actVel = 0
         self.actVolt = 0
 
@@ -48,8 +48,9 @@ class WrapperedSparkMax:
         addLog(self.name + "_desPos", lambda: self.desPos, "rad")
         addLog(self.name + "_desVel", lambda: self.desVel, "RPM")
         addLog(self.name + "_actVolt", lambda: self.actVolt, "V")
-        addLog(self.name + "_actPos", lambda: self.actPos, "rad")
-        addLog(self.name + "_actVel", lambda: RPM2RadPerSec(self.encoder.getVelocity()), "RPM")
+        addLog(self.name + "_externalAbsoluteEncoderPos", lambda: self.externalAbsoluteEncoderPos, "rad")
+        addLog(self.name + "_encoderPos", lambda: self.externalAbsoluteEncoder.getPosition(), "tbd")
+        addLog(self.name + "_externalAbsoluteEncoderVel", lambda: RPM2RadPerSec(self.externalAbsoluteEncoder.getVelocity()), "RPM")
 
     def _sparkmax_config(self, retries, resetMode, persistMode):
         # Perform motor configuration, tracking errors and retrying until we have success
@@ -152,20 +153,20 @@ class WrapperedSparkMax:
         if self.configSuccess:
             self.ctrl.setVoltage(outputVoltageVolts)
 
-    def getMotorPositionRad(self):
+    def getExternalAbsoluteEncoderRad(self):
         if(TimedRobot.isSimulation()):
             pos = self.simActPos
         else:
             if self.configSuccess:
-                pos = rev2Rad(self.encoder.getPosition())
+                pos = rev2Rad(self.externalAbsoluteEncoder.getPosition())
             else:
                 pos = 0
-        self.actPos = pos
+        self.externalAbsoluteEncoderPos = pos
         return pos
 
-    def getMotorVelocityRadPerSec(self):
+    def getExternalAbsoluteEncoderVelocityRadPerSec(self):
         if self.configSuccess:
-            vel = self.encoder.getVelocity()
+            vel = self.externalAbsoluteEncoder.getVelocity()
         else:
             vel = 0
         self.actVel = vel

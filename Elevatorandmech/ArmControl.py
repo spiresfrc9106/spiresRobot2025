@@ -87,7 +87,7 @@ class ArmControl(metaclass=Singleton):
 
 
     def update(self):
-        self.actualPosDeg = 0 # TOOD replace this with a read of the absolute encoder.
+        self.actualPosDeg = 0 # TOOD replace this with a read of the absolute externalAbsoluteEncoder.
 
         # Update motor closed-loop calibration
         if(self.kP.isChanged()):

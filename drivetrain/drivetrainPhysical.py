@@ -108,15 +108,15 @@ MAX_ROTATE_ACCEL_RAD_PER_SEC_2 = (
 )  # 0-full time of 0.25 second - this is a guestaimate
 
 
-# Mechanical mounting offsets of the encoder & magnet within the shaft
+# Mechanical mounting offsets of the externalAbsoluteEncoder & magnet within the shaft
 # Must be updated whenever the module is reassembled
 # Procedure:
 # 0 - Put the robot up on blocks.
 # 1 - Reset all these values to 0, deploy code
-# 2 - Pull up dashboard with encoder readings (in radians)
+# 2 - Pull up dashboard with externalAbsoluteEncoder readings (in radians)
 # 3 - Using a square, twist the modules by hand until they are aligned with the robot's chassis
-# 4 - Read out the encoder readings for each module, put them here
-# 5 - Redeploy code, verify that the  encoder readings are correct as each module is manually rotated
+# 4 - Read out the externalAbsoluteEncoder readings for each module, put them here
+# 5 - Redeploy code, verify that the  externalAbsoluteEncoder readings are correct as each module is manually rotated
 
 
 if RobotIdentification().isSpiresRobot():
@@ -164,7 +164,7 @@ FR = 1
 BL = 2
 BR = 3
 
-# Function make a swerve module azimuth encoder reader object
+# Function make a swerve module azimuth externalAbsoluteEncoder reader object
 def wrapperedSwerveDriveAzmthEncoder(azmthEncoderPortIdx, moduleName, azmthOffsetRad, inverted):
     return WrapperedRevThroughBoreEncoder(
         port=azmthEncoderPortIdx,
