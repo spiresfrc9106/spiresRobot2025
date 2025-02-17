@@ -77,7 +77,7 @@ class ElevatorControl(metaclass=Singleton):
         self.maxAccelerationIps2 = Calibration(name="Elevator Max Accel", default=MAX_ELEV_ACCEL_INPS2, units="inps2")
         self.trapProfiler = TrapezoidProfile(TrapezoidProfile.Constraints(self.maxVelocityIps.get(), self.maxAccelerationIps2.get()))
         self.actTrapPState = self.trapProfiler.State()
-        self.nxtTrapPState = self.trapProfiler.State()
+        self.curTrapPState = self.trapProfiler.State()
         #go to wpilib online documentation to learn more about the trapezoid (very cool)
 
         self.actualPosIn = 0
@@ -107,14 +107,17 @@ class ElevatorControl(metaclass=Singleton):
 
         addLog("Elevator Goal Height", lambda: self.heightGoalIn, "in")
         addLog("Elevator Stopped", lambda: self.stopped, "bool")
+        addLog("Elevator Profiled actPosIn", lambda: self.actualPosIn, "in")
         addLog("Elevator Profiled Height", lambda: self.actTrapPState.position, "in")
         addLog("Elevator Profiled Velocity", lambda: self.actTrapPState.velocity, "inps")
-        addLog("Elevator Next Height", lambda: self.nxtTrapPState.position, "in")
-        addLog("Elevator Next Velocity", lambda: self.nxtTrapPState.velocity, "inps")
+        addLog("Elevator Next Height", lambda: self.curTrapPState.position, "in")
+        addLog("Elevator Next Velocity", lambda: self.curTrapPState.velocity, "inps")
         addLog("Elevator Desired Height", lambda: self.desTrapPState.position, "in")
         addLog("Elevator Desired Velocity", lambda: self.desTrapPState.velocity, "inps")
         self.actProfiledAccLogger = getNowLogger("Elevator Profiled Acceleration", "inps2")
         self.actDesiredAccLogger = getNowLogger("Elevator Desired Acceleration", "inps2")
+        addLog("Elevator Height Error", lambda: self.actTrapPState.position-self.curTrapPState.position, "in")
+        addLog("Elevator Velocity Error", lambda: self.actTrapPState.velocity-self.curTrapPState.velocity, "in")
 
 
         self.profiledPos = 0.0
@@ -164,7 +167,7 @@ class ElevatorControl(metaclass=Singleton):
 
         self.actualPosIn = self.getHeightIn()
 
-        self.actTrapPState = TrapezoidProfile.State(self.actualPosIn, 0)
+        self.actTrapPState = TrapezoidProfile.State(self.actualPosIn, self.actualVelInps)
 
         self.desTrapPState = TrapezoidProfile.State(self.heightGoalIn,0)
 
@@ -178,14 +181,14 @@ class ElevatorControl(metaclass=Singleton):
             manAdjVoltage = self.manAdjMaxVoltage.get() * self.manualAdjCmd
 
             self.Rmotor.setVoltage(self.kG.get() + manAdjVoltage)
-            self.nxtTrapPState = TrapezoidProfile.State(self.actualPosIn, 0)
+            self.curTrapPState = TrapezoidProfile.State(self.actualPosIn, 0)
         else:
-            self.nxtTrapPState = self.trapProfiler.calculate(0.02, self.actTrapPState, self.desTrapPState)
+            self.curTrapPState = self.trapProfiler.calculate(0.02, self.curTrapPState, self.desTrapPState)
 
             self.actDesiredAccLogger.logNow((self.desTrapPState.velocity-self.actTrapPState.velocity)/0.02)
 
-            motorPosCmdRad = self._heightInToMotorRad(self.nxtTrapPState.position)
-            motorVelCmdRadps = self._heightVelInpsToMotorVelRadps(self.nxtTrapPState.velocity)
+            motorPosCmdRad = self._heightInToMotorRad(self.curTrapPState.position)
+            motorVelCmdRadps = self._heightVelInpsToMotorVelRadps(self.curTrapPState.velocity)
 
             # set our feed forward to 0 at the start so we're not throwing extra voltage into the motor, then see if their feed forward calc makes sense
             #vFF = self.kV.get() * motorVelCmdRadps  + self.kS.get() * sign(motorVelCmdRadps) \
@@ -207,3 +210,6 @@ class ElevatorControl(metaclass=Singleton):
 
     def setManualAdjCmd(self, cmd:float) -> None:
         self.manualAdjCmd = cmd
+
+    def forceStartAtHeightZeroIn(self) -> None:
+        self.relEncOffsetRad = self.Rmotor.getExternalAbsoluteEncoderRad()

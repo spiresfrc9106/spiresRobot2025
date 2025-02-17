@@ -111,6 +111,8 @@ class MyRobot(wpilib.TimedRobot):
             self.driveTrain.poseEst._telemetry.setCurObstacles(self.autodrive.rfp.getObstacleStrengths())
         self.stt.mark("Telemetry")
         if robotDepConstants['HAS_ELEVATOR']:
+            if self.count == 1:
+                self.elev.forceStartAtHeightZeroIn()
             self.elev.update()
             self.stt.mark("Elevator")
         self.logger2.logNow(nt._now())
