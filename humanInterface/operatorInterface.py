@@ -10,6 +10,7 @@ from utils.signalLogging import addLog
 
 
 class OperatorInterface:
+    #add input on a joystick so one joystick will control elev and one arm
     """Class to gather input from the driver of the robot"""
 
     def __init__(self):
