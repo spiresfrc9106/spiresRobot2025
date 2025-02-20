@@ -28,7 +28,7 @@ from utils.powerMonitor import PowerMonitor
 
 from webserver.webserver import Webserver
 from AutoSequencerV2.autoSequencer import AutoSequencer
-from Elevatorandmech.RobotPoser import SystemIdentification
+from Elevatorandmech.RobotPoser import RobotPoser, SignalDirector
 
 
 # TODO Refactor this so that it is more DRY.
@@ -44,7 +44,7 @@ class MyRobot(wpilib.TimedRobot):
         # pylint: disable=attribute-defined-outside-init
         remoteRIODebugSupport()
 
-        self.Noah = SystemIdentification()
+        self.Noah = RobotPoser()
 
         self.crashLogger = CrashLogger()
         wpilib.LiveWindow.disableAllTelemetry()
