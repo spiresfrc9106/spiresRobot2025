@@ -28,7 +28,7 @@ from utils.powerMonitor import PowerMonitor
 
 from webserver.webserver import Webserver
 from AutoSequencerV2.autoSequencer import AutoSequencer
-from Elevatorandmech.SystemIdentification import SystemIdentification
+from Elevatorandmech.RobotPoser import SystemIdentification
 
 
 # TODO Refactor this so that it is more DRY.
