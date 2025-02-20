@@ -16,11 +16,6 @@ from rev import SparkLowLevel
 from wpimath.trajectory import TrapezoidProfile
 from wpilib import Timer
 
-setup = None
-if setup == "modifiedElev":
-    ARM_GEARBOX_GEAR_RATIO = 5.0/1.0
-elif setup == "robotArm":
-    ARM_GEARBOX_GEAR_RATIO = 50.0/1.0
 
 MAX_ARM_VEL_DEGPS = 20 # Could be 80
 MAX_ARM_ACCEL_DEGPS2 = 4 # Could be 160
