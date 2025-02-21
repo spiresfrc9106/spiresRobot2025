@@ -34,22 +34,24 @@ class OperatorInterface:
         # value of contoller buttons
 
         if self.ctrl.isConnected():
-            # Convert from  joystic sign/axis conventions to robot conventions
+            # Convert from  joystick sign/axis conventions to robot conventions
             vYJoyRaw = self.ctrl.getLeftY() * -1
 
             # deadband
             vYJoyWithDeadband = applyDeadband(vYJoyRaw, 0.15)
 
             self.elevatorPosYCmd = vYJoyWithDeadband
-            print(vYJoyWithDeadband)
+
 
 
         else:
             # If the joystick is unplugged, pick safe-state commands and raise a fault
             self.elevatorPosYCmd = 0.0
 
+        #shuts off control of joysticks when x is pressed
         if self.ctrl.getYButton():
-            print("HI")
+            self.elevatorPosYCmd = 0
+
 
 
 
