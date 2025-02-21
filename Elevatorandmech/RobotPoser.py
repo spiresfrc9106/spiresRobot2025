@@ -1,8 +1,8 @@
-from humanInterface.driverInterface import DriverInterface
-from humanInterface.operatorInterface import OperatorInterface
-from Elevatorandmech.ArmControl import ArmControl
-from Elevatorandmech.ElevatorControl import ElevatorControl
-from drivetrain.drivetrainControl import DrivetrainControl
+# from humanInterface.driverInterface import DriverInterface
+# from humanInterface.operatorInterface import OperatorInterface
+# from Elevatorandmech.ArmControl import ArmControl
+# from Elevatorandmech.ElevatorControl import ElevatorControl
+# from drivetrain.drivetrainControl import DrivetrainControl
 
 """
 NOAH TASK:
@@ -35,10 +35,17 @@ class SignalDirector:
     def update(self):
         pass
 
+
 class RobotPoser:
     def __init__(self):
         pass
 
     def update(self):
+        # x = receive from coral station pose
+        # y = plunge
+        # b = place at L4
+        # A = place at L3
+        # RightTrigger = place at L2
+        # LeftTrigger = place at L1
         pass
 

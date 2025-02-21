@@ -28,7 +28,6 @@ from utils.powerMonitor import PowerMonitor
 
 from webserver.webserver import Webserver
 from AutoSequencerV2.autoSequencer import AutoSequencer
-from Elevatorandmech.RobotPoser import RobotPoser, SignalDirector
 
 
 # TODO Refactor this so that it is more DRY.
@@ -44,7 +43,6 @@ class MyRobot(wpilib.TimedRobot):
         # pylint: disable=attribute-defined-outside-init
         remoteRIODebugSupport()
 
-        self.Noah = RobotPoser()
 
         self.crashLogger = CrashLogger()
         wpilib.LiveWindow.disableAllTelemetry()
@@ -176,8 +174,6 @@ class MyRobot(wpilib.TimedRobot):
     def teleopPeriodic(self):
         # TODO - this is technically one loop delayed, which could induce lag
         # Probably not noticeable, but should be corrected.
-
-        self.Noah.update()
 
 
         if robotDepConstants['HAS_DRIVETRAIN']:

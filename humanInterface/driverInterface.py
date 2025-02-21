@@ -89,6 +89,7 @@ class DriverInterface:
 
             self.connectedFault.setNoFault()
 
+
         else:
             # If the joystick is unplugged, pick safe-state commands and raise a fault
             self.velXCmd = 0.0
@@ -99,6 +100,9 @@ class DriverInterface:
             self.autoDriveToPickup = False
             self.createDebugObstacle = False
             self.connectedFault.setFaulted()
+
+        if self.ctrl.getXButton():
+            pass
 
 
 

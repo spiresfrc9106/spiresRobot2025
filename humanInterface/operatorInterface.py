@@ -41,11 +41,15 @@ class OperatorInterface:
             vYJoyWithDeadband = applyDeadband(vYJoyRaw, 0.15)
 
             self.elevatorPosYCmd = vYJoyWithDeadband
+            print(vYJoyWithDeadband)
 
 
         else:
             # If the joystick is unplugged, pick safe-state commands and raise a fault
             self.elevatorPosYCmd = 0.0
+
+        if self.ctrl.getYButton():
+            print("HI")
 
 
 
