@@ -31,10 +31,11 @@ ELEV_LM_CANID = 21
 ELEV_TOF_CANID = 22
 
 class ElevatorStates(Enum):
-    ELEVATOR_INITIALIZING = 0
-    ELEVATOR_STOPPED = 1
-    ELEVATOR_CMD = 2
-    ELEVATOR_NO_CMD = -1
+    UNINITIALIZED = 0
+    INIT_GOING_DOWN = 1
+    FOUND_BOTTOM = 2
+    OPERATING = 3
+    NO_CMD = -1
 
 
 class ElevatorControl(metaclass=Singleton):
@@ -56,9 +57,9 @@ class ElevatorControl(metaclass=Singleton):
         self.desTrapPState = TrapezoidProfile.State(self.heightGoalIn,0)
 
         # Elevator Motors
-        self.Rmotor = WrapperedSparkMax(ELEV_RM_CANID, "ElevatorMotorRight", brakeMode=True, currentLimitA=10)
-        self.LMotor = WrapperedSparkMax(ELEV_LM_CANID, "ElevatorMotorLeft", brakeMode=True, currentLimitA=10)
-        self.LMotor.setFollow(ELEV_RM_CANID, True)
+        self.rMotor = WrapperedSparkMax(ELEV_RM_CANID, "ElevatorMotorRight", brakeMode=True, currentLimitA=10)
+        self.lMotor = WrapperedSparkMax(ELEV_LM_CANID, "ElevatorMotorLeft", brakeMode=True, currentLimitA=10)
+        self.lMotor.setFollow(ELEV_RM_CANID, True)
 
 
         # FF and proportional gain constants
@@ -68,7 +69,7 @@ class ElevatorControl(metaclass=Singleton):
         self.kP = Calibration(name="Elevator kP", default=0.05, units="V/rad error") # Per 0.001 seconds
 
         # Set P gain on motor
-        self.Rmotor.setPID(self.kP.get(), 0.0, 0.0)
+        self.rMotor.setPID(self.kP.get(), 0.0, 0.0)
 
         # Profiler
         self.maxV = Calibration(name="Elevator Max Vel", default=MAX_ELEV_VEL_INPS, units="inps")
@@ -109,6 +110,13 @@ class ElevatorControl(metaclass=Singleton):
         self.profiledPos = 0.0
         self.curUnprofiledPosCmd = 0.0
 
+        self.elevatorState = ElevatorStates.UNINITIALIZED
+
+        self.HeightGoalIn = 100000
+
+        self.timeWhenChangeS = 0
+
+        self.lowestHeightIn = 10000
 
     def _RmotorRadToHeightIn(self, RmotorRad: float) -> float:
         #return RmotorRad * 1/ELEV_GEARBOX_GEAR_RATIO * (ELEV_SPOOL_RADIUS_M) - self.relEncOffsetM
@@ -121,7 +129,7 @@ class ElevatorControl(metaclass=Singleton):
         return (elevVelInps / ELEV_SPOOL_RADIUS_IN) * ELEV_GEARBOX_GEAR_RATIO
     
     def getHeightIn(self) -> float:
-        return self._RmotorRadToHeightIn(self.Rmotor.getMotorPositionRad())
+        return self._RmotorRadToHeightIn(self.rMotor.getMotorPositionRad())
     
     #return the height of the elevator as measured by the absolute sensor in meters
     def _getAbsHeight(self) -> float:
@@ -138,35 +146,92 @@ class ElevatorControl(metaclass=Singleton):
         # New Offset = real height - what height says?? 
         self.relEncOffsetM = self._getAbsHeight() - self.getHeightIn()
 
+    UNINITIALIZED = 0
+    INIT_GOING_DOWN = 1
+    FOUND_BOTTOM = 2
+    OPERATING = 3
+    NO_CMD = -1
     def update(self) -> None:
+        match self.elevatorState:
+            case ElevatorStates.UNINITIALIZED:
+                self._updateUninitialized()
+            case ElevatorStates.INIT_GOING_DOWN:
+                self._updateInitGoingDown()
+            case ElevatorStates.FOUND_BOTTOM:
+                self._updateFoundBottom()
+            case ElevatorStates.OPERATING:
+                self._updateOperating()
+            case ElevatorStates.NO_CMD:
+                pass
+            case _:
+                pass
+
+    def _updateUninitialized(self) -> None:
+        self.startTime = Timer.getFPGATimestamp()
+        self.elevatorState = ElevatorStates.INIT_GOING_DOWN
+        positionRad = self.rMotor.getMotorPositionRad()
+        goalPositionRad = positionRad - self._heightInToMotorRad(1000)
+        self.desTrapPState = TrapezoidProfile.State(goalPositionRad,0)
+        self._setMotorPosAndFF()
+        self.lowestHeightIn = 100000
+
+    def _updateInitGoingDown(self) -> None:
+        # in going down, check to see if how long since we last moved, if we haven't moved in 1 seocond stop
+            # make a new self.lowestHeightIn
+            # set to 100,000 in when first start
+            # make var of time since last change of height, use getFPGATimestamp whenever it gets lower to get the time
+            # when lowest height hasn't changed for 1s (current time - last changed time >= 1s) then switch to found bottom state
+        positionRad = self.rMotor.getMotorPositionRad()
+        curPosIn = self.getHeightIn()
+
+        if curPosIn < self.lowestHeightIn:
+            self.lowestHeightIn = curPosIn
+            self.timeWhenChangeS = Timer.getFPGATimestamp()
+            # change the time we last moved in seconds
+        else:
+            # because we didnt go any lower, maybe we have been at the lowest height for a second
+            nowS = Timer.getFPGATimestamp()
+            if nowS - 1 >= self.timeWhenChangeS:
+                self.elevatorState = ElevatorStates.FOUND_BOTTOM
+
+        pass
+
+    def _updateFoundBottom(self) -> None:
+        #
+
+    def _setMotorPosAndFF(self) -> None:
+        self.curTrapPState = self.trapProfiler.calculate(0.02, self.curTrapPState, self.desTrapPState)
+
+        motorPosCmdRad = self._heightInToMotorRad(self.curTrapPState.position)
+        motorVelCmdRadps = self._heightVelInpsToMotorVelRadps(self.curTrapPState.velocity)
+
+        # set our feed forward to 0 at the start so we're not throwing extra voltage into the motor, then see if their feed forward calc makes sense
+        # vFF = self.kV.get() * motorVelCmdRadps  + self.kS.get() * sign(motorVelCmdRadps) \
+        #    + self.kG.get()
+
+        vFF = 0
+
+        self.rMotor.setPosCmd(motorPosCmdRad, vFF)
+
+    def _updateOperating(self) -> None:
         self.actualPosIn = self.getHeightIn()
 
         self.desTrapPState = TrapezoidProfile.State(self.heightGoalIn,0)
 
         # Update motor closed-loop calibration
         if self.kP.isChanged():
-            self.Rmotor.setPID(self.kP.get(), 0.0, 0.0)
+            self.rMotor.setPID(self.kP.get(), 0.0, 0.0)
 
         if self.stopped:
             # Handle stopped by just holding mechanism in place with gravity offset, no closed loop.
             # TODO - do we need a more gentle stop here?
             manAdjVoltage = self.manAdjMaxVoltage.get() * self.manualAdjCmd
 
-            self.Rmotor.setVoltage(self.kG.get() + manAdjVoltage)
+            self.rMotor.setVoltage(self.kG.get() + manAdjVoltage)
             self.curTrapPState = TrapezoidProfile.State(self.actualPosIn,0)
         else:
-            self.curTrapPState = self.trapProfiler.calculate(0.02, self.curTrapPState, self.desTrapPState)
+            self._setMotorPosAndFF()
 
-            motorPosCmdRad = self._heightInToMotorRad(self.curTrapPState.position)
-            motorVelCmdRadps = self._heightVelInpsToMotorVelRadps(self.curTrapPState.velocity)
-
-            # set our feed forward to 0 at the start so we're not throwing extra voltage into the motor, then see if their feed forward calc makes sense
-            #vFF = self.kV.get() * motorVelCmdRadps  + self.kS.get() * sign(motorVelCmdRadps) \
-            #    + self.kG.get()
-
-            vFF = 0
-
-            self.Rmotor.setPosCmd(motorPosCmdRad, vFF)
 
     # API to set current height goal
     def setHeightGoal(self, heightGoalIn:float) -> None:
