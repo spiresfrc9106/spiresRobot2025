@@ -19,7 +19,9 @@ know to route the signal to only the buttons, Joysticks should not work when but
 version of this might be that the joysticks control will be heavily diminished, is the signal router class a 
 subclass of the poser might establish hierarchy between each, each of these objects have update class that will 
 be called in teleop, classes will also have an update that will be called it autonomous, 
+
 --
+
 RobotPoser: Take an operator interface object, some buttons on the operator interface will cause the arm 
 and elevator to go into different poses, poses are Receive coral, complete a plunge, final poses you're 
 gonna get to are receive from coral, complete a plunge operation on coral, *assume driving in complete plunge pose*, 
@@ -42,20 +44,27 @@ controllerStates = {
 
 class SignalDirector(metaclass=Singleton):
     def __init__(self):
-        self.controllerState = controllerStates["PositionControl"]
+        self.controllerState = controllerStates["VelocityControl"]
+        self.defaultJoystickMovement = "VelocityControl"
 
     def update(self):
+        print(self.defaultJoystickMovement)
         pass
 
     def disableJoySticks(self):
         return 0
 
     def setControllerState(self, state):
+        if state == "VelocityControl" or state == "PositionControl":
+            self.defaultJoystickMovement = state
         self.controllerState = controllerStates[state]
+
 
     def getControllerState(self):
         return self.controllerState
 
+    def getDefaultJoystickMovement(self):
+        return self.defaultJoystickMovement
 
 class RobotPoser:
     def __init__(self):
@@ -69,4 +78,8 @@ class RobotPoser:
         # A = place at L3
         # b = place at L4
         pass
+
+    def getPlungePoseElevator(self):
+        return 1
+
 

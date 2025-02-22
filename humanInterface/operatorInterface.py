@@ -10,7 +10,7 @@ MAX_ROTATE_SPEED_RAD_PER_SEC,MAX_TRANSLATE_ACCEL_MPS2,MAX_ROTATE_ACCEL_RAD_PER_S
 from utils.allianceTransformUtils import onRed
 from utils.faults import Fault
 from utils.signalLogging import addLog
-from Elevatorandmech.RobotPoser import SignalDirector
+from Elevatorandmech.RobotPoser import SignalDirector, RobotPoser
 from Elevatorandmech.ElevatorControl import ElevatorControl
 
 
@@ -25,6 +25,7 @@ class OperatorInterface:
 
         #Noah
         self.signalDirector = SignalDirector()
+        self.robotPoser = RobotPoser()
         self.currentState = self.signalDirector.getControllerState()
 
         self.elevatorControl = ElevatorControl()
@@ -61,36 +62,51 @@ class OperatorInterface:
             self.elevatorPosYCmd = 0.0
 
         #--------------------------------------------------------------------------------------------------
-        #Noah
+        #Noahw
 
-        #shuts off control of joysticks when x is pressed
-        if self.ctrl.getYButton():
-            self.elevatorPosYCmd = self.signalDirector.disableJoySticks()
+        #Defaults to Velocity movement state or position movement state if no buttons are pressed
+        self.signalDirector.setControllerState(self.signalDirector.getDefaultJoystickMovement())
 
-        #Velocity Mode
-        if self.ctrl.getRightBumper():
-            self.signalDirector.setControllerState("VelocityControl")
 
-        if self.ctrl.getLeftBumper():
+        #Position Mode
+        if self.ctrl.getLeftBumperPressed():
             self.signalDirector.setControllerState("PositionControl")
 
+        #Velocity Mode
+        if self.ctrl.getRightBumperPressed():
+            self.signalDirector.setControllerState("VelocityControl")
 
+        #Plunge
+        if self.ctrl.getYButton():
+            self.signalDirector.setControllerState("Plunge")
 
 
 
 
     def getDesElevatorPosIn(self)->float:
         elevatorRangeIn = 6.0
+        elevatorCurrentHeight = self.elevatorControl.getHeightIn()
+
+        #Disables Joysticks If not in position or velocity movement states
+        if not self.currentState == 0 and not self.currentState == 1:
+            self.elevatorPosYCmd = self.signalDirector.disableJoySticks()
 
 
         if self.currentState == 0:
+
             return (elevatorRangeIn/2.0) * (1.0 + self.elevatorPosYCmd)
+
         elif self.currentState == 1:
-            elevatorCurrentHeight = self.elevatorControl.getHeightIn()
+
             if self.elevatorPosYCmd > 0:
                 return elevatorCurrentHeight + 0.5
             elif self.elevatorPosYCmd < 0:
                 return elevatorCurrentHeight - 0.5
             else:
                 return elevatorCurrentHeight
+        elif self.currentState == 2:
+            pass
+        elif self.currentState == 3:
+            return RobotPoser.getPlungeElevatorHeight()
+
 
