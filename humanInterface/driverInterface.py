@@ -101,9 +101,6 @@ class DriverInterface:
             self.createDebugObstacle = False
             self.connectedFault.setFaulted()
 
-        if self.ctrl.getXButton():
-            pass
-
 
 
     def getMotorTestPowerRpm(self):
