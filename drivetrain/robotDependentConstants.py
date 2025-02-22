@@ -1,5 +1,7 @@
 from wpimath.system.plant import DCMotor
 from utils.robotIdentification import RobotTypes
+from utils.signalLogging import addLog
+from utils.robotIdentification import RobotIdentification
 class RobotDependentConstants:
     def __init__(self):
         self.robotConstants = {
@@ -20,6 +22,7 @@ class RobotDependentConstants:
                 "HAS_DRIVETRAIN": True,
                 "HAS_ELEVATOR": False,
                 "HAS_MOTOR_TEST": False,
+                "HAS_ARM": False,
             },
             RobotTypes.Spires2024: {
                 # "SWERVE_WHEEL_GEAR_RATIO": 5.50, # Base Low
@@ -38,6 +41,7 @@ class RobotDependentConstants:
                 "HAS_DRIVETRAIN": True,
                 "HAS_ELEVATOR": True,
                 "HAS_MOTOR_TEST": False,
+                "HAS_ARM": False,
             },
             RobotTypes.SpiresTestBoard: {
                 # "SWERVE_WHEEL_GEAR_RATIO": 5.50, # Base Low
@@ -56,6 +60,8 @@ class RobotDependentConstants:
                 "HAS_DRIVETRAIN": False,
                 "HAS_ELEVATOR": True,
                 "HAS_MOTOR_TEST": False,
+                "HAS_ARM": True,
+                "ARM_GEARBOX_GEAR_RATIO": 5.0/1.0,
             },
             RobotTypes.SpiresRoboRioV1: {
                 # "SWERVE_WHEEL_GEAR_RATIO": 5.50, # Base Low
@@ -74,6 +80,7 @@ class RobotDependentConstants:
                 "HAS_DRIVETRAIN": False,
                 "HAS_ELEVATOR": False,
                 "HAS_MOTOR_TEST": False,
+                "HAS_ARM": False,
             },
         }
 

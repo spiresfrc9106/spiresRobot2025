@@ -21,6 +21,7 @@ class OperatorInterface:
 
         # Drivetrain motion commands
         self.elevatorPosYCmd = 0
+        self.armPosYCmd = 0
 
         # Driver motion rate limiters - enforce smoother driving
         #self.velXSlewRateLimiter = SlewRateLimiter(rateLimit=MAX_TRANSLATE_ACCEL_MPS2)
@@ -29,28 +30,35 @@ class OperatorInterface:
 
         # Logging
         addLog("OI Elevator Pos Cmd", lambda: self.elevatorPosYCmd, "frac")
+        addLog("OI Arm Pos Cmd", lambda: self.armPosYCmd, "frac")
 
 
     def update(self):
-        # value of contoller buttons
+        # value of controller buttons
 
         if self.ctrl.isConnected():
-            # Convert from  joystic sign/axis conventions to robot conventions
+            # Convert from  joystick sign/axis conventions to robot conventions
             vYJoyRaw = self.ctrl.getLeftY() * -1
+            vYJoyRaw2 = self.ctrl.getRightY() * -1
 
             # deadband
             vYJoyWithDeadband = applyDeadband(vYJoyRaw, 0.15)
+            vYJoy2WithDeadband = applyDeadband(vYJoyRaw2, 0.15)
 
             self.elevatorPosYCmd = vYJoyWithDeadband
+            self.armPosYCmd = vYJoy2WithDeadband
 
 
         else:
             # If the joystick is unplugged, pick safe-state commands and raise a fault
             self.elevatorPosYCmd = 0.0
-
+            self.armPosYCmd = 0.0
 
 
 
     def getDesElevatorPosIn(self)->float:
         elevatorRangeIn = 6.0
         return (elevatorRangeIn/2.0) * (1.0 + self.elevatorPosYCmd)
+
+    def getDesArmAngleDeg(self)->float:
+        return 180.0 * self.armPosYCmd

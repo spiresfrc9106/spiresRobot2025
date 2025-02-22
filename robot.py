@@ -5,7 +5,7 @@ import ntcore as nt
 from wpimath.geometry import Translation2d, Pose2d, Rotation2d
 from dashboard import Dashboard
 from Elevatorandmech.ElevatorControl import ElevatorControl
-from Elevatorandmech.ArmControl import ArmControl
+from Elevatorandmech.NewArmControl import ArmControl
 from testingMotors.motorCtrl import MotorControl
 from drivetrain.controlStrategies.autoDrive import AutoDrive
 from drivetrain.controlStrategies.trajectory import Trajectory
@@ -51,6 +51,8 @@ class MyRobot(wpilib.TimedRobot):
             self.driveTrain = DrivetrainControl()
         if robotDepConstants['HAS_ELEVATOR']:
             self.elev= ElevatorControl()
+        if robotDepConstants['HAS_ARM']:
+            self.arm= ArmControl()
 
         self.autodrive = AutoDrive()
 
@@ -150,6 +152,10 @@ class MyRobot(wpilib.TimedRobot):
             self.elev.update()
             self.stt.mark("Elevator-auto")
 
+        if robotDepConstants['HAS_ARM']:
+            self.arm.update()
+            self.stt.mark("Arm-auto")
+
 
     def autonomousExit(self):
         self.autoSequencer.end()
@@ -209,6 +215,11 @@ class MyRobot(wpilib.TimedRobot):
             #    self.elev.forceStartAtHeightZeroIn()
             self.elev.update()
             self.stt.mark("Elevator-teleop")
+
+        if robotDepConstants['HAS_ARM']:
+            self.arm.setAngleGoal(self.oInt.getDesArmAngleDeg())
+            self.arm.update()
+            self.stt.mark("Arm-teleop")
 
         # No trajectory in Teleop
         Trajectory().setCmd(None)
