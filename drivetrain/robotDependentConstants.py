@@ -11,7 +11,7 @@ class RobotDependentConstants:
                 "SWERVE_WHEEL_MAX_SPEED_RPS": DCMotor.NEO(1).freeSpeed,
                 "WIDTH": 16.5,
                 "LENGTH": 26.5,
-                "MASS_LBS": 60,
+                "MASS_LBS": 32, #changed because coach jeremy lifted the robot and felt it was that
                 "FL_OFFSET_DEG": 169.2+90+180,
                 "FR_OFFSET_DEG": -49.7,
                 "BL_OFFSET_DEG": -56.2+180,

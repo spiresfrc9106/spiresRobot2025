@@ -9,6 +9,7 @@ from drivetrain.drivetrainPhysical import (
     ROBOT_TO_LEFT_CAM,
     ROBOT_TO_RIGHT_CAM,
     ROBOT_TO_FRONT_CAM,
+    ROBOT_TO_LIME_1,
 )
 from drivetrain.poseEstimation.drivetrainPoseTelemetry import DrivetrainPoseTelemetry
 from utils.faults import Fault
@@ -61,7 +62,7 @@ class DrivetrainPoseEstimator:
             WrapperedPoseEstPhotonCamera("LEFT_CAM", ROBOT_TO_LEFT_CAM),
             WrapperedPoseEstPhotonCamera("RIGHT_CAM", ROBOT_TO_RIGHT_CAM),
             WrapperedPoseEstPhotonCamera("FRONT_CAM", ROBOT_TO_FRONT_CAM),
-            WrapperedPoseEstLimelight("limelight", ROBOT_TO_FRONT_CAM) #limelight-three
+            WrapperedPoseEstLimelight("limelight", ROBOT_TO_LIME_1) #limelight-three
         ]
         # don't include "_"
         self.posEstLogs = [

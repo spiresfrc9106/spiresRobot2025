@@ -19,10 +19,8 @@ class YTestForPosition:
         addLog(self.t_name, lambda: self.t_value, "")
 
     def update(self, position: Pose2d):
-        print(f"attempting to log pos: {position}")
-        print(position.rotation().)
-        print(position.translation())
-        print(position.X())
-        print(position.Y())
+        self.x_value = position.X()
+        self.y_value = position.Y()
+        self.t_value = position.rotation().radians()
 
 

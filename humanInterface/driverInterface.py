@@ -7,6 +7,7 @@ MAX_ROTATE_SPEED_RAD_PER_SEC,MAX_TRANSLATE_ACCEL_MPS2,MAX_ROTATE_ACCEL_RAD_PER_S
 from utils.allianceTransformUtils import onRed
 from utils.faults import Fault
 from utils.signalLogging import addLog
+from drivetrain.drivetrainControl import DrivetrainControl
 #from utils.signalLogging import addLog
 
 
@@ -39,10 +40,20 @@ class DriverInterface:
 
         self.processedStrafe = 0
         self.processedRotate = 0
-
+        self.tempStdDevX = 0
+        self.tempStdDevY = 0
+        self.tempStdDevT = 0
+        self.allXMeasures = []
+        self.allYMeasures = []
+        self.allTMeasures = []
+        self.drivetrainCtrl = DrivetrainControl()
+        self.sd_record = 0
 
         addLog("ytest_speed_strafe_level", lambda: self.processedStrafe, "")
         addLog("ytest_speed_rotate_level", lambda: self.processedRotate, "")
+        addLog("ytest_standard_dev_x", lambda: self.tempStdDevX, "")
+        addLog("ytest_standard_dev_y", lambda: self.tempStdDevY, "")
+        addLog("ytest_standard_dev_t", lambda: self.tempStdDevT, "")
 
         # Logging
         #addLog("DI FwdRev Cmd", lambda: self.velXCmd, "mps")
@@ -85,13 +96,58 @@ class DriverInterface:
             self.velYCmd = self.velYSlewRateLimiter.calculate(velCmdYRaw)
             self.velTCmd = self.velTSlewRateLimiter.calculate(velCmdRotRaw)
 
-            self.gyroResetCmd = self.ctrl.getAButton()
+            self.gyroResetCmd = False
 
-            self.autoDriveToSpeaker = self.ctrl.getBButton()
-            self.autoDriveToPickup = self.ctrl.getXButton()
-            self.createDebugObstacle = self.ctrl.getYButtonPressed()
+            self.autoDriveToSpeaker = False
+            self.autoDriveToPickup = False
+            self.createDebugObstacle = False
 
             self.connectedFault.setNoFault()
+
+            what = 0
+            if self.ctrl.getXButton():
+                what = 4
+            if self.ctrl.getAButton():
+                what = 3
+            if self.ctrl.getYButton():
+                what = 2
+            if self.ctrl.getBButton():
+                what = 1
+
+            #locations would go here...
+
+            if what>0:
+                posEst = self.drivetrainCtrl.poseEst.posEstLogs[3]
+                if self.sd_record==0: #turning on
+                    self.allXMeasures = []
+                    self.allYMeasures = []
+                    self.allTMeasures = []
+
+                og_x = 3.65760732 #we're using sig figs for this hahaha
+                og_y = 4.02590805
+                rate_x = 0.918765625
+                real_x = og_x - (rate_x * what) #order of ops but i don't trust python
+                real_y = og_y
+                real_t = 0
+
+                if posEst.x_value != 0:
+                    self.allXMeasures.append(pow(posEst.x_value-real_x, 2))
+                if posEst.y_value != 0:
+                    self.allYMeasures.append(pow(posEst.y_value-real_y, 2))
+                if posEst.t_value != 0:
+                    self.allTMeasures.append(pow(posEst.t_value-real_t, 2))
+
+                self.sd_record = self.sd_record + 1
+            else:
+                if self.sd_record>0: #turning off
+                    self.tempStdDevX = pow(sum(self.allXMeasures)/(len(self.allXMeasures)-1), 0.5)
+                    self.tempStdDevY = pow(sum(self.allYMeasures)/(len(self.allYMeasures)-1), 0.5)
+                    self.tempStdDevT = pow(sum(self.allTMeasures)/(len(self.allTMeasures)-1), 0.5)
+                    # sd (sample) = sqrt(sum((x-m)^2)/(n-1))
+
+                self.sd_record = 0
+
+
 
         else:
             # If the joystick is unplugged, pick safe-state commands and raise a fault
