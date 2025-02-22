@@ -2,7 +2,7 @@
 
 # It is definitely buggy and untested, but it gives us a great framework on how to control an elevator.
 
-from enum import Enum
+from enum import IntEnum
 from playingwithfusion import TimeOfFlight
 from utils.calibration import Calibration
 from utils.units import sign
@@ -79,7 +79,6 @@ class ElevatorControl(metaclass=Singleton):
         self.searchMaxVelocityIps = Calibration(name="Elevator Max Vel", default=4, units="inps")
         self.searchMaxAccelerationIps2 = Calibration(name="Elevator Max Accel", default=4, units="inps2")
 
-
         self.trapProfiler = TrapezoidProfile(TrapezoidProfile.Constraints(self.maxVelocityIps.get(), self.maxAccelerationIps2.get()))
         self.actTrapPState = self.trapProfiler.State()
         self.curTrapPState = self.trapProfiler.State()
@@ -126,7 +125,7 @@ class ElevatorControl(metaclass=Singleton):
 
         self.profiledPos = 0.0
         self.curUnprofiledPosCmd = 0.0
-        self.previousUpdateTimeS = None
+        self.previousUpdateTimeS = None  # TOOD See if Michael needs this
 
     def _offsetFreeRmotorRadToHeightIn(self, RmotorRad: float) -> float:
         return  RmotorRad * (1/ELEV_GEARBOX_GEAR_RATIO) * ELEV_SPOOL_RADIUS_IN
