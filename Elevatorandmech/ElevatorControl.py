@@ -66,7 +66,7 @@ class ElevatorControl(metaclass=Singleton):
         self.kV = Calibration(name="Elevator kV", default=0.02, units="V/rps")
         self.kS = Calibration(name="Elevator kS", default=0.1, units="V")
         self.kG = Calibration(name="Elevator kG", default=0.25, units="V")
-        self.kP = Calibration(name="Elevator kP", default=0.05, units="V/rad error") # Per 0.001 seconds
+        self.kP = Calibration(name="Elevator kP", default=0.4, units="V/rad error") # Per 0.001 seconds
 
         # Set P gain on motor
         self.rMotor.setPID(self.kP.get(), 0.0, 0.0)
