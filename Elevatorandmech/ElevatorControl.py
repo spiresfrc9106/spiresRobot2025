@@ -185,9 +185,8 @@ class ElevatorControl(metaclass=Singleton):
     def _updateUninitialized(self) -> None:
         self.startTime = Timer.getFPGATimestamp()
         self._changeState(ElevatorStates.INIT_GOING_DOWN)
-        positionRad = self.rMotor.getMotorPositionRad()
-        goalPositionRad = positionRad - self._heightInToMotorRad(1000)
-        self.desTrapPState = TrapezoidProfile.State(goalPositionRad,0)
+        self.forceStartAtHeightZeroIn()
+        self.desTrapPState = TrapezoidProfile.State(-1000,0)
         self._setMotorPosAndFF()
         self.lowestHeightIn = 100000
 
@@ -203,12 +202,15 @@ class ElevatorControl(metaclass=Singleton):
         if positionIn < self.lowestHeightIn:
             self.lowestHeightIn = positionIn
             self.timeWhenChangeS = Timer.getFPGATimestamp()
+            self._setMotorPosAndFF()
             # change the time we last moved in seconds
         else:
             # because we didnt go any lower, maybe we have been at the lowest height for a second
             nowS = Timer.getFPGATimestamp()
             if nowS - 1 >= self.timeWhenChangeS:
                 self._changeState(ElevatorStates.OPERATING)
+            else:
+                self._setMotorPosAndFF()
 
         pass
 
