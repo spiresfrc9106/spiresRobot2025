@@ -2,7 +2,7 @@
 
 # It is definitely buggy and untested, but it gives us a great framework on how to control an elevator.
 
-from enum import Enum
+from enum import IntEnum
 from playingwithfusion import TimeOfFlight
 from utils.calibration import Calibration
 from utils.units import sign
@@ -30,7 +30,7 @@ ELEV_RM_CANID = 20
 ELEV_LM_CANID = 21
 ELEV_TOF_CANID = 22
 
-class ElevatorStates(Enum):
+class ElevatorStates(IntEnum):
     UNINITIALIZED = 0
     INIT_GOING_DOWN = 1
     FOUND_BOTTOM = 2
@@ -103,10 +103,6 @@ class ElevatorControl(metaclass=Singleton):
 
         self.heightGoalIn = 0.0
 
-        addLog("Elevator Goal Height", lambda: self.heightGoalIn, "in")
-        addLog("Elevator Stopped", lambda: self.stopped, "bool")
-        addLog("Elevator Profiled Height", lambda: self.curTrapPState.position, "in")
-
         self.profiledPos = 0.0
         self.curUnprofiledPosCmd = 0.0
 
@@ -117,6 +113,13 @@ class ElevatorControl(metaclass=Singleton):
         self.timeWhenChangeS = 0
 
         self.lowestHeightIn = 10000
+
+
+
+        addLog("Elevator Goal Height", lambda: self.heightGoalIn, "in")
+        addLog("Elevator Stopped", lambda: self.stopped, "bool")
+        addLog("Elevator Profiled Height", lambda: self.curTrapPState.position, "in")
+        addLog("Elevator State", lambda: float(int(self.elevatorState)), "int")
 
     def _RmotorRadToHeightIn(self, RmotorRad: float) -> float:
         #return RmotorRad * 1/ELEV_GEARBOX_GEAR_RATIO * (ELEV_SPOOL_RADIUS_M) - self.relEncOffsetM
@@ -146,11 +149,6 @@ class ElevatorControl(metaclass=Singleton):
         # New Offset = real height - what height says?? 
         self.relEncOffsetM = self._getAbsHeight() - self.getHeightIn()
 
-    UNINITIALIZED = 0
-    INIT_GOING_DOWN = 1
-    FOUND_BOTTOM = 2
-    OPERATING = 3
-    NO_CMD = -1
     def update(self) -> None:
         match self.elevatorState:
             case ElevatorStates.UNINITIALIZED:
@@ -168,7 +166,7 @@ class ElevatorControl(metaclass=Singleton):
 
     def _updateUninitialized(self) -> None:
         self.startTime = Timer.getFPGATimestamp()
-        self.elevatorState = ElevatorStates.INIT_GOING_DOWN
+        self._changeState(ElevatorStates.INIT_GOING_DOWN)
         positionRad = self.rMotor.getMotorPositionRad()
         goalPositionRad = positionRad - self._heightInToMotorRad(1000)
         self.desTrapPState = TrapezoidProfile.State(goalPositionRad,0)
@@ -182,22 +180,23 @@ class ElevatorControl(metaclass=Singleton):
             # make var of time since last change of height, use getFPGATimestamp whenever it gets lower to get the time
             # when lowest height hasn't changed for 1s (current time - last changed time >= 1s) then switch to found bottom state
         positionRad = self.rMotor.getMotorPositionRad()
-        curPosIn = self.getHeightIn()
+        positionIn = self.getHeightIn()
 
-        if curPosIn < self.lowestHeightIn:
-            self.lowestHeightIn = curPosIn
+        if positionIn < self.lowestHeightIn:
+            self.lowestHeightIn = positionIn
             self.timeWhenChangeS = Timer.getFPGATimestamp()
             # change the time we last moved in seconds
         else:
             # because we didnt go any lower, maybe we have been at the lowest height for a second
             nowS = Timer.getFPGATimestamp()
             if nowS - 1 >= self.timeWhenChangeS:
-                self.elevatorState = ElevatorStates.FOUND_BOTTOM
+                self._changeState(ElevatorStates.OPERATING)
 
         pass
 
     def _updateFoundBottom(self) -> None:
-        #
+        self.bottom = self.getHeightIn()
+        self._changeState(ElevatorStates.OPERATING)
 
     def _setMotorPosAndFF(self) -> None:
         self.curTrapPState = self.trapProfiler.calculate(0.02, self.curTrapPState, self.desTrapPState)
@@ -205,9 +204,10 @@ class ElevatorControl(metaclass=Singleton):
         motorPosCmdRad = self._heightInToMotorRad(self.curTrapPState.position)
         motorVelCmdRadps = self._heightVelInpsToMotorVelRadps(self.curTrapPState.velocity)
 
-        # set our feed forward to 0 at the start so we're not throwing extra voltage into the motor, then see if their feed forward calc makes sense
-        # vFF = self.kV.get() * motorVelCmdRadps  + self.kS.get() * sign(motorVelCmdRadps) \
-        #    + self.kG.get()
+        # set our feed forward to 0 at the start so we're not throwing extra voltage into the motor
+        # then see if their feed forward calc makes sense
+        vFF = self.kV.get() * motorVelCmdRadps  + self.kS.get() * sign(motorVelCmdRadps) \
+            + self.kG.get()
 
         vFF = 0
 
@@ -243,3 +243,7 @@ class ElevatorControl(metaclass=Singleton):
 
     def setManualAdjCmd(self, cmd:float) -> None:
         self.manualAdjCmd = cmd
+
+    def _changeState(self, newState: ElevatorStates) -> None:
+        print(f"time = {Timer.getFPGATimestamp():.3f}s changing from elevator state {self.elevatorState} to {newState}")
+        self.elevatorState = newState

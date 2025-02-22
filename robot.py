@@ -43,6 +43,8 @@ class MyRobot(wpilib.TimedRobot):
         # pylint: disable=attribute-defined-outside-init
         remoteRIODebugSupport()
 
+        print(f"robot type = {RobotIdentification().getRobotType()}")
+
         self.crashLogger = CrashLogger()
         wpilib.LiveWindow.disableAllTelemetry()
         self.webserver = Webserver()
