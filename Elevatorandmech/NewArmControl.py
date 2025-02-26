@@ -2,6 +2,10 @@
 
 # It is definitely buggy and untested, but it gives us a great framework on how to control an elevator.
 
+#Notes to self:
+#1) taking readings from abs encoder and SparkMax to offset each other (reset each other on init)
+#2) setting up state machine so that it will be iterated through; make sure states are changed!
+
 from enum import Enum
 from playingwithfusion import TimeOfFlight
 
@@ -177,55 +181,7 @@ class ArmControl(metaclass=Singleton):
         vFF = 0
 
         self.Motor.setPosCmd(motorPosCmdRad, vFF)
-
-
-    # def _updateSearchDown(self) -> None:
-    #     self.currentUpdateTimeS = Timer.getFPGATimestamp()
-    #     self.actualVelInps = self.getVelocityInps()
-    #     if self.previousUpdateTimeS is not None:
-    #         currentPeriodS = self.currentUpdateTimeS - self.previousUpdateTimeS
-    #         self.actAccLogger.logNow((self.actualVelInps - self.previousVelDegps) / currentPeriodS)
-    #
-    #     self.oldActTrapPState = self.actTrapPState
-    #     self.actTrapPState = TrapezoidProfile.State(self.getAngleDeg(), self.actualVelInps)
-    #
-    #     if (self.actTrapPState.position >=  self.lowestAngleDeg) and (self.currentUpdateTimeS - self.lastStoppedTimeS > 1.0):
-    #
-    #         # Stop the motor where it is at
-    #         self.Motor.setPosCmd(self._angleDegToMotorRad(self.actTrapPState.position), 0)
-    #
-    #         # Prepare for the operating state
-    #         self.state = ArmStates.ARM_OPERATING
-    #         self.forceStartAtAngleZeroDeg()
-    #         self.trapProfiler = TrapezoidProfile(TrapezoidProfile.Constraints(self.maxVelocityDegps.get(), self.maxAccelerationDegps2.get()))
-    #         self.actTrapPState = self.trapProfiler.State()
-    #         self.curTrapPState = self.trapProfiler.State()
-    #         self.Motor.setSmartCurrentLimit(20)
-    #     else:
-    #         if self.actTrapPState.position < self.lowestAngleDeg:
-    #             self.lowestAngleDeg = self.actTrapPState.position
-    #             self.lastStoppedTimeS = self.currentUpdateTimeS
-    #
-    #         self.desTrapPState = TrapezoidProfile.State(-100000,0)
-    #
-    #         oldVelocityInps = self.curTrapPState.velocity
-    #         self.curTrapPState = self.trapProfiler.calculate(0.02, self.curTrapPState, self.desTrapPState)
-    #
-    #         self.curTrapPAccLogger.logNow((self.curTrapPState.velocity - oldVelocityInps) / 0.02)
-    #
-    #         motorPosCmdRad = self._angleDegToMotorRad(self.curTrapPState.position)
-    #         motorVelCmdRadps = self._angleVelDegpsToMotorVelRadps(self.curTrapPState.velocity)
-    #
-    #         # set our feed forward to 0 at the start so we're not throwing extra voltage into the motor, then see if their feed forward calc makes sense
-    #         # vFF = self.kV.get() * motorVelCmdRadps  + self.kS.get() * sign(motorVelCmdRadps) \
-    #         #    + self.kG.get()
-    #
-    #         vFF = 0
-    #
-    #         self.Motor.setPosCmd(motorPosCmdRad, vFF)
-    #
-    #         self.previousVelDegps = self.actualVelInps
-    #         self.previousUpdateTimeS = self.currentUpdateTimeS
+        self.state = ArmStates.ARM_OPERATING
 
     def _updateOperating(self) -> None:
         self.currentUpdateTimeS = Timer.getFPGATimestamp()
