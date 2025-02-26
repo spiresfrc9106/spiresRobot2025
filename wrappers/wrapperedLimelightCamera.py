@@ -42,11 +42,7 @@ class WrapperedPoseEstLimelight:
     def __init__(self, camName:str, robotToCam:Transform3d):
         setVersionCheckEnabled(False)
 
-        if wpilib.RobotBase.isSimulation():
-            print(f"In simulation substituting PhotonCamera for LimeLight Camera {camName}")
-            self.cam = PhotonCamera(camName)
-        else:
-            self.cam = Limelight(robotToCam, camName)
+        self.cam = Limelight(robotToCam, camName)
 
         self.disconFault = Fault(f"LL Camera {camName} not sending data")
         self.timeoutSec = 1.0
