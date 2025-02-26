@@ -40,7 +40,8 @@ class WrapperedPoseEstPhotonCamera:
         )
 
         self.targetLength = 0
-        addLog("test_targets_seen_photon", lambda: self.targetLength, "")
+        self.recordedBestCandidate = Pose2d()
+        addLog("ytest_targets_photon_seen", lambda: self.targetLength, "")
 
 
     def update(self, prevEstPose:Pose2d):
@@ -118,10 +119,14 @@ class WrapperedPoseEstPhotonCamera:
                         self.poseEstimates.append(
                             CameraPoseObservation(obsTime, bestCandidate)
                         )
+                        self.recordedBestCandidate = bestCandidate
                         self.CamPublisher.set(bestCandidate)
 
     def getPoseEstimates(self):
         return self.poseEstimates
+
+    def getPoseEstFormatted(self):
+        return self.recordedBestCandidate
 
     def _toFieldPose(self, tgtPose, camToTarget):
         camPose = tgtPose.transformBy(camToTarget.inverse())

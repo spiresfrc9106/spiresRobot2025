@@ -192,12 +192,17 @@ ROBOT_TO_RIGHT_CAM = Transform3d(
 
 ROBOT_TO_FRONT_CAM = Transform3d(
     Translation3d(
-        inchesToMeters(14.5), inchesToMeters(2.75), inchesToMeters(8)  # X  # Y  # Z
+        inchesToMeters(14), inchesToMeters(2.75), inchesToMeters(9)  # X  # Y  # Z
     ),
     Rotation3d.fromDegrees(0.0, 3.0, 0.0),  # Roll  # Pitch  # Yaw
 )
 
-
+ROBOT_TO_LIME_1 = Transform3d(
+    Translation3d(
+        inchesToMeters(14), inchesToMeters(-8), inchesToMeters(8)  # X:0.3556  # Y:(-0.25)-0.00635  # Z:0.2032
+    ),
+    Rotation3d.fromDegrees(0.0, 11.0, 0.0),  # Roll  # Pitch  # Yaw
+)
 
 # Array of translations from robot's origin (center bottom, on floor) to the module's contact patch with the ground
 robotToModuleTranslations = []

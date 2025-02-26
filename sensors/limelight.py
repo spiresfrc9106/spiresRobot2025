@@ -59,9 +59,10 @@ class Limelight:
         self.cam_pos_moving: bool = False
         self.set_pipeline_mode(LimelightPipeline.neural)
         #self.set_led_mode(limelight_led_mode["force_on"])
+        self.set_cam_pose(self.origin_offset)
 
     def init(self):
-        self.set_cam_pose(self.origin_offset)
+        pass
 
     def set_cam_pose(self, pose: Pose3d):
         """
@@ -80,8 +81,7 @@ class Limelight:
             math.degrees(self.origin_offset.rotation().Y()),
             math.degrees(self.origin_offset.rotation().Z()),
         ]
-
-        self.table.putNumberArray("camerapose_robotspace_set", campose)
+        #self.table.putNumberArray("camerapose_robotspace_set", campose)
         
     def get_cam_pose(self):
         """
@@ -234,6 +234,9 @@ class Limelight:
         self.tv = self.table.getNumber("tv", 0)
         self.ta = self.table.getNumber("ta", 0)
         self.tid = self.table.getNumber("tid", -1)
+
+    def getTargetSize(self):
+        return self.ta
         
     def update_bot_pose(self, megatag2:bool = False):
         '''
@@ -248,7 +251,7 @@ class Limelight:
             botpose_red = 'botpose_orb_wpired'
             botpose_blue = 'botpose_orb_wpiblue'
 
-        botposemeta2 = 'botpose_orb'
+        botposemeta2 = 'botpose_orb_wpiblue' #changed from botpode to blue for proper numbers
         
         # self.botpose_red = self.table.getNumberArray(
         #     botpose_red, [0, 0, 0, 0, 0, 0, 0, 0, 0,0,0]
@@ -293,6 +296,7 @@ class Limelight:
         self.botpose = self.table.getNumberArray(botpose, [0, 0, 0, 0, 0, 0, 0, 0, 0,0,0])
         self.botposemeta2 = self.table.getNumberArray(botposemeta2, [0, 0, 0, 0, 0, 0, 0, 0, 0,0,0])
         self.targetpose = self.table.getNumberArray("botpose_targetspace", [0, 0, 0, 0, 0, 0])
+
 
     def set_robot_orientation(self, yaw_degrees: float, yaw_rate_degrees_per_second: float,
                               pitch_degrees: float, pitch_rate_degrees_per_second: float,
