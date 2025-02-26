@@ -16,7 +16,7 @@ from utils.faults import Fault
 from utils.signalLogging import addLog
 from wrappers.wrapperedPoseEstPhotonCamera import WrapperedPoseEstPhotonCamera
 from sensors.limelight import Limelight
-from wrappers.wrapperedLimelightCamera import WrapperedPoseEstLimelight
+from wrappers.wrapperedLimelightCamera import wrapperedLimilightCameraFactory
 from ytests.logging import YTestForPosition
 
 # Convienent abreviations for the types that we'll be passing around here.
@@ -62,7 +62,7 @@ class DrivetrainPoseEstimator:
             WrapperedPoseEstPhotonCamera("LEFT_CAM", ROBOT_TO_LEFT_CAM),
             WrapperedPoseEstPhotonCamera("RIGHT_CAM", ROBOT_TO_RIGHT_CAM),
             WrapperedPoseEstPhotonCamera("FRONT_CAM", ROBOT_TO_FRONT_CAM),
-            WrapperedPoseEstLimelight("limelight", ROBOT_TO_LIME_1) #limelight-three
+            wrapperedLimilightCameraFactory("limelight", ROBOT_TO_LIME_1) #limelight-three
         ]
         # don't include "_"
         self.posEstLogs = [

@@ -441,6 +441,9 @@ class Limelight:
     def isConnected(self):
         return True
 
+    def getName(self):
+        return self.name
+
 
 class LimelightController():
     def __init__(self, limelight_list: list[Limelight], gyro, mega_tag2: bool = True):

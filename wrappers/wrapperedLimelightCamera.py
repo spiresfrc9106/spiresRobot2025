@@ -4,6 +4,7 @@ from typing import Tuple
 import wpilib
 from wpimath.estimator import SwerveDrive4PoseEstimator
 from wpimath.geometry import Pose2d, Rotation2d, Twist2d
+from wpimath.geometry import Pose3d, Rotation3d, Translation3d, Translation2d, Transform3d
 from wpimath.kinematics import SwerveModulePosition, SwerveModuleState
 from drivetrain.drivetrainPhysical import (
     kinematics,
@@ -16,7 +17,6 @@ from utils.faults import Fault
 from utils.signalLogging import addLog
 from wrappers.wrapperedPoseEstPhotonCamera import WrapperedPoseEstPhotonCamera
 
-from wpimath.geometry import Pose3d, Rotation3d, Translation3d, Translation2d, Transform3d
 from sensors.limelight import Limelight
 
 from dataclasses import dataclass
@@ -39,7 +39,7 @@ class LimelightCameraPoseObservation:
 
 
 class WrapperedPoseEstLimelight:
-    def __init__(self, camName, robotToCam):
+    def __init__(self, camName:str, robotToCam:Transform3d):
         setVersionCheckEnabled(False)
 
         self.cam = Limelight(robotToCam, camName)
@@ -144,3 +144,12 @@ class WrapperedPoseEstLimelight:
 
         y = a * pow(b, x) + d * x + c
         return max(y, 0.0127)
+
+
+def wrapperedLimilightCameraFactory(camName:str, robotToCam):
+    if wpilib.RobotBase.isSimulation():
+        print(f"In simulation substituting PhotonCamera for LimeLight Camera {camName}")
+        wrapperedCam = WrapperedPoseEstPhotonCamera(camName, robotToCam)
+    else:
+        wrapperedCame = WrapperedPoseEstLimelight(robotToCam, camName)
+    return wrapperedCam
