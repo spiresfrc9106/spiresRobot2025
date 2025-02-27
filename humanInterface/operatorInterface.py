@@ -62,7 +62,7 @@ class OperatorInterface:
             self.elevatorPosYCmd = 0.0
 
         #--------------------------------------------------------------------------------------------------
-        #Noahw
+        #Noah
 
         #Defaults to Velocity movement state or position movement state if no buttons are pressed
         self.signalDirector.setControllerState(self.signalDirector.getDefaultJoystickMovement())
@@ -77,36 +77,50 @@ class OperatorInterface:
             self.signalDirector.setControllerState("VelocityControl")
 
         #Plunge
-        if self.ctrl.getYButton():
+        if self.ctrl.getRightTriggerAxis() > .5:
             self.signalDirector.setControllerState("Plunge")
 
+        #Receive From Coral Station
+        if self.ctrl.getLeftTriggerAxis() > .5:
+            self.signalDirector.setControllerState("ReceiveCoral")
 
+        #Place at L1
+        if self.ctrl.getAButton():
+            self.signalDirector.setControllerState("L1")
+
+        # Place at L2
+        if self.ctrl.getXButton():
+            self.signalDirector.setControllerState("L2")
+
+        # Place at L3
+        if self.ctrl.getBButton():
+            self.signalDirector.setControllerState("L3")
+
+        # Place at L4
+        if self.ctrl.getYButton():
+            self.signalDirector.setControllerState("L4")
 
 
     def getDesElevatorPosIn(self)->float:
         elevatorRangeIn = 6.0
         elevatorCurrentHeight = self.elevatorControl.getHeightIn()
 
-        #Disables Joysticks If not in position or velocity movement states
-        if not self.currentState == 0 and not self.currentState == 1:
-            self.elevatorPosYCmd = self.signalDirector.disableJoySticks()
-
 
         if self.currentState == 0:
-
             return (elevatorRangeIn/2.0) * (1.0 + self.elevatorPosYCmd)
-
         elif self.currentState == 1:
-
-            if self.elevatorPosYCmd > 0:
-                return elevatorCurrentHeight + 0.5
-            elif self.elevatorPosYCmd < 0:
-                return elevatorCurrentHeight - 0.5
-            else:
-                return elevatorCurrentHeight
+            return self.signalDirector.determineVelocityMovement(self.elevatorPosYCmd, elevatorCurrentHeight)
         elif self.currentState == 2:
-            pass
+            return self.robotPoser.receiveFromCoralStation()
         elif self.currentState == 3:
-            return RobotPoser.getPlungeElevatorHeight()
+            return self.robotPoser.plunge()
+        elif self.currentState == 4:
+            return self.robotPoser.placeL1()
+        elif self.currentState == 5:
+            return self.robotPoser.placeL2()
+        elif self.currentState == 6:
+            return self.robotPoser.placeL3()
+        elif self.currentState == 7:
+            return self.robotPoser.placeL4()
 
 

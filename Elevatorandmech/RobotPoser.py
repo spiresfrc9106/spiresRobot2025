@@ -51,8 +51,13 @@ class SignalDirector(metaclass=Singleton):
         print(self.defaultJoystickMovement)
         pass
 
-    def disableJoySticks(self):
-        return 0
+    def determineVelocityMovement(self, joyStickInput, elevatorCurrentHeight):
+        if joyStickInput > 0:
+            return elevatorCurrentHeight + 2
+        elif joyStickInput < 0:
+            return elevatorCurrentHeight - 2
+        else:
+            return elevatorCurrentHeight
 
     def setControllerState(self, state):
         if state == "VelocityControl" or state == "PositionControl":
@@ -71,15 +76,31 @@ class RobotPoser:
         pass
 
     def update(self):
-        # x = receive from coral station pose
-        # y = plunge
-        # LeftTrigger = place at L1
-        # RightTrigger = place at L2
-        # A = place at L3
-        # b = place at L4
+        # A = L1
+        # x = L2
+        # b = L3
+        # y = L4
+        # LeftTrigger = Coral Station Alignmnet
+        # RightTrigger = Plunge
         pass
 
-    def getPlungePoseElevator(self):
+    def placeL1(self):
         return 1
+
+    def placeL2(self):
+        return 2
+
+    def placeL3(self):
+        return 3
+
+    def placeL4(self):
+        return 4
+
+    def plunge(self):
+        return 5
+
+    def receiveFromCoralStation(self):
+        return 6
+
 
 
