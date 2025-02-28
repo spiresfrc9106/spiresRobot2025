@@ -3,7 +3,7 @@
 # It is definitely buggy and untested, but it gives us a great framework on how to control an elevator.
 
 #Notes to self:
-#1) taking readings from abs encoder and SparkMax to offset each other (reset each other on init)
+#1) abs encoder needs to have constant calibration offset applied to it, and calibrated offset is then applied to rel
 #2) setting up state machine so that it will be iterated through; make sure states are changed!
 
 from enum import Enum
@@ -19,6 +19,7 @@ from wrappers.wrapperedSparkMax import WrapperedSparkMax
 from rev import SparkLowLevel
 from wpimath.trajectory import TrapezoidProfile
 from wpilib import Timer
+import math
 
 
 MAX_ARM_VEL_DEGPS = 20 # Could be 80
@@ -26,7 +27,6 @@ MAX_ARM_ACCEL_DEGPS2 = 4 # Could be 160
 
 ARM_M_CANID = 20
 
-#might be only one state on arm because 
 #will need to use abs encoder angle to find offset for 
 #Spark Max angle, then Spark Max angle can be used
 class ArmStates(Enum):
@@ -78,18 +78,16 @@ class ArmControl(metaclass=Singleton):
 
         self.stopped = False
 
-        # Try to set a small current limit and decide when we're on the bottom using this, and turn off the motor when it doesn't need to spin anymore.  then up the current limit as needed
+        # Try to set a small current limit and decide when we're on the bottom using this, and turn
+        # off the motor when it doesn't need to spin anymore.  then up the current limit as needed
 
 
-        # Absolute Sensor mount offsets: use laser range finders to measure distance? either sensor or revolution count
-
-        # After mounting the sensor, these should be tweaked one time
-        # in order to adjust whatever the sensor reads into the reference frame
-        # of the mechanism
-        self.ABS_SENSOR_READING_AT_ARM_BOTTOM_M = 0.074 # TODO correct?
+        # This variable stores the offset for the Abs sensor to define what angle is
+        # zero based on the Abs sensor's physical orientation on the robot
+        self.ABS_SENSOR_CALIBRATION_OFFSET_DEG = 0 # TODO find this
 
         # Relative Encoder Offsets
-        # Releative encoders always start at 0 at power-on
+        # Relative encoders always start at 0 at power-on
         # However, we may or may not have the mechanism at the "zero" position when we powered on
         # These variables store an offset which is calculated from the absolute sensors
         # to make sure the relative sensors inside the encoders accurately reflect
@@ -102,7 +100,6 @@ class ArmControl(metaclass=Singleton):
 
         self.state = ArmStates.ARM_UNINITIALIZED
 
-        #will need to change inches to degrees and whatnot
         addLog("Arm Goal Degree", lambda: self.armGoalDeg, "deg")
         addLog("Arm Stopped", lambda: self.stopped, "bool")
         addLog("Arm act Degree", lambda: self.actTrapPState.position, "deg")
@@ -121,10 +118,10 @@ class ArmControl(metaclass=Singleton):
         self.previousUpdateTimeS = None
 
     def _offsetFreeMotorRadToAngleDeg(self, MotorRad: float) -> float:
-        return  MotorRad * (1/ARM_GEARBOX_GEAR_RATIO)
+        return  (math.degrees(MotorRad) * (1/ARM_GEARBOX_GEAR_RATIO)) - self.relEncOffsetAngleDeg
 
     def _MotorRadToAngleDeg(self, MotorRad: float) -> float:
-        return  self._offsetFreeMotorRadToAngleDeg(MotorRad-self.relEncOffsetRad)
+        return  self._offsetFreeMotorRadToAngleDeg(MotorRad)
 
     def _angleDegToMotorRad(self, armAngleDeg: float) -> float:
         return armAngleDeg * ARM_GEARBOX_GEAR_RATIO + self.relEncOffsetRad
@@ -138,9 +135,9 @@ class ArmControl(metaclass=Singleton):
     def getVelocityDegps(self) -> float:
         return self._offsetFreeMotorRadToAngleDeg(self.Motor.getMotorVelocityRadPerSec())
     
-    #return the height of the elevator as measured by the absolute sensor in meters
+    #return the angle of the arm as measured by the absolute sensor in angles (hopefully)
     def _getAbsAngle(self) -> float:
-        return self.angleAbsSen.getRange() / 1000.0 - self.ABS_SENSOR_READING_AT_ARM_BOTTOM_M
+        return self.angleAbsSen.getRange() / 1000.0 - self.ABS_SENSOR_CALIBRATION_OFFSET_DEG
 
     # This routine uses the absolute sensors to adjust the offsets for the relative sensors
     # so that the relative sensors match reality.
@@ -148,10 +145,10 @@ class ArmControl(metaclass=Singleton):
     def initFromAbsoluteSensor(self) -> None:
         # Reset offsets to zero, so the relative sensor get functions return
         # just whatever offset the relative sensor currently has.
-        self.relEncOffsetM = 0.0
+        self.relEncOffsetAngleDeg = 0.0
 
         # New Offset = real angle - what angle says??
-        self.relEncOffsetM = self._getAbsAngle() - self.getAngleDeg()
+        self.relEncOffsetAngleDeg = self._getAbsAngle() - self.getAngleDeg()
 
 
     def update(self) -> None:
@@ -170,7 +167,10 @@ class ArmControl(metaclass=Singleton):
         self.trapProfiler = TrapezoidProfile(TrapezoidProfile.Constraints(self.searchMaxVelocityDegps.get(), self.searchMaxAccelerationDegps2.get()))
         self.lastStoppedTimeS = 0
         self.lowestAngleDeg = 1000.0
-        self.forceStartAtAngleZeroDeg()
+
+        # going to try and use abs sensor to provide offset for rel encoder, not what is commented below
+        #self.forceStartAtAngleZeroDeg()
+        self.initFromAbsoluteSensor()
         motorPosCmdRad = self._angleDegToMotorRad(0)
         motorVelCmdRadps = self._angleVelInpsToMotorVelRadps(0)
 
