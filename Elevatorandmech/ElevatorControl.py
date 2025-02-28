@@ -13,12 +13,13 @@ from wrappers.wrapperedSparkMax import WrapperedSparkMax
 from rev import SparkLowLevel
 from wpimath.trajectory import TrapezoidProfile
 from wpilib import Timer
+TEST_ELEVATOR_RANGE_IN = 4.8
 
 ELEV_GEARBOX_GEAR_RATIO = 5.0/1.0
 ELEV_SPOOL_RADIUS_IN = 1.92/2.0
 
-MAX_ELEV_VEL_INPS = 20
-MAX_ELEV_ACCEL_INPS2 = 4
+MAX_ELEV_VEL_INPS = 100000000
+MAX_ELEV_ACCEL_INPS2 = 10000
 
 REEF_L1_HEIGHT_M = 0.5842
 REEF_L2_HEIGHT_M = 0.9398
@@ -115,11 +116,14 @@ class ElevatorControl(metaclass=Singleton):
 
         self.elevatorState = ElevatorStates.UNINITIALIZED
 
-        self.HeightGoalIn = 100000
+        self.HeightGoalIn = 1000
 
         self.timeWhenChangeS = 0
 
-        self.lowestHeightIn = 10000
+        self.lowestHeightIn = 1000
+
+
+        self.funRuns = 0
 
 
         addLog("Elevator State", lambda: float(int(self.elevatorState)), "int")
@@ -187,10 +191,12 @@ class ElevatorControl(metaclass=Singleton):
         self._changeState(ElevatorStates.INIT_GOING_DOWN)
         self.forceStartAtHeightZeroIn()
         self.desTrapPState = TrapezoidProfile.State(-1000,0)
+        self.curTrapPState = TrapezoidProfile.State(self.getHeightIn(), 0)
         self._setMotorPosAndFF()
-        self.lowestHeightIn = 100000
+        self.lowestHeightIn = 1000
 
     def _updateInitGoingDown(self) -> None:
+        self.funRuns = 0
         # in going down, check to see if how long since we last moved, if we haven't moved in 1 seocond stop
             # make a new self.lowestHeightIn
             # set to 100,000 in when first start
@@ -214,10 +220,6 @@ class ElevatorControl(metaclass=Singleton):
 
         pass
 
-    def _updateFoundBottom(self) -> None:
-        self.bottom = self.getHeightIn()
-        self._changeState(ElevatorStates.OPERATING)
-
     def _setMotorPosAndFF(self) -> None:
         oldVelocityInps = self.curTrapPState.velocity
         self.curTrapPState = self.trapProfiler.calculate(0.02, self.curTrapPState, self.desTrapPState)
@@ -236,14 +238,19 @@ class ElevatorControl(metaclass=Singleton):
         self.rMotor.setPosCmd(motorPosCmdRad, vFF)
 
     def _updateOperating(self) -> None:
+        if self.funRuns == 0:
+            self.curTrapPState = TrapezoidProfile.State(self.getHeightIn(), 0)
+        self.funRuns = self.funRuns + 1
         self.currentUpdateTimeS = Timer.getFPGATimestamp()
         self.actualVelInps = self.getVelocityInps()
         if self.previousUpdateTimeS is not None:
             currentPeriodS = self.currentUpdateTimeS - self.previousUpdateTimeS
             self.actAccLogger.logNow((self.actualVelInps - self.previousVelInps) / currentPeriodS)
+        self.heightGoalIn = self.lowestHeightIn + (TEST_ELEVATOR_RANGE_IN)
 
         self.actTrapPState = TrapezoidProfile.State(self.getHeightIn(), self.actualVelInps)
         self.desTrapPState = TrapezoidProfile.State(self.heightGoalIn,0)
+        self._setMotorPosAndFF()
 
         # Update motor closed-loop calibration
         if self.kP.isChanged():
@@ -274,7 +281,7 @@ class ElevatorControl(metaclass=Singleton):
         self.manualAdjCmd = cmd
 
     def forceStartAtHeightZeroIn(self) -> None:
-        self.relEncOffsetRad = self.Rmotor.getMotorPositionRad()
+        self.relEncOffsetRad = self.rMotor.getMotorPositionRad()
 
     def _changeState(self, newState: ElevatorStates) -> None:
         print(f"time = {Timer.getFPGATimestamp():.3f}s changing from elevator state {self.elevatorState} to {newState}")
