@@ -100,12 +100,12 @@ class SwerveModuleControl:
 
         addLog(
             getAzmthDesTopicName(moduleName),
-            self.optimizedDesiredState.angle.degrees,
+            lambda: (self.optimizedDesiredState.angle.degrees()),
             "deg",
         )
         addLog(
             getAzmthActTopicName(moduleName),
-            self.actualState.angle.degrees,
+            lambda: (self.actualState.angle.degrees()),
             "deg",
         )
         addLog(
@@ -213,6 +213,8 @@ class SwerveModuleControl:
             motorVoltageFF = 0
         else:
             motorVoltageFF = self.wheelMotorFF.calculate(motorDesSpd, motorDesAccel)
+            # TODO Consider:
+            # motorVoltageFF = self.wheelMotorFF.calculate(self._prevMotorDesSpeed, motorDesSpd) #This is the problem child of the new non-backwards compatable Robotpy update. actualstate.speed is "prev" and motorDesSpd is "cur"
         self.wheelMotor.setVelCmd(motorDesSpd, motorVoltageFF)
 
         self._prevMotorDesSpeed = motorDesSpd  # save for next loop

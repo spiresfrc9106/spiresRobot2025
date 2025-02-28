@@ -5,6 +5,7 @@ import ntcore as nt
 from wpimath.geometry import Translation2d, Pose2d, Rotation2d
 from dashboard import Dashboard
 from drivetrain.controlStrategies.autoDrive import AutoDrive
+from drivetrain.controlStrategies.autoSteer import AutoSteer
 from drivetrain.controlStrategies.trajectory import Trajectory
 from drivetrain.drivetrainCommand import DrivetrainCommand
 from drivetrain.drivetrainControl import DrivetrainControl
@@ -35,11 +36,15 @@ class MyRobot(wpilib.TimedRobot):
         remoteRIODebugSupport()
 
         self.crashLogger = CrashLogger()
+
+        # We do our own logging, we don't need additional logging in the background.
+        # Both of these will increase CPU load by a lot, and we never use their output.
         wpilib.LiveWindow.disableAllTelemetry()
         self.webserver = Webserver()
 
         self.driveTrain = DrivetrainControl()
         self.autodrive = AutoDrive()
+        self.autosteer = AutoSteer()
 
         self.stt = SegmentTimeTracker()      
 
@@ -108,7 +113,9 @@ class MyRobot(wpilib.TimedRobot):
         self.autoSequencer.initialize()
 
         # Use the autonomous rouines starting pose to init the pose estimator
-        self.driveTrain.poseEst.setKnownPose(self.autoSequencer.getStartingPose())
+        startPose = self.autoSequencer.getStartingPose()
+        if(startPose is not None):
+            self.driveTrain.poseEst.setKnownPose(startPose)
 
         # Mark we at least started autonomous
         self.autoHasRun = True # pylint: disable=attribute-defined-outside-init
@@ -118,7 +125,7 @@ class MyRobot(wpilib.TimedRobot):
         self.autoSequencer.update()
 
         # Operators cannot control in autonomous
-        self.driveTrain.setManualCmd(DrivetrainCommand())
+        #self.driveTrain.setManualCmd(DrivetrainCommand())
 
     def autonomousExit(self):
         self.autoSequencer.end()
@@ -139,8 +146,10 @@ class MyRobot(wpilib.TimedRobot):
 
     def teleopPeriodic(self):
         # TODO - this is technically one loop delayed, which could induce lag
-        # Probably not noticeable, but should be corrected.
-        self.driveTrain.setManualCmd(self.dInt.getCmd())
+        #self.driveTrain.setElevLimiter(self.elev.getDtSpeedLimitFactor())
+        self.driveTrain.setManualCmd(self.dInt.getCmd(), self.dInt.getRobotRelative())
+        self.autosteer.setReefAutoSteerCmd(self.dInt.getAutoSteer())
+        self.autodrive.setRequest(self.dInt.getAutoDrive())
 
         if self.dInt.getGyroResetCmd():
             self.driveTrain.resetGyro()
@@ -162,7 +171,6 @@ class MyRobot(wpilib.TimedRobot):
                 obs = PointObstacle(location=(ct+tf), strength=0.5)
                 self.autodrive.rfp.addObstacleObservation(obs)
 
-        self.autodrive.setRequest(self.dInt.getNavToSpeaker(), self.dInt.getNavToPickup())
 
         # No trajectory in Teleop
         Trajectory().setCmd(None)
@@ -187,6 +195,10 @@ class MyRobot(wpilib.TimedRobot):
     #########################################################
     ## Cleanup
     def endCompetition(self):
+        print("Goodbye!")
+
+        # Stop robot code exectuion first
+        super().endCompetition()
 
         # Sometimes `robopy test pyfrc_test.py` will invoke endCompetition() without completing robotInit(),
         # this will create a confusing exception here because we can reach self.rioMonitor.stopThreads()
@@ -197,7 +209,6 @@ class MyRobot(wpilib.TimedRobot):
             self.rioMonitor.stopThreads()
 
         destroyAllSingletonInstances()
-        super().endCompetition()
 
 def remoteRIODebugSupport():
     if __debug__ and "run" in sys.argv:

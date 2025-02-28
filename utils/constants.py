@@ -2,14 +2,22 @@
 # Just starting with the minimum stuff we need
 # The math conversions are under units.py
 
+from wpimath.geometry import Translation2d
+
 from config import FRC_TEAM_NUMBER
 
 #######################################################################################
 ## FIELD DIMENSIONS
 #######################################################################################
 
-FIELD_X_M = 16.54 # "Length"
-FIELD_Y_M = 8.21  # "Width"
+FIELD_X_M = 17.548 # "Length"
+FIELD_Y_M = 8.062  # "Width"
+
+# Blue Reef Location
+_REEF_LOC_X_M = 4.502
+_REEF_LOC_Y_M = 4.0363
+blueReefLocation = Translation2d(_REEF_LOC_X_M, _REEF_LOC_Y_M)
+redReefLocation = Translation2d(FIELD_X_M - _REEF_LOC_X_M, _REEF_LOC_Y_M)
 
 #######################################################################################
 ## CAN ID'S
