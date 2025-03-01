@@ -72,7 +72,7 @@ class RobotDependentConstants:
                 "BR_OFFSET_DEG": 0,
                 "GYRO": "NoGyro",
                 "HAS_DRIVETRAIN": False,
-                "HAS_ELEVATOR": False,
+                "HAS_ELEVATOR": True,
                 "HAS_MOTOR_TEST": False,
             },
         }

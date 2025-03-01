@@ -26,11 +26,11 @@ REEF_L3_HEIGHT_M = 1.397
 REEF_L4_HEIGHT_M = 2.159 
 ELEV_MIN_HEIGHT_M = REEF_L1_HEIGHT_M  # TODO - is elevator's bottom position actually L1?
 
-ELEV_RM_CANID = 20
+ELEV_RM_CANID = 18
 ELEV_LM_CANID = 21
 ELEV_TOF_CANID = 22
 
-class ElevatorStates(Enum):
+class ElevatorStates(IntEnum):
     ELEVATOR_UNINITIALIZED = 0
     ELEVATOR_SEARCH_DOWN = 1
     ELEVATOR_OPERATING = 2
