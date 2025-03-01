@@ -10,18 +10,18 @@
 
 
 .outlined{
-    border: 1px solid #FFFFFF;
+    border: 1px solid #feb800;
     margin: 1px;
 }
 
 
 body {
-    background: black;
+    background: #0122d2;
     padding: 0.25em;
     margin: 0;
     font-size: 16px;
-    font-family: localMichroma, Verdana, sans-serif;
-    color: white;
+    font-family: Calibri, Arial;
+    color: #feb800;
 }
 
 /* Ensure we use up the full screen space with our content */

@@ -3,13 +3,13 @@
 
 <head>
     <meta charset="utf-8"/>
-    <link rel="stylesheet" href="common.css">
-    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="common.css?v=5">
+    <link rel="stylesheet" href="index.css?v=05">
     <title>Robot</title>
 </head>
 
 <body>
-    <h1> Robot Data Interface </h1>
+    <h1>Spires Robot Web Interface</h1>
 
     <topLevelContainer>
 
@@ -31,6 +31,17 @@ ${BUILD_INFO}
         </robotStatusBox>
 
     </topLevelContainer>
+
+<script>
+function loadOptions() {
+var allLinks = document.getElementsByClassName("bigLinkButton");
+for (var i = 0; i < allLinks.length; i++) {
+allLinks[i].style.margin = "0px 5px";
+allLinks[i].style.opacity = 1;
+}
+}
+setTimeout(loadOptions,20);
+</script>
 
 </body>
 
