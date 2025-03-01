@@ -14,18 +14,18 @@ from wrappers.wrapperedSparkMax import WrapperedSparkMax
 from rev import SparkLowLevel
 from wpimath.trajectory import TrapezoidProfile
 from wpilib import Timer
-TEST_ELEVATOR_RANGE_IN = 4.8
+TEST_ELEVATOR_RANGE_IN = 5.2
 
 ELEV_GEARBOX_GEAR_RATIO = 5.0/1.0
 ELEV_SPOOL_RADIUS_IN = 1.92/2.0
 
-MAX_ELEV_VEL_INPS = 100000000
-MAX_ELEV_ACCEL_INPS2 = 10000
+MAX_ELEV_VEL_INPS = 62500
+MAX_ELEV_ACCEL_INPS2 = 250
 
 REEF_L1_HEIGHT_M = 0.5842
 REEF_L2_HEIGHT_M = 0.9398
 REEF_L3_HEIGHT_M = 1.397 
-REEF_L4_HEIGHT_M = 2.159 
+REEF_L4_HEIGHT_M = 2.159
 ELEV_MIN_HEIGHT_M = REEF_L1_HEIGHT_M  # TODO - is elevator's bottom position actually L1?
 
 ELEV_RM_CANID = 20
@@ -35,8 +35,7 @@ ELEV_TOF_CANID = 22
 class ElevatorStates(IntEnum):
     UNINITIALIZED = 0
     INIT_GOING_DOWN = 1
-    FOUND_BOTTOM = 2
-    OPERATING = 3
+    OPERATING = 2
     NO_CMD = -1
 
 
@@ -181,8 +180,6 @@ class ElevatorControl(metaclass=Singleton):
                 self._updateUninitialized()
             case ElevatorStates.INIT_GOING_DOWN:
                 self._updateInitGoingDown()
-            case ElevatorStates.FOUND_BOTTOM:
-                self._updateFoundBottom()
             case ElevatorStates.OPERATING:
                 self._updateOperating()
             case ElevatorStates.NO_CMD:
@@ -250,20 +247,28 @@ class ElevatorControl(metaclass=Singleton):
         if self.previousUpdateTimeS is not None:
             currentPeriodS = self.currentUpdateTimeS - self.previousUpdateTimeS
             self.actAccLogger.logNow((self.actualVelInps - self.previousVelInps) / currentPeriodS)
-        self.heightGoalIn = self.lowestHeightIn + (TEST_ELEVATOR_RANGE_IN)
+        self.heightGoalIn = self.lowestHeightIn + (TEST_ELEVATOR_RANGE_IN / 2)
 
         self.actTrapPState = TrapezoidProfile.State(self.getHeightIn(), self.actualVelInps)
         self.desTrapPState = TrapezoidProfile.State(self.heightGoalIn,0)
-        self._setMotorPosAndFF()
 
+        # A X B Y ARE FOR L1 L2 L3 L4 RESPECTIVELY
+        # REPLACE MULTIPLICATION BY 1 WITH MULT BY 39.3700787402 ON THE ACTUAL ELEV TO CONVERT FROM M TO IN
+        # TODO: ADD A LITTLE MORE HEIGHT TO THE L1 L2 L3 AND EVEN MORE TO THE L4
+        #   SO THAT WE CAN ANGLE THE ARM DOWNWARDS INTO THE CORAL BETTER
         if self.ctrl.getAButton():
-            self.heightGoalIn = REEF_L1_HEIGHT_M
+            self.heightGoalIn = REEF_L1_HEIGHT_M * 1 + self.lowestHeightIn
         if self.ctrl.getXButton():
-            self.heightGoalIn = REEF_L2_HEIGHT_M
+            self.heightGoalIn = REEF_L2_HEIGHT_M * 1 + self.lowestHeightIn
         if self.ctrl.getBButton():
-            self.heightGoalIn = REEF_L2_HEIGHT_M
+            self.heightGoalIn = REEF_L3_HEIGHT_M * 1 + self.lowestHeightIn
         if self.ctrl.getYButton():
-            self.heightGoalIn = REEF_L2_HEIGHT_M
+            self.heightGoalIn = REEF_L4_HEIGHT_M * 1 + self.lowestHeightIn
+
+        # PLUNGE USING THE RIGHT TRIGGER
+        if self.ctrl.getRightTriggerAxis():
+            self.heightGoalIn = self.lowestHeightIn
+
         self.desTrapPState = TrapezoidProfile.State(self.heightGoalIn, 0)
         self._setMotorPosAndFF()
 
