@@ -15,6 +15,8 @@ from utils.units import sign
 from utils.signalLogging import  addLog, getNowLogger
 #from utils.constants import ARM_LM_CANID, ARM_RM_CANID, ARM_TOF_CANID
 from utils.singleton import Singleton
+from wrappers.wrapperedPulseWidthEncoder import WrapperedPulseWidthEncoder
+from wrappers.wrapperedRevThroughBoreEncoder import WrapperedRevThroughBoreEncoder
 from wrappers.wrapperedSparkMax import WrapperedSparkMax
 from rev import SparkLowLevel
 from wpimath.trajectory import TrapezoidProfile
@@ -52,6 +54,9 @@ class ArmControl(metaclass=Singleton):
         MotorIsInverted = True
         self.Motor.setInverted(MotorIsInverted)
 
+        # Rev Relative Encoder
+        self.Encoder = WrapperedRevThroughBoreEncoder(port=9, name="ArmRevRelEncoder", mountOffsetRad=0, dirInverted=False)
+        self.angleAbsSen = self.Encoder.getAngleRad()
 
         # FF and proportional gain constants
         self.kV = Calibration(name="Arm kV", default=0.02, units="V/rps")
@@ -97,6 +102,7 @@ class ArmControl(metaclass=Singleton):
         # acceleration constraints for the next setpoint.
 
         self.armGoalDeg = 0.0
+        self.relEncOffsetAngleDeg = 0.0
 
         self.state = ArmStates.ARM_UNINITIALIZED
 
@@ -116,6 +122,13 @@ class ArmControl(metaclass=Singleton):
         self.profiledPos = 0.0
         self.curUnprofiledPosCmd = 0.0
         self.previousUpdateTimeS = None
+        self.previousVelDegps = None
+
+    def _angleInRange(self, angle: float) -> float:
+        angle%= 360
+        angle = (angle + 360) % 360
+        if (angle > 180): angle -= 360
+        return angle
 
     def _offsetFreeMotorRadToAngleDeg(self, MotorRad: float) -> float:
         return  (math.degrees(MotorRad) * (1/ARM_GEARBOX_GEAR_RATIO)) - self.relEncOffsetAngleDeg
@@ -129,15 +142,16 @@ class ArmControl(metaclass=Singleton):
     def _angleVelDegpsToMotorVelRadps(self, armAngleDeg: float) -> float:
         return armAngleDeg * ARM_GEARBOX_GEAR_RATIO
 
-    def getAngleDeg(self) -> float:
-        return self._MotorRadToAngleDeg(self.Motor.getMotorPositionRad())
+    def getRelAngleDeg(self) -> float:
+        return self._angleInRange(self._MotorRadToAngleDeg(self.Motor.getMotorPositionRad()))
 
     def getVelocityDegps(self) -> float:
         return self._offsetFreeMotorRadToAngleDeg(self.Motor.getMotorVelocityRadPerSec())
     
-    #return the angle of the arm as measured by the absolute sensor in angles (hopefully)
+    #return the angle of the arm as measured by the absolute sensor in angles
     def _getAbsAngle(self) -> float:
-        return self.angleAbsSen.getRange() / 1000.0 - self.ABS_SENSOR_CALIBRATION_OFFSET_DEG
+        self.angleAbsSen = (math.degrees(self.angleAbsSen))
+        return (self._angleInRange(self.angleAbsSen)) - self.ABS_SENSOR_CALIBRATION_OFFSET_DEG
 
     # This routine uses the absolute sensors to adjust the offsets for the relative sensors
     # so that the relative sensors match reality.
@@ -148,7 +162,7 @@ class ArmControl(metaclass=Singleton):
         self.relEncOffsetAngleDeg = 0.0
 
         # New Offset = real angle - what angle says??
-        self.relEncOffsetAngleDeg = self._getAbsAngle() - self.getAngleDeg()
+        self.relEncOffsetAngleDeg = self._getAbsAngle() - self.getRelAngleDeg()
 
 
     def update(self) -> None:
@@ -164,7 +178,7 @@ class ArmControl(metaclass=Singleton):
                 pass
 
     def _updateUninitialized(self) -> None:
-        self.trapProfiler = TrapezoidProfile(TrapezoidProfile.Constraints(self.searchMaxVelocityDegps.get(), self.searchMaxAccelerationDegps2.get()))
+        self.trapProfiler = TrapezoidProfile(TrapezoidProfile.Constraints(self.maxVelocityDegps.get(), self.maxAccelerationDegps2.get()))
         self.lastStoppedTimeS = 0
         self.lowestAngleDeg = 1000.0
 
@@ -172,7 +186,7 @@ class ArmControl(metaclass=Singleton):
         #self.forceStartAtAngleZeroDeg()
         self.initFromAbsoluteSensor()
         motorPosCmdRad = self._angleDegToMotorRad(0)
-        motorVelCmdRadps = self._angleVelInpsToMotorVelRadps(0)
+        motorVelCmdRadps = self._angleVelDegpsToMotorVelRadps(0)
 
         # set our feed forward to 0 at the start so we're not throwing extra voltage into the motor, then see if their feed forward calc makes sense
         # vFF = self.kV.get() * motorVelCmdRadps  + self.kS.get() * sign(motorVelCmdRadps) \
@@ -190,7 +204,7 @@ class ArmControl(metaclass=Singleton):
             currentPeriodS = self.currentUpdateTimeS - self.previousUpdateTimeS
             self.actAccLogger.logNow((self.actualVelDegps - self.previousVelDegps) / currentPeriodS)
 
-        self.actTrapPState = TrapezoidProfile.State(self.getAngleDeg(), self.actualVelDegps)
+        self.actTrapPState = TrapezoidProfile.State(self.getRelAngleDeg(), self.actualVelDegps)
 
         self.desTrapPState = TrapezoidProfile.State(self.armGoalDeg,0)
 

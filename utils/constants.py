@@ -58,9 +58,9 @@ else:
 # Unused = 4
 # Unused = 5
 # Unused = 6
-# Unused = 7
+LED_STACK_LIGHT_CTRL_PWM = 7
 # Unused = 8
-LED_STACK_LIGHT_CTRL_PWM = 9
+# Used on Encoder = 9
 
 
 #######################################################################################
@@ -81,6 +81,6 @@ else:
 # Unused = 4
 # Unused = 5
 # Unused = 6
-# Unused = 7
+HEARTBEAT_LED_PIN = 7
 FIX_ME_LED_PIN = 8
-HEARTBEAT_LED_PIN = 9
+# Used on Encoder = 9

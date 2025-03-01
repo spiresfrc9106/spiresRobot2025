@@ -31,6 +31,7 @@ class OperatorInterface:
         # Logging
         addLog("OI Elevator Pos Cmd", lambda: self.elevatorPosYCmd, "frac")
         addLog("OI Arm Pos Cmd", lambda: self.armPosYCmd, "frac")
+        addLog("armPosYCmd", lambda: self.armPosYCmd, "frac")
 
 
     def update(self):

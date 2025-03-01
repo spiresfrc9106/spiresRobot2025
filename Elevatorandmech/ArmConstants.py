@@ -11,7 +11,7 @@ robotDepConstants = RobotDependentConstants().get()[RobotIdentification().getRob
 if robotDepConstants['HAS_ARM']:
     ARM_GEARBOX_GEAR_RATIO = robotDepConstants['ARM_GEARBOX_GEAR_RATIO']
 else:
-    ARM_GEARBOX_GEAR_RATIO = None
+    ARM_GEARBOX_GEAR_RATIO = 5.0/1.0
 MAX_ARM_VEL_DPS = 10 # degrees per second
 MAX_ARM_ACCEL_DPS2 = 5 # degrees per second per second
 
