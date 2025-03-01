@@ -3,6 +3,7 @@
 # It is definitely buggy and untested, but it gives us a great framework on how to control an elevator.
 
 from enum import IntEnum
+from wpilib import XboxController
 from playingwithfusion import TimeOfFlight
 from utils.calibration import Calibration
 from utils.units import sign
@@ -41,6 +42,9 @@ class ElevatorStates(IntEnum):
 
 class ElevatorControl(metaclass=Singleton):
     def __init__(self):
+
+        ctrlIdx = 1
+        self.ctrl = XboxController(ctrlIdx)
 
         # Coral Scoring Heights in meters
         self.L1_Height = Calibration(name="Elevator Preset Height L1", units="m", default=REEF_L1_HEIGHT_M - ELEV_MIN_HEIGHT_M)
@@ -252,6 +256,17 @@ class ElevatorControl(metaclass=Singleton):
         self.desTrapPState = TrapezoidProfile.State(self.heightGoalIn,0)
         self._setMotorPosAndFF()
 
+        if self.ctrl.getAButton():
+            self.heightGoalIn = REEF_L1_HEIGHT_M
+        if self.ctrl.getXButton():
+            self.heightGoalIn = REEF_L2_HEIGHT_M
+        if self.ctrl.getBButton():
+            self.heightGoalIn = REEF_L2_HEIGHT_M
+        if self.ctrl.getYButton():
+            self.heightGoalIn = REEF_L2_HEIGHT_M
+        self.desTrapPState = TrapezoidProfile.State(self.heightGoalIn, 0)
+        self._setMotorPosAndFF()
+
         # Update motor closed-loop calibration
         if self.kP.isChanged():
             self.rMotor.setPID(self.kP.get(), 0.0, 0.0)
@@ -268,6 +283,8 @@ class ElevatorControl(metaclass=Singleton):
 
         self.previousVelInps = self.actualVelInps
         self.previousUpdateTimeS = self.currentUpdateTimeS
+
+
 
     # API to set current height goal
     def setHeightGoal(self, heightGoalIn:float) -> None:
