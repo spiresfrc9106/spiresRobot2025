@@ -49,12 +49,12 @@ class RobotIdentification(metaclass=Singleton):
         elif self.roboControl.getSerialNumber() == "0316b37c":
             #Test to see if the RoboRio serial number is our testboard's serial number.
             self.robotType = RobotTypes.TestBoard
-        elif self.roboControl.getSerialNumber() == "032430C5" \
-                or FRC_TEAM_NUMBER==9106 and wpilib.TimedRobot.isSimulation():
+        elif self.roboControl.getSerialNumber() == "032430C5":
             self.robotType = RobotTypes.Spires2023
         elif self.roboControl.getSerialNumber() == "032B1F4B":
             self.robotType = RobotTypes.Spires2024
-        elif self.roboControl.getSerialNumber() == "032B1FBB":
+        elif self.roboControl.getSerialNumber() == "032B1FBB" \
+                or FRC_TEAM_NUMBER==9106 and wpilib.TimedRobot.isSimulation():
             self.robotType = RobotTypes.SpiresTestBoard
         elif self.roboControl.getSerialNumber() == "03057ab7":
             self.robotType = RobotTypes.SpiresRoboRioV1

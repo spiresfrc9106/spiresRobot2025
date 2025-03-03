@@ -15,7 +15,7 @@ from utils.faults import Fault
 # Fault handling for not crashing code if the motor controller is disconnected
 # Fault annunication logic to trigger warnings if a motor couldn't be configured
 class WrapperedSparkMax:
-    def __init__(self, canID, name, brakeMode=False, currentLimitA=40.0):
+    def __init__(self, canID, name, brakeMode=False, currentLimitA=40):
         self.ctrl = SparkMax(canID, SparkMax.MotorType.kBrushless)
         self.closedLoopCtrl = self.ctrl.getClosedLoopController()
         self.encoder = self.ctrl.getEncoder()
@@ -23,13 +23,15 @@ class WrapperedSparkMax:
         self.configSuccess = False
         self.disconFault = Fault(f"Spark Max {name} ID {canID} disconnected")
         self.simActPos = 0
+        self.canID = canID
 
         # pylint: disable= R0801
-        self.desPos = 0
-        self.desVel = 0
+        self.desPosRad = 0
+        self.desVelRadps = 0
         self.desVolt = 0
-        self.actPos = 0
-        self.actVel = 0
+        self.actPosRad = 0
+        self.actVelRadps = 0
+        self.actVolt = 0
 
         self.cfg = SparkMaxConfig()
         self.cfg.signals.appliedOutputPeriodMs(200)
@@ -37,37 +39,50 @@ class WrapperedSparkMax:
         self.cfg.signals.primaryEncoderPositionPeriodMs(20)
         self.cfg.signals.primaryEncoderVelocityPeriodMs(200)
         self.cfg.setIdleMode(SparkBaseConfig.IdleMode.kBrake if brakeMode else SparkBaseConfig.IdleMode.kCoast)
-        self.cfg.smartCurrentLimit(round(currentLimitA))
+        self.cfg.smartCurrentLimit(round(currentLimitA),0,5700)
 
-        # Perform motor configuration, tracking errors and retrying until we have success
-        # Clear previous configuration, and persist anything set in this config.
-        retryCounter = 0
-        while not self.configSuccess and retryCounter < 10:
-            retryCounter += 1
-            err = self.ctrl.configure(self.cfg, 
-                                      SparkBase.ResetMode.kResetSafeParameters, 
-                                      SparkBase.PersistMode.kPersistParameters)
-
-            # Check if any operation triggered an error
-            if err != REVLibError.kOk:
-                print(
-                    f"Failure configuring Spark Max {name} CAN ID {canID}, retrying..."
-                )
-                self.configSuccess = False
-            else:
-                # Only attempt other communication if we're able to successfully configure
-                self.configSuccess = True
-            time.sleep(0.1)
-        
-        self.disconFault.set(not self.configSuccess)
+        self._sparkmax_config(retries=10, resetMode=SparkBase.ResetMode.kResetSafeParameters, persistMode=SparkBase.PersistMode.kPersistParameters, step="Initial Config")
 
         addLog(self.name + "_outputCurrent", self.ctrl.getOutputCurrent, "A")
         addLog(self.name + "_desVolt", lambda: self.desVolt, "V")
-        addLog(self.name + "_desPos", lambda: self.desPos, "rad")
-        addLog(self.name + "_desVel", lambda: self.desVel, "RPM")
-        addLog(self.name + "_actPos", lambda: self.actPos, "rad")
-        addLog(self.name + "_actVel", lambda: self.actVel, "RPM")
+        addLog(self.name + "_desPos", lambda: self.desPosRad, "rad")
+        addLog(self.name + "_desVel", lambda: self.desVelRadps, "radps")
+        addLog(self.name + "_actVolt", lambda: self.actVolt, "V")
+        addLog(self.name + "_actPos", lambda: self.actPosRad, "rad")
+        addLog(self.name + "_actVel", lambda: RPM2RadPerSec(self.encoder.getVelocity()), "radps")
 
+    def _sparkmax_config(self, retries, resetMode, persistMode, printResults=True, step=""):
+        # Perform motor configuration, tracking errors and retrying until we have success
+        # Clear previous configuration, and persist anything set in this config.
+        retryCounter = 0
+        success=False
+        while not success and retryCounter < retries:
+            retryCounter += 1
+            err = self.ctrl.configure(self.cfg, resetMode, persistMode)
+
+            # Check if any operation triggered an error
+            if err != REVLibError.kOk:
+                if printResults:
+                    print(
+                        f"{step} Failure configuring Spark Max {self.name} CAN ID {self.canID}, retrying..."
+                    )
+            else:
+                # Only attempt other communication if we're able to successfully configure
+                if printResults:
+                    print(f"{step} Successfully connected to {self.name} motor")
+                success = True
+            if retryCounter < retries:
+                time.sleep(0.1)
+
+        self.configSuccess = success
+
+        self.disconFault.set(not self.configSuccess)
+
+    def setFollow(self, leaderCanID, invert=False):
+        self.cfg.follow(leaderCanID, invert)
+        self.ctrl.configure(self.cfg,
+                                SparkBase.ResetMode.kNoResetSafeParameters, 
+                                SparkBase.PersistMode.kPersistParameters)
 
     def setInverted(self, isInverted):
         if self.configSuccess:
@@ -99,7 +114,7 @@ class WrapperedSparkMax:
         self.simActPos = posCmd
         posCmdRev = rad2Rev(posCmd)
 
-        self.desPos = posCmd
+        self.desPosRad = posCmd
         self.desVolt = arbFF
 
         if self.configSuccess:
@@ -123,12 +138,13 @@ class WrapperedSparkMax:
             arbFF (int, optional): _description_. Defaults to 0.
         """
 
-        self.desVel = radPerSec2RPM(velCmd)
+        self.desVelRadps = velCmd
+        desVelRPM = radPerSec2RPM(velCmd)
         self.desVolt = arbFF
 
         if self.configSuccess:
             err = self.closedLoopCtrl.setReference(
-                self.desVel,
+                desVelRPM,
                 SparkMax.ControlType.kVelocity,
                 ClosedLoopSlot.kSlot0,
                 arbFF,
@@ -149,7 +165,7 @@ class WrapperedSparkMax:
                 pos = rev2Rad(self.encoder.getPosition())
             else:
                 pos = 0
-        self.actPos = pos
+        self.actPosRad = pos
         return pos
 
     def getMotorVelocityRadPerSec(self):
@@ -157,5 +173,13 @@ class WrapperedSparkMax:
             vel = self.encoder.getVelocity()
         else:
             vel = 0
-        self.actVel = vel
-        return RPM2RadPerSec(vel)
+        self.actVelRadps = RPM2RadPerSec(vel)
+        return self.actVelRadps
+
+    def getAppliedOutput(self):
+        self.actVolt = self.ctrl.getAppliedOutput() * 12
+        return self.actVolt
+
+    def setSmartCurrentLimit(self, currentLimitA: int):
+        self.cfg.smartCurrentLimit(round(currentLimitA),0,5700)
+        self._sparkmax_config(retries=4, resetMode=SparkBase.ResetMode.kNoResetSafeParameters, persistMode=SparkBase.PersistMode.kNoPersistParameters, printResults=True, step="Current Limit")

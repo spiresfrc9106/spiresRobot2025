@@ -2,14 +2,12 @@ from wpimath import applyDeadband
 from wpimath.filter import SlewRateLimiter
 from wpilib import XboxController
 from drivetrain.drivetrainCommand import DrivetrainCommand
+from drivetrain.drivetrainControl import DrivetrainControl
 from drivetrain.drivetrainPhysical import MAX_FWD_REV_SPEED_MPS,MAX_STRAFE_SPEED_MPS,\
 MAX_ROTATE_SPEED_RAD_PER_SEC,MAX_TRANSLATE_ACCEL_MPS2,MAX_ROTATE_ACCEL_RAD_PER_SEC_2
 from utils.allianceTransformUtils import onRed
 from utils.faults import Fault
 from utils.signalLogging import addLog
-from drivetrain.drivetrainControl import DrivetrainControl
-#from utils.signalLogging import addLog
-
 
 class DriverInterface:
     """Class to gather input from the driver of the robot"""
@@ -37,6 +35,7 @@ class DriverInterface:
 
         # Utility - reset to zero-angle at the current pose
         self.gyroResetCmd = False
+        self.motorTestCmd = 0
 
         self.processedStrafe = 0
         self.processedRotate = 0
@@ -56,12 +55,13 @@ class DriverInterface:
         addLog("ytest_standard_dev_t", lambda: self.tempStdDevT, "")
 
         # Logging
-        #addLog("DI FwdRev Cmd", lambda: self.velXCmd, "mps")
-        #addLog("DI Strafe Cmd", lambda: self.velYCmd, "mps")
-        #addLog("DI Rot Cmd", lambda: self.velTCmd, "radps")
-        #addLog("DI gyroResetCmd", lambda: self.gyroResetCmd, "bool")
-        #addLog("DI autoDriveToSpeaker", lambda: self.autoDriveToSpeaker, "bool")
-        #addLog("DI autoDriveToPickup", lambda: self.autoDriveToPickup, "bool")
+        addLog("DI FwdRev Cmd", lambda: self.velXCmd, "mps")
+        addLog("DI Strafe Cmd", lambda: self.velYCmd, "mps")
+        addLog("DI Rot Cmd", lambda: self.velTCmd, "radps")
+        addLog("DI gyroResetCmd", lambda: self.gyroResetCmd, "bool")
+        addLog("DI autoDriveToSpeaker", lambda: self.autoDriveToSpeaker, "bool")
+        addLog("DI autoDriveToPickup", lambda: self.autoDriveToPickup, "bool")
+        addLog("DI motorTestCmd", lambda: self.motorTestCmd, "frac")
 
     def update(self):
         # value of contoller buttons
@@ -101,6 +101,8 @@ class DriverInterface:
             self.autoDriveToSpeaker = False
             self.autoDriveToPickup = False
             self.createDebugObstacle = False
+
+            self.motorTestCmd = self.ctrl.getLeftTriggerAxis() - self.ctrl.getRightTriggerAxis()
 
             self.connectedFault.setNoFault()
 
@@ -162,6 +164,9 @@ class DriverInterface:
 
 
 
+    def getMotorTestPowerRpm(self):
+        rpms = 2000
+        return self.motorTestCmd * rpms
 
     def getCmd(self) -> DrivetrainCommand:
         retval = DrivetrainCommand()

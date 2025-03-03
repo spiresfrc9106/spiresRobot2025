@@ -17,6 +17,9 @@ class RobotDependentConstants:
                 "BL_OFFSET_DEG": -56.2+180,
                 "BR_OFFSET_DEG": -11.2-90+180,
                 "GYRO": "NAVX", # "NAVX", # "ADIS16470_IMU",
+                "HAS_DRIVETRAIN": True,
+                "HAS_ELEVATOR": False,
+                "HAS_MOTOR_TEST": False,
             },
             RobotTypes.Spires2024: {
                 # "SWERVE_WHEEL_GEAR_RATIO": 5.50, # Base Low
@@ -32,6 +35,9 @@ class RobotDependentConstants:
                 "BL_OFFSET_DEG": 125.4-180,
                 "BR_OFFSET_DEG": 117.5-90-180,
                 "GYRO": "ADIS16470_IMU",
+                "HAS_DRIVETRAIN": True,
+                "HAS_ELEVATOR": True,
+                "HAS_MOTOR_TEST": False,
             },
             RobotTypes.SpiresTestBoard: {
                 # "SWERVE_WHEEL_GEAR_RATIO": 5.50, # Base Low
@@ -47,6 +53,9 @@ class RobotDependentConstants:
                 "BL_OFFSET_DEG": 0,
                 "BR_OFFSET_DEG": 0,
                 "GYRO": "NoGyro",
+                "HAS_DRIVETRAIN": False,
+                "HAS_ELEVATOR": True,
+                "HAS_MOTOR_TEST": False,
             },
             RobotTypes.SpiresRoboRioV1: {
                 # "SWERVE_WHEEL_GEAR_RATIO": 5.50, # Base Low
@@ -62,6 +71,9 @@ class RobotDependentConstants:
                 "BL_OFFSET_DEG": 0,
                 "BR_OFFSET_DEG": 0,
                 "GYRO": "NoGyro",
+                "HAS_DRIVETRAIN": False,
+                "HAS_ELEVATOR": False,
+                "HAS_MOTOR_TEST": False,
             },
         }
 
