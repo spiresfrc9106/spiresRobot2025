@@ -3,17 +3,40 @@
 # It is definitely buggy and untested, but it gives us a great framework on how to control an elevator.
 
 
-from Elevatorandmech.ElevatorandMechConstants import ELEV_HEIGHT, MAX_ELEV_ACCEL_MPS2, MAX_ELEV_VEL_MPS
-from utils.calibration import Calibration
-from utils.units import sign
-from utils.signalLogging import log, getNowLogger
-# from utils.constants import ELEV_LM_CANID, ELEV_RM_CANID, ELEV_TOF_CANID
-from utils.singleton import Singleton
-from wrappers.wrapperedSparkMax import WrapperedSparkMax
-from wpimath.trajectory import TrapezoidProfile
-from wpilib import Timer
 
-TEST_MOTOR_CANID = 20
+from utils.signalLogging import log, getNowLogger
+from utils.singleton import Singleton
+from utils.robotIdentification import RobotTypes, RobotIdentification
+from wrappers.wrapperedSparkMax import WrapperedSparkMax
+
+class MotorDependentConstants:
+    def __init__(self):
+        self.motorDepConstants = {
+            RobotTypes.Spires2023: {
+                "HAS_MOTOR_TEST": False,
+                "TEST_MOTOR_CANID": None,
+            },
+            RobotTypes.Spires2025: {
+                "HAS_MOTOR_TEST": False,
+                "TEST_MOTOR_CANID": None,
+            },
+            RobotTypes.SpiresTestBoard: {
+                "HAS_MOTOR_TEST": False,
+                "TEST_MOTOR_CANID": None,
+        },
+            RobotTypes.SpiresRoboRioV1: {
+                "HAS_MOTOR_TEST": False,
+                "TEST_MOTOR_CANID": None,
+            },
+        }
+
+    def get(self):
+        return self.motorDepConstants[RobotIdentification().getRobotType()]
+
+motorDepConstants = MotorDependentConstants().get()
+
+
+TEST_MOTOR_CANID = motorDepConstants['TEST_MOTOR_CANID']
 
 class MotorControl(metaclass=Singleton):
     def __init__(self):
@@ -36,7 +59,7 @@ class MotorControl(metaclass=Singleton):
             self.Rmotor.setVelCmd(0,0)
             self.Rmotor.setVoltage(0.0)
         self.motorRpmLogger.logNow(desiredSpeedRpm)
-        self.Rmotor.getExternalAbsoluteEncoderVelocityRadPerSec()
+        self.Rmotor.getMotorVelocityRadPerSec()
         self.Rmotor.getAppliedOutput()
 
 

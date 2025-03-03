@@ -10,7 +10,6 @@ from utils.signalLogging import addLog
 
 
 class OperatorInterface:
-    #add input on a joystick so one joystick will control elev and one arm
     """Class to gather input from the driver of the robot"""
 
     def __init__(self):
@@ -40,11 +39,11 @@ class OperatorInterface:
         if self.ctrl.isConnected():
             # Convert from  joystick sign/axis conventions to robot conventions
             vYJoyRaw = self.ctrl.getLeftY() * -1
-            vYJoyRaw2 = self.ctrl.getRightY() * -1
+            vYJoyRaw2 = self.ctrl.getRightY() * -1 # TODO xyzzy talk to Benjamin about a better name for this
 
             # deadband
             vYJoyWithDeadband = applyDeadband(vYJoyRaw, 0.15)
-            vYJoy2WithDeadband = applyDeadband(vYJoyRaw2, 0.15)
+            vYJoy2WithDeadband = applyDeadband(vYJoyRaw2, 0.15) # TODO xyzzy talk to Benjamin about a better name for this
 
             self.elevatorPosYCmd = vYJoyWithDeadband
             self.armPosYCmd = vYJoy2WithDeadband
@@ -58,7 +57,7 @@ class OperatorInterface:
 
 
     def getDesElevatorPosIn(self)->float:
-        elevatorRangeIn = 6.0
+        elevatorRangeIn = 5.0
         return (elevatorRangeIn/2.0) * (1.0 + self.elevatorPosYCmd)
 
     def getDesArmAngleDeg(self)->float:

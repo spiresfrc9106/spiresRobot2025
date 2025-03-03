@@ -8,7 +8,7 @@ from utils.units import deg2Rad
 from utils.units import in2m
 from utils.robotIdentification import RobotIdentification, RobotTypes
 from wrappers.wrapperedRevThroughBoreEncoder import WrapperedRevThroughBoreEncoder
-from drivetrain.robotDependentConstants import RobotDependentConstants
+from drivetrain.DrivetrainDependentConstants import DrivetrainDependentConstants
 
 """
 Defines the physical dimensions and characteristics of the drivetrain
@@ -16,15 +16,15 @@ Defines the physical dimensions and characteristics of the drivetrain
 
 ###################################################################
 
-robotDepConstants = RobotDependentConstants().get()[RobotIdentification().getRobotType()]
+drivetrainDepConstants = DrivetrainDependentConstants().get()
 
 ###################################################################
 # Physical dimensions and mass distribution
 
 # Wheel base half width: Distance from the center of the frame rail
 # out to the center of the "contact patch" where the wheel meets the ground
-WHEEL_BASE_HALF_WIDTH_M = inchesToMeters(robotDepConstants["WIDTH"] / 2.0)
-WHEEL_BASE_HALF_LENGTH_M = inchesToMeters(robotDepConstants["LENGTH"] / 2.0)
+WHEEL_BASE_HALF_WIDTH_M = inchesToMeters(drivetrainDepConstants["WIDTH"] / 2.0)
+WHEEL_BASE_HALF_LENGTH_M = inchesToMeters(drivetrainDepConstants["LENGTH"] / 2.0)
 
 # Additional distance from the wheel contact patch out to the edge of the bumper
 BUMPER_THICKNESS_M = inchesToMeters(2.5)
@@ -32,7 +32,7 @@ BUMPER_THICKNESS_M = inchesToMeters(2.5)
 # Total mass includes robot, battery, and bumpers
 # more than the "weigh-in" weight
 if RobotIdentification().isSpiresRobot():
-    ROBOT_MASS_KG = lbsToKg(robotDepConstants['MASS_LBS'])
+    ROBOT_MASS_KG = lbsToKg(drivetrainDepConstants['MASS_LBS'])
 else:
     ROBOT_MASS_KG = lbsToKg(60)
 
@@ -54,7 +54,7 @@ if RobotIdentification().getRobotType() == RobotTypes.Main:
 elif RobotIdentification().getRobotType() == RobotTypes.Practice:
     WHEEL_GEAR_RATIO = WHEEL_GEAR_RATIO_L2
 elif RobotIdentification().isSpiresRobot():
-    WHEEL_GEAR_RATIO = robotDepConstants['SWERVE_WHEEL_GEAR_RATIO']
+    WHEEL_GEAR_RATIO = drivetrainDepConstants['SWERVE_WHEEL_GEAR_RATIO']
 else:
     WHEEL_GEAR_RATIO = WHEEL_GEAR_RATIO_L3
 
@@ -68,7 +68,7 @@ WHEEL_FUDGE_FACTOR = 0.9238
 
 # Nominal 4-inch diameter swerve drive wheels
 # https:#www.swervedrivespecialties.com/collections/mk4i-parts/products/billet-wheel-4d-x-1-5w-bearing-bore
-WHEEL_RADIUS_IN = robotDepConstants["SWERVE_WHEEL_DIAMETER_IN"] / 2.0 * WHEEL_FUDGE_FACTOR
+WHEEL_RADIUS_IN = drivetrainDepConstants["SWERVE_WHEEL_DIAMETER_IN"] / 2.0 * WHEEL_FUDGE_FACTOR
 
 
 # Utility conversion functions to go between drivetrain "linear" measurements and wheel motor rotational measurements
@@ -87,7 +87,7 @@ def dtMotorRotToLinear(rot):
 # Drivetrain Performance Mechanical limits
 # Nominal calculations (ideal)
 if RobotIdentification().isSpiresRobot():
-    MAX_DT_MOTOR_SPEED_RPS = robotDepConstants['SWERVE_WHEEL_MAX_SPEED_RPS']
+    MAX_DT_MOTOR_SPEED_RPS = drivetrainDepConstants['SWERVE_WHEEL_MAX_SPEED_RPS']
 else:
     MAX_DT_MOTOR_SPEED_RPS = DCMotor.NEO(1).freeSpeed
     #MAX_DT_MOTOR_SPEED_RPS = DCMotor.neoVortex(1).freeSpeed
@@ -148,10 +148,10 @@ if RobotIdentification().getRobotType() == RobotTypes.Main:
     BR_ENCODER_MOUNT_OFFSET_RAD = 1.259
     BL_ENCODER_MOUNT_OFFSET_RAD = 1.777
 elif RobotIdentification().isSpiresRobot():
-    FL_ENCODER_MOUNT_OFFSET_RAD = deg2Rad(robotDepConstants["FL_OFFSET_DEG"])
-    FR_ENCODER_MOUNT_OFFSET_RAD = deg2Rad(robotDepConstants["FR_OFFSET_DEG"])
-    BL_ENCODER_MOUNT_OFFSET_RAD = deg2Rad(robotDepConstants["BL_OFFSET_DEG"])
-    BR_ENCODER_MOUNT_OFFSET_RAD = deg2Rad(robotDepConstants["BR_OFFSET_DEG"])
+    FL_ENCODER_MOUNT_OFFSET_RAD = deg2Rad(drivetrainDepConstants["FL_OFFSET_DEG"])
+    FR_ENCODER_MOUNT_OFFSET_RAD = deg2Rad(drivetrainDepConstants["FR_OFFSET_DEG"])
+    BL_ENCODER_MOUNT_OFFSET_RAD = deg2Rad(drivetrainDepConstants["BL_OFFSET_DEG"])
+    BR_ENCODER_MOUNT_OFFSET_RAD = deg2Rad(drivetrainDepConstants["BR_OFFSET_DEG"])
 else:
     FR_ENCODER_MOUNT_OFFSET_RAD = 0.8412
     FL_ENCODER_MOUNT_OFFSET_RAD = 0.2412

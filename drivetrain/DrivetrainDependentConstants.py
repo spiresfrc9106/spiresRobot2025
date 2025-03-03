@@ -1,8 +1,8 @@
 from wpimath.system.plant import DCMotor
-from utils.robotIdentification import RobotTypes
-class RobotDependentConstants:
+from utils.robotIdentification import RobotIdentification, RobotTypes
+class DrivetrainDependentConstants:
     def __init__(self):
-        self.robotConstants = {
+        self.drivetrainConstants = {
             RobotTypes.Spires2023: {
                 "SWERVE_WHEEL_GEAR_RATIO": 5.50,   # Base Low
                 #"SWERVE_WHEEL_GEAR_RATIO": 5.08,  # Base Medium
@@ -18,7 +18,6 @@ class RobotDependentConstants:
                 "BR_OFFSET_DEG": -11.2-90+180,
                 "GYRO": "NAVX", # "NAVX", # "ADIS16470_IMU",
                 "HAS_DRIVETRAIN": True,
-                "HAS_MOTOR_TEST": False,
             },
             RobotTypes.Spires2025: {
                 # "SWERVE_WHEEL_GEAR_RATIO": 5.50, # Base Low
@@ -35,7 +34,6 @@ class RobotDependentConstants:
                 "BR_OFFSET_DEG": 117.5-90-180,
                 "GYRO": "ADIS16470_IMU",
                 "HAS_DRIVETRAIN": True,
-                "HAS_MOTOR_TEST": False,
             },
             RobotTypes.SpiresTestBoard: {
                 # "SWERVE_WHEEL_GEAR_RATIO": 5.50, # Base Low
@@ -52,7 +50,6 @@ class RobotDependentConstants:
                 "BR_OFFSET_DEG": 0,
                 "GYRO": "NoGyro",
                 "HAS_DRIVETRAIN": False,
-                "HAS_MOTOR_TEST": False,
             },
             RobotTypes.SpiresRoboRioV1: {
                 # "SWERVE_WHEEL_GEAR_RATIO": 5.50, # Base Low
@@ -69,9 +66,8 @@ class RobotDependentConstants:
                 "BR_OFFSET_DEG": 0,
                 "GYRO": "NoGyro",
                 "HAS_DRIVETRAIN": False,
-                "HAS_MOTOR_TEST": False,
             },
         }
 
     def get(self):
-        return self.robotConstants
+        return self.drivetrainConstants[RobotIdentification().getRobotType()]

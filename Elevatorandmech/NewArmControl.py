@@ -7,27 +7,63 @@
 #2) setting up state machine so that it will be iterated through; make sure states are changed!
 
 from enum import Enum
-from playingwithfusion import TimeOfFlight
-
-from Elevatorandmech.ArmConstants import ARM_GEARBOX_GEAR_RATIO
-from utils.calibration import Calibration
-from utils.units import sign
-from utils.signalLogging import  addLog, getNowLogger
-#from utils.constants import ARM_LM_CANID, ARM_RM_CANID, ARM_TOF_CANID
-from utils.singleton import Singleton
-from wrappers.wrapperedPulseWidthEncoder import WrapperedPulseWidthEncoder
-from wrappers.wrapperedRevThroughBoreEncoder import WrapperedRevThroughBoreEncoder
-from wrappers.wrapperedSparkMax import WrapperedSparkMax
-from rev import SparkLowLevel
 from wpimath.trajectory import TrapezoidProfile
 from wpilib import Timer
 import math
 
 
-MAX_ARM_VEL_DEGPS = 20 # Could be 80
-MAX_ARM_ACCEL_DEGPS2 = 4 # Could be 160
+from utils.calibration import Calibration
+from utils.units import sign
+from utils.signalLogging import  addLog, getNowLogger
+from utils.singleton import Singleton
+from utils.robotIdentification import RobotIdentification
+from wrappers.wrapperedRevThroughBoreEncoder import WrapperedRevThroughBoreEncoder
+from wrappers.wrapperedSparkMax import WrapperedSparkMax
+from utils.robotIdentification import RobotTypes
 
-ARM_M_CANID = 20
+class ArmDependentConstants:
+    def __init__(self):
+        self.armDepConstants = {
+            RobotTypes.Spires2023: {
+                "HAS_ARM": False,
+                "ARM_GEARBOX_GEAR_RATIO": 50.0 / 1.0,
+                "ARM_M_CANID": None,
+                "MAX_ARM_VEL_DEGPS": 20,
+                "MAX_ARM_ACCEL_DEGPS2": 4,
+            },
+            RobotTypes.Spires2025: {
+                "HAS_ARM": True,
+                "ARM_GEARBOX_GEAR_RATIO": 50.0 / 1.0,
+                "ARM_M_CANID": 99,  # xyzzy fix me
+                "MAX_ARM_VEL_DEGPS": 20,
+                "MAX_ARM_ACCEL_DEGPS2": 4,
+            },
+            RobotTypes.SpiresTestBoard: {
+                "HAS_ARM": False,  # xyzzy talk to Benjamin about switching dev test setups
+                "ARM_GEARBOX_GEAR_RATIO": 5.0 / 1.0,
+                "ARM_M_CANID": 99,  # xyzzy fix me
+                "MAX_ARM_VEL_DEGPS": 20,
+                "MAX_ARM_ACCEL_DEGPS2": 4,
+            },
+            RobotTypes.SpiresRoboRioV1: {
+                "HAS_ARM": True,
+                "ARM_GEARBOX_GEAR_RATIO": 5.0 / 1.0,
+                "ARM_M_CANID": 18,
+                "MAX_ARM_VEL_DEGPS": 20,
+                "MAX_ARM_ACCEL_DEGPS2": 4,
+            },
+        }
+
+    def get(self):
+        return self.armDepConstants[RobotIdentification().getRobotType()]
+
+
+armDepConstants = ArmDependentConstants().get()
+
+ARM_GEARBOX_GEAR_RATIO = armDepConstants['ARM_GEARBOX_GEAR_RATIO']
+
+MAX_ARM_VEL_DEGPS = armDepConstants['MAX_ARM_VEL_DEGPS']
+MAX_ARM_ACCEL_DEGPS2 = armDepConstants['MAX_ARM_ACCEL_DEGPS2']
 
 #will need to use abs encoder angle to find offset for 
 #Spark Max angle, then Spark Max angle can be used
@@ -50,7 +86,7 @@ class ArmControl(metaclass=Singleton):
         self.desTrapPState = TrapezoidProfile.State(self.armGoalDeg,0)
 
         # Arm Motors
-        self.Motor = WrapperedSparkMax(ARM_M_CANID, "ArmMotor", brakeMode=False, currentLimitA=5)
+        self.Motor = WrapperedSparkMax(armDepConstants['ARM_M_CANID'], "ArmMotor", brakeMode=False, currentLimitA=5)
         MotorIsInverted = True
         self.Motor.setInverted(MotorIsInverted)
 
