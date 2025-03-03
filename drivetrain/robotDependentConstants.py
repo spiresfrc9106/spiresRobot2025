@@ -21,7 +21,7 @@ class RobotDependentConstants:
                 "HAS_ELEVATOR": False,
                 "HAS_MOTOR_TEST": False,
             },
-            RobotTypes.Spires2024: {
+            RobotTypes.Spires2025: {
                 # "SWERVE_WHEEL_GEAR_RATIO": 5.50, # Base Low
                 # "SWERVE_WHEEL_GEAR_RATIO": 5.08, # Base Medium
                 "SWERVE_WHEEL_GEAR_RATIO": 4.71, # Base High
