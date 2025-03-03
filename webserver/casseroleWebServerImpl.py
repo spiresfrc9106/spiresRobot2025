@@ -3,6 +3,7 @@ import os
 import platform
 import sys
 import json
+import datetime
 
 # These imports are mostly just to make sure we put versions on the webpage
 import wpilib
@@ -86,7 +87,8 @@ class CasseroleWebServerImpl(SimpleHTTPRequestHandler):
         deployText += f"PhotonVision - {version.PHOTONLIB_VERSION} \n"
         deployText += f"Working Dir - {os.getcwd()}\n"
 
-        filledOut = INDEX_TMPLT_TXT.replace("${BUILD_INFO}", deployText)
+        tim = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+        filledOut = (INDEX_TMPLT_TXT.replace("${BUILD_INFO}", deployText)).replace("${VERSION_FRESH}",tim)
 
         self.send_response(200)
         self.send_header("Content-Type", "text/html")
