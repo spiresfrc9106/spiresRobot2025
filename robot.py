@@ -4,14 +4,14 @@ import wpilib
 import ntcore as nt
 from wpimath.geometry import Translation2d, Pose2d, Rotation2d
 from dashboard import Dashboard
-from Elevatorandmech.ElevatorControl import ElevatorControl
-from Elevatorandmech.ArmControl import ArmControl
-from testingMotors.motorCtrl import MotorControl
+from Elevatorandmech.ElevatorControl import ElevatorControl, elevDepConstants
+from Elevatorandmech.NewArmControl import ArmControl, armDepConstants
+from testingMotors.motorCtrl import MotorControl, motorDepConstants
 from drivetrain.controlStrategies.autoDrive import AutoDrive
 from drivetrain.controlStrategies.trajectory import Trajectory
 from drivetrain.drivetrainCommand import DrivetrainCommand
 from drivetrain.drivetrainControl import DrivetrainControl
-from drivetrain.robotDependentConstants import RobotDependentConstants
+from drivetrain.DrivetrainDependentConstants import DrivetrainDependentConstants
 from humanInterface.driverInterface import DriverInterface
 from humanInterface.operatorInterface import OperatorInterface
 from humanInterface.ledControl import LEDControl
@@ -30,7 +30,7 @@ from webserver.webserver import Webserver
 from AutoSequencerV2.autoSequencer import AutoSequencer
 
 # TODO Refactor this so that it is more DRY.
-robotDepConstants = RobotDependentConstants().get()[RobotIdentification().getRobotType()]
+drivetrainDepConstants = DrivetrainDependentConstants().get()
 
 class MyRobot(wpilib.TimedRobot):
 
@@ -48,10 +48,12 @@ class MyRobot(wpilib.TimedRobot):
         wpilib.LiveWindow.disableAllTelemetry()
         self.webserver = Webserver()
 
-        if robotDepConstants['HAS_DRIVETRAIN']:
+        if drivetrainDepConstants['HAS_DRIVETRAIN']:
             self.driveTrain = DrivetrainControl()
-        if robotDepConstants['HAS_ELEVATOR']:
+        if elevDepConstants['HAS_ELEVATOR']:
             self.elev= ElevatorControl()
+        if armDepConstants['HAS_ARM']:
+            self.arm= ArmControl()
 
         self.autodrive = AutoDrive()
 
@@ -70,7 +72,7 @@ class MyRobot(wpilib.TimedRobot):
 
         self.arm = ArmControl()
 
-        if robotDepConstants['HAS_MOTOR_TEST']:
+        if motorDepConstants['HAS_MOTOR_TEST']:
             self.motorCtrlFun = MotorControl()
 
         # Normal robot code updates every 20ms, but not everything needs to be that fast.
@@ -102,12 +104,12 @@ class MyRobot(wpilib.TimedRobot):
         self.oInt.update()
         self.stt.mark("Driver Interface")
 
-        if robotDepConstants['HAS_DRIVETRAIN']:
+        if drivetrainDepConstants['HAS_DRIVETRAIN']:
             self.driveTrain.update()
             self.stt.mark("Drivetrain")
 
         self.autodrive.updateTelemetry()
-        if robotDepConstants['HAS_DRIVETRAIN']:
+        if drivetrainDepConstants['HAS_DRIVETRAIN']:
             self.driveTrain.poseEst._telemetry.setCurAutoDriveWaypoints(self.autodrive.getWaypoints())
             self.driveTrain.poseEst._telemetry.setCurObstacles(self.autodrive.rfp.getObstacleStrengths())
         self.stt.mark("Telemetry")
@@ -130,7 +132,7 @@ class MyRobot(wpilib.TimedRobot):
         # Start up the autonomous sequencer
         self.autoSequencer.initialize()
 
-        if robotDepConstants['HAS_DRIVETRAIN']:
+        if drivetrainDepConstants['HAS_DRIVETRAIN']:
             # Use the autonomous routines starting pose to init the pose estimator
             self.driveTrain.poseEst.setKnownPose(self.autoSequencer.getStartingPose())
 
@@ -142,15 +144,18 @@ class MyRobot(wpilib.TimedRobot):
         self.autoSequencer.update()
 
         # Operators cannot control in autonomous
-        if robotDepConstants['HAS_DRIVETRAIN']:
+        if drivetrainDepConstants['HAS_DRIVETRAIN']:
             self.driveTrain.setManualCmd(DrivetrainCommand())
 
-        if robotDepConstants['HAS_ELEVATOR']:
+        if elevDepConstants['HAS_ELEVATOR']:
             #if self.count == 1:
             #    self.elev.forceStartAtHeightZeroIn()
             self.elev.update()
             self.stt.mark("Elevator-auto")
 
+        if armDepConstants['HAS_ARM']:
+            self.arm.update()
+            self.stt.mark("Arm-auto")
 
     def autonomousExit(self):
         self.autoSequencer.end()
@@ -159,12 +164,12 @@ class MyRobot(wpilib.TimedRobot):
     ## Teleop-Specific init and update
     def teleopInit(self):
         # clear existing telemetry trajectory
-        if robotDepConstants['HAS_DRIVETRAIN']:
+        if drivetrainDepConstants['HAS_DRIVETRAIN']:
             self.driveTrain.poseEst._telemetry.setCurAutoTrajectory(None)
 
         # If we're starting teleop but haven't run auto, set a nominal default pose
         # This is needed because initial pose is usually set by the autonomous routine
-        if robotDepConstants['HAS_DRIVETRAIN']:
+        if drivetrainDepConstants['HAS_DRIVETRAIN']:
             if not self.autoHasRun:
                 self.driveTrain.poseEst.setKnownPose(
                     Pose2d(1.0, 1.0, Rotation2d(0.0))
@@ -174,19 +179,19 @@ class MyRobot(wpilib.TimedRobot):
     def teleopPeriodic(self):
         # TODO - this is technically one loop delayed, which could induce lag
         # Probably not noticeable, but should be corrected.
-        if robotDepConstants['HAS_DRIVETRAIN']:
+        if drivetrainDepConstants['HAS_DRIVETRAIN']:
             self.driveTrain.setManualCmd(self.dInt.getCmd())
 
-        if robotDepConstants['HAS_MOTOR_TEST']:
+        if motorDepConstants['HAS_MOTOR_TEST']:
             self.motorCtrlFun.update(self.dInt.getMotorTestPowerRpm())
 
         if self.dInt.getGyroResetCmd():
-            if robotDepConstants['HAS_DRIVETRAIN']:
+            if drivetrainDepConstants['HAS_DRIVETRAIN']:
                 self.driveTrain.resetGyro()
 
 
         if self.dInt.getCreateObstacle():
-            if robotDepConstants['HAS_DRIVETRAIN']:
+            if drivetrainDepConstants['HAS_DRIVETRAIN']:
                 # For test purposes, inject a series of obstacles around the current pose
                 ct = self.driveTrain.poseEst.getCurEstPose().translation()
                 tfs = [
@@ -205,12 +210,17 @@ class MyRobot(wpilib.TimedRobot):
         self.autodrive.setRequest(self.dInt.getNavToSpeaker(), self.dInt.getNavToPickup())
         #self.elev.setHeightGoal(self.dInt.getL1(), self.dInt.getL2(), self.dInt.getL3(), self.dInt.getL4(), kylefunciton)
 
-        if robotDepConstants['HAS_ELEVATOR']:
+        if elevDepConstants['HAS_ELEVATOR']:
             self.elev.setHeightGoal(self.oInt.getDesElevatorPosIn())
             # if self.count == 1:
             #    self.elev.forceStartAtHeightZeroIn()
             self.elev.update()
             self.stt.mark("Elevator-teleop")
+
+        if armDepConstants['HAS_ARM']:
+            self.arm.setAngleGoal(self.oInt.getDesArmAngleDeg())
+            self.arm.update()
+            self.stt.mark("Arm-teleop")
 
         # No trajectory in Teleop
         Trajectory().setCmd(None)

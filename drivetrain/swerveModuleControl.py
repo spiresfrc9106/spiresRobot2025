@@ -185,10 +185,10 @@ class SwerveModuleControl:
             # Update this module's actual state with measurements from the sensors
             self.actualState.angle = Rotation2d(self.azmthEnc.getAngleRad())
             self.actualState.speed = dtMotorRotToLinear(
-                self.wheelMotor.getMotorVelocityRadPerSec()
+                self.wheelMotor.getExternalAbsoluteEncoderVelocityRadPerSec() # todo xyzzy Mike this confuses me
             )
             self.actualPosition.distance = dtMotorRotToLinear(
-                self.wheelMotor.getMotorPositionRad()
+                self.wheelMotor.getMotorPositionRad() # todo xyzzy Mike this confuses me
             )
             self.actualPosition.angle = self.actualState.angle
 

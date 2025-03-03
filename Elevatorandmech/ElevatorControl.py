@@ -4,23 +4,77 @@
 
 from enum import IntEnum
 from wpilib import XboxController
-from playingwithfusion import TimeOfFlight
+from wpilib import Timer
+from wpimath.trajectory import TrapezoidProfile
+
 from utils.calibration import Calibration
-from utils.units import sign
+from utils.robotIdentification import RobotIdentification
 from utils.signalLogging import  addLog, getNowLogger
-#from utils.constants import ELEV_LM_CANID, ELEV_RM_CANID, ELEV_TOF_CANID
 from utils.singleton import Singleton
+from utils.units import sign
+from utils.robotIdentification import RobotTypes
 from wrappers.wrapperedSparkMax import WrapperedSparkMax
 from rev import SparkLowLevel
-from wpimath.trajectory import TrapezoidProfile
-from wpilib import Timer
-TEST_ELEVATOR_RANGE_IN = 5.2
 
-ELEV_GEARBOX_GEAR_RATIO = 5.0/1.0
-ELEV_SPOOL_RADIUS_IN = 1.92/2.0
+class ElevatorDependentConstants:
+    def __init__(self):
+        self.elevDepConstants = {
+            RobotTypes.Spires2023: {
+                "HAS_ELEVATOR": False,
+                "ELEV_RM_CANID": None,
+                "ELEV_LM_CANID": None,
+                "ELEVATOR_RANGE_IN": None,
+                "ELEV_GEARBOX_GEAR_RATIO": None,
+                "ELEV_SPOOL_RADIUS_IN": None,
+                "MAX_ELEV_VEL_INPS": None,
+                "MAX_ELEV_ACCEL_INPS2": None,
+            },
+            RobotTypes.Spires2025: {
+                "HAS_ELEVATOR": True,
+                "ELEV_RM_CANID": 97,
+                "ELEV_LM_CANID": 98,
+                "ELEVATOR_RANGE_IN": 30, # xyzzy fix me up
+                "ELEV_GEARBOX_GEAR_RATIO": 3.0 / 1.0,
+                "ELEV_SPOOL_RADIUS_IN": 1.660 / 2.0,
+                "MAX_ELEV_VEL_INPS": 5.0,  # TODO xyzzy - talk to Micahel Vu - must be a units issue
+                "MAX_ELEV_ACCEL_INPS2": 5.0,
+            },
+            RobotTypes.SpiresTestBoard: {
+                "HAS_ELEVATOR": True,
+                "ELEV_RM_CANID": 20,
+                "ELEV_LM_CANID": None,
+                "ELEVATOR_RANGE_IN": 5.2,
+                "ELEV_GEARBOX_GEAR_RATIO": 5.0 / 1.0,
+                "ELEV_SPOOL_RADIUS_IN": 1.92 / 2.0,
+                "MAX_ELEV_VEL_INPS": 62500,  # TODO xyzzy - talk to Micahel Vu - must be a units issue
+                "MAX_ELEV_ACCEL_INPS2": 250,
+        },
+            RobotTypes.SpiresRoboRioV1: {
+                "HAS_ELEVATOR": False,
+                "ELEV_RM_CANID": None,
+                "ELEV_LM_CANID": None,
+                "ELEVATOR_RANGE_IN": None,
+                "ELEV_GEARBOX_GEAR_RATIO": None,
+                "ELEV_SPOOL_RADIUS_IN": None,
+                "MAX_ELEV_VEL_INPS": None,
+                "MAX_ELEV_ACCEL_INPS2": None,
+            },
+        }
 
-MAX_ELEV_VEL_INPS = 62500
-MAX_ELEV_ACCEL_INPS2 = 250
+    def get(self):
+        return self.elevDepConstants[RobotIdentification().getRobotType()]
+
+elevDepConstants = ElevatorDependentConstants().get()
+
+ELEV_RM_CANID = elevDepConstants['ELEV_RM_CANID']
+ELEV_LM_CANID = elevDepConstants['ELEV_LM_CANID']
+ELEVATOR_RANGE_IN = elevDepConstants['ELEVATOR_RANGE_IN']
+
+ELEV_GEARBOX_GEAR_RATIO = elevDepConstants['ELEV_GEARBOX_GEAR_RATIO']
+ELEV_SPOOL_RADIUS_IN = elevDepConstants['ELEV_SPOOL_RADIUS_IN']
+
+MAX_ELEV_VEL_INPS = elevDepConstants['MAX_ELEV_VEL_INPS']
+MAX_ELEV_ACCEL_INPS2 = elevDepConstants['MAX_ELEV_ACCEL_INPS2']
 
 REEF_L1_HEIGHT_M = 0.5842
 REEF_L2_HEIGHT_M = 0.9398
@@ -28,9 +82,6 @@ REEF_L3_HEIGHT_M = 1.397
 REEF_L4_HEIGHT_M = 2.159
 ELEV_MIN_HEIGHT_M = REEF_L1_HEIGHT_M  # TODO - is elevator's bottom position actually L1?
 
-ELEV_RM_CANID = 20
-ELEV_LM_CANID = 21
-ELEV_TOF_CANID = 22
 
 class ElevatorStates(IntEnum):
     UNINITIALIZED = 0
@@ -64,8 +115,11 @@ class ElevatorControl(metaclass=Singleton):
         self.rMotor = WrapperedSparkMax(ELEV_RM_CANID, "ElevatorMotorRight", brakeMode=False, currentLimitA=5)
         rMotorIsInverted = True
         self.rMotor.setInverted(rMotorIsInverted)
-        self.lMotor = WrapperedSparkMax(ELEV_LM_CANID, "ElevatorMotorLeft", brakeMode=False, currentLimitA=5)
-        self.lMotor.setFollow(ELEV_RM_CANID, True)
+        if ELEV_LM_CANID is not None:
+            self.lMotor = WrapperedSparkMax(ELEV_LM_CANID, "ElevatorMotorLeft", brakeMode=False, currentLimitA=5)
+            self.lMotor.setFollow(ELEV_RM_CANID, invert=True)
+        else:
+            self.lMotor = None
 
 
         # FF and proportional gain constants
@@ -128,6 +182,9 @@ class ElevatorControl(metaclass=Singleton):
 
         self.funRuns = 0
 
+        # xyzzy talk to Michael Vu about a configuration option to use the joy stick for velocity control
+        # xyzzy talk to Michael Vu about getting the logged values to be reasonable in robot units, not in
+        # internal encoder units.
 
         addLog("Elevator State", lambda: float(int(self.elevatorState)), "int")
         addLog("Elevator Goal Height", lambda: self.heightGoalIn, "in")
@@ -247,7 +304,7 @@ class ElevatorControl(metaclass=Singleton):
         if self.previousUpdateTimeS is not None:
             currentPeriodS = self.currentUpdateTimeS - self.previousUpdateTimeS
             self.actAccLogger.logNow((self.actualVelInps - self.previousVelInps) / currentPeriodS)
-        self.heightGoalIn = self.lowestHeightIn + (TEST_ELEVATOR_RANGE_IN / 2)
+        self.heightGoalIn = self.lowestHeightIn + (ELEVATOR_RANGE_IN / 2)
 
         self.actTrapPState = TrapezoidProfile.State(self.getHeightIn(), self.actualVelInps)
         self.desTrapPState = TrapezoidProfile.State(self.heightGoalIn,0)
@@ -256,6 +313,21 @@ class ElevatorControl(metaclass=Singleton):
         # REPLACE MULTIPLICATION BY 1 WITH MULT BY 39.3700787402 ON THE ACTUAL ELEV TO CONVERT FROM M TO IN
         # TODO: ADD A LITTLE MORE HEIGHT TO THE L1 L2 L3 AND EVEN MORE TO THE L4
         #   SO THAT WE CAN ANGLE THE ARM DOWNWARDS INTO THE CORAL BETTER
+        # xyzzy Talk to software team that:
+        # elevator should either take inputs from joystick as velocity inputs or
+        # position and velocity inputs from Noah's code because the elevator needs to do actions to:
+        # The velocity inputs and position and velocity inputs should limit the velocity so that we don't slam into the end stops.
+        # - A Intake. (No motion here)
+        # - B Plunge (Motion at a desired velocity here)
+        # - C travel configuration with CORAL
+        # - D travel configuration without CORAL
+        # - E prepare to place at L2, L3, L4 (Motion with a velocity to a position)
+        # - F place at L2, L3, L4 (Moition with a velocity to a position)
+        # - G return to travel configuration without CORAL
+        # Noah's code should be looking at ctrl.getAButton(), ect.
+        #
+        # The main point is that we need to move the elevator and arm and drivetrain together to accomplish these goals.
+
         if self.ctrl.getAButton():
             self.heightGoalIn = REEF_L1_HEIGHT_M * 1 + self.lowestHeightIn
         if self.ctrl.getXButton():
