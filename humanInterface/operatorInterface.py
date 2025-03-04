@@ -61,4 +61,4 @@ class OperatorInterface:
         return (elevatorRangeIn/2.0) * (1.0 + self.elevatorPosYCmd)
 
     def getDesArmAngleDeg(self)->float:
-        return 180.0 * self.armPosYCmd
+        return 90.0 * self.armPosYCmd

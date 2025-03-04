@@ -2,9 +2,10 @@
 
 # It is definitely buggy and untested, but it gives us a great framework on how to control an elevator.
 
-#Notes to self:
-#1) abs encoder needs to have constant calibration offset applied to it, and calibrated offset is then applied to rel
-#2) setting up state machine so that it will be iterated through; make sure states are changed!
+#Notes to self as of 3/5/2025:
+#1) get motor to calibrate (set zero) at correct position
+#2) get motor to not return to zero when no joystick is relaxed
+#3) get motor to only move + or - 90 degrees from its zero
 
 from enum import Enum
 from wpimath.trajectory import TrapezoidProfile
@@ -30,6 +31,7 @@ class ArmDependentConstants:
                 "ARM_M_CANID": None,
                 "MAX_ARM_VEL_DEGPS": 20,
                 "MAX_ARM_ACCEL_DEGPS2": 4,
+                "ABS_SENSOR_CALIBRATION_OFFSET_DEG": 0.0,
             },
             RobotTypes.Spires2025: {
                 "HAS_ARM": True,
@@ -37,6 +39,7 @@ class ArmDependentConstants:
                 "ARM_M_CANID": 99,  # xyzzy fix me
                 "MAX_ARM_VEL_DEGPS": 20,
                 "MAX_ARM_ACCEL_DEGPS2": 4,
+                "ABS_SENSOR_CALIBRATION_OFFSET_DEG": 0.0,
             },
             RobotTypes.SpiresTestBoard: {
                 "HAS_ARM": False,  # xyzzy talk to Benjamin about switching dev test setups
@@ -44,6 +47,7 @@ class ArmDependentConstants:
                 "ARM_M_CANID": 99,  # xyzzy fix me
                 "MAX_ARM_VEL_DEGPS": 20,
                 "MAX_ARM_ACCEL_DEGPS2": 4,
+                "ABS_SENSOR_CALIBRATION_OFFSET_DEG": 0.0,
             },
             RobotTypes.SpiresRoboRioV1: {
                 "HAS_ARM": True,
@@ -51,6 +55,7 @@ class ArmDependentConstants:
                 "ARM_M_CANID": 18,
                 "MAX_ARM_VEL_DEGPS": 20,
                 "MAX_ARM_ACCEL_DEGPS2": 4,
+                "ABS_SENSOR_CALIBRATION_OFFSET_DEG": 180.0,
             },
         }
 
@@ -61,6 +66,7 @@ class ArmDependentConstants:
 armDepConstants = ArmDependentConstants().get()
 
 ARM_GEARBOX_GEAR_RATIO = armDepConstants['ARM_GEARBOX_GEAR_RATIO']
+ABS_SENSOR_CALIBRATION_OFFSET_DEG = armDepConstants['ABS_SENSOR_CALIBRATION_OFFSET_DEG']
 
 MAX_ARM_VEL_DEGPS = armDepConstants['MAX_ARM_VEL_DEGPS']
 MAX_ARM_ACCEL_DEGPS2 = armDepConstants['MAX_ARM_ACCEL_DEGPS2']
@@ -123,10 +129,6 @@ class ArmControl(metaclass=Singleton):
         # off the motor when it doesn't need to spin anymore.  then up the current limit as needed
 
 
-        # This variable stores the offset for the Abs sensor to define what angle is
-        # zero based on the Abs sensor's physical orientation on the robot
-        self.ABS_SENSOR_CALIBRATION_OFFSET_DEG = -145
-
         # Relative Encoder Offsets
         # Relative encoders always start at 0 at power-on
         # However, we may or may not have the mechanism at the "zero" position when we powered on
@@ -173,7 +175,7 @@ class ArmControl(metaclass=Singleton):
         return  self._offsetFreeMotorRadToAngleDeg(MotorRad) - self.relEncOffsetAngleDeg
 
     def _angleDegToMotorRad(self, armAngleDeg: float) -> float:
-        return armAngleDeg * ARM_GEARBOX_GEAR_RATIO + self.relEncOffsetRad
+        return armAngleDeg * ARM_GEARBOX_GEAR_RATIO + self.relEncOffsetAngleDeg
     
     def _angleVelDegpsToMotorVelRadps(self, armAngleDeg: float) -> float:
         return armAngleDeg * ARM_GEARBOX_GEAR_RATIO
@@ -187,7 +189,7 @@ class ArmControl(metaclass=Singleton):
     #return the angle of the arm as measured by the absolute sensor in angles
     def _getAbsAngle(self) -> float:
         self.angleAbsSen = (math.degrees(self.angleAbsSen))
-        return (self._angleInRange(self.angleAbsSen)) - self.ABS_SENSOR_CALIBRATION_OFFSET_DEG
+        return (self._angleInRange(self.angleAbsSen)) - ABS_SENSOR_CALIBRATION_OFFSET_DEG
 
     # This routine uses the absolute sensors to adjust the offsets for the relative sensors
     # so that the relative sensors match reality.
@@ -216,7 +218,7 @@ class ArmControl(metaclass=Singleton):
     def _updateUninitialized(self) -> None:
         self.trapProfiler = TrapezoidProfile(TrapezoidProfile.Constraints(self.maxVelocityDegps.get(), self.maxAccelerationDegps2.get()))
         self.lastStoppedTimeS = 0
-        self.lowestAngleDeg = 1000.0
+        #self.lowestAngleDeg = -180
 
         # going to try and use abs sensor to provide offset for rel encoder, not what is commented below
         #self.forceStartAtAngleZeroDeg()
