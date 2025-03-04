@@ -42,13 +42,14 @@ class MyRobot(wpilib.TimedRobot):
         # pylint: disable=attribute-defined-outside-init
         remoteRIODebugSupport()
 
-        print(f"robot type = {RobotIdentification().getRobotType()}")
+        print(f"robot type = {RobotIdentification().getRobotType()} {RobotIdentification().serialNumber}")
 
         self.crashLogger = CrashLogger()
         wpilib.LiveWindow.disableAllTelemetry()
         self.webserver = Webserver()
 
         if drivetrainDepConstants['HAS_DRIVETRAIN']:
+            print(f"drivetrainDepConstants['HAS_DRIVETRAIN']={drivetrainDepConstants['HAS_DRIVETRAIN']}")
             self.driveTrain = DrivetrainControl()
         if elevDepConstants['HAS_ELEVATOR']:
             self.elev= ElevatorControl()

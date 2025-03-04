@@ -125,7 +125,7 @@ class ArmControl(metaclass=Singleton):
 
         # This variable stores the offset for the Abs sensor to define what angle is
         # zero based on the Abs sensor's physical orientation on the robot
-        self.ABS_SENSOR_CALIBRATION_OFFSET_DEG = 0 # TODO find this
+        self.ABS_SENSOR_CALIBRATION_OFFSET_DEG = -145
 
         # Relative Encoder Offsets
         # Relative encoders always start at 0 at power-on
@@ -167,10 +167,10 @@ class ArmControl(metaclass=Singleton):
         return angle
 
     def _offsetFreeMotorRadToAngleDeg(self, MotorRad: float) -> float:
-        return  (math.degrees(MotorRad) * (1/ARM_GEARBOX_GEAR_RATIO)) - self.relEncOffsetAngleDeg
+        return  math.degrees(MotorRad * (1/ARM_GEARBOX_GEAR_RATIO))
 
     def _MotorRadToAngleDeg(self, MotorRad: float) -> float:
-        return  self._offsetFreeMotorRadToAngleDeg(MotorRad)
+        return  self._offsetFreeMotorRadToAngleDeg(MotorRad) - self.relEncOffsetAngleDeg
 
     def _angleDegToMotorRad(self, armAngleDeg: float) -> float:
         return armAngleDeg * ARM_GEARBOX_GEAR_RATIO + self.relEncOffsetRad
@@ -242,13 +242,13 @@ class ArmControl(metaclass=Singleton):
 
         self.actTrapPState = TrapezoidProfile.State(self.getRelAngleDeg(), self.actualVelDegps)
 
-        self.desTrapPState = TrapezoidProfile.State(self.armGoalDeg,0)
+        self.desTrapPState = TrapezoidProfile.State(self.armGoalDeg, 0)
 
         # Update motor closed-loop calibration
         if self.kP.isChanged():
             self.Motor.setPID(self.kP.get(), 0.0, 0.0)
 
-        #this doesn't happen right now
+        # this doesn't happen right now
         if self.stopped:
             # Handle stopped by just holding mechanism in place with gravity offset, no closed loop.
             # TODO - do we need a more gentle stop here?
@@ -257,24 +257,24 @@ class ArmControl(metaclass=Singleton):
             self.Motor.setVoltage(self.kG.get() + manAdjVoltage)
             self.curTrapPState = TrapezoidProfile.State(self.actTrapPState.position, 0)
         else:
-            #this case does happen
+            # this case does happen
             oldVelocityDegps = self.curTrapPState.velocity
-            
-            #this line does the main work of the profiler. It steps through
-            #each of the target positions and velocities to get self.curTrapPState.position
-            #through the set of positions you need to run the profile
-            
-            #search for self.trapProfiler initialization for the definition of the profile
+
+            # this line does the main work of the profiler. It steps through
+            # each of the target positions and velocities to get self.curTrapPState.position
+            # through the set of positions you need to run the profile
+
+            # search for self.trapProfiler initialization for the definition of the profile
             timeStepSeconds = 0.02
             self.curTrapPState = self.trapProfiler.calculate(timeStepSeconds, self.curTrapPState, self.desTrapPState)
-            
+
             self.curTrapPAccLogger.logNow((self.curTrapPState.velocity - oldVelocityDegps) / 0.02)
 
             motorPosCmdRad = self._angleDegToMotorRad(self.curTrapPState.position)
             motorVelCmdRadps = self._angleVelDegpsToMotorVelRadps(self.curTrapPState.velocity)
 
             # set our feed forward to 0 at the start so we're not throwing extra voltage into the motor, then see if their feed forward calc makes sense
-            #vFF = self.kV.get() * motorVelCmdRadps  + self.kS.get() * sign(motorVelCmdRadps) \
+            # vFF = self.kV.get() * motorVelCmdRadps  + self.kS.get() * sign(motorVelCmdRadps) \
             #    + self.kG.get()
 
             vFF = 0

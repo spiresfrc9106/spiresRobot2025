@@ -9,6 +9,8 @@ from utils.allianceTransformUtils import onRed
 from utils.faults import Fault
 from utils.signalLogging import addLog
 
+HAS_DRIVETRAIN = False
+
 class DriverInterface:
     """Class to gather input from the driver of the robot"""
 
@@ -45,7 +47,8 @@ class DriverInterface:
         self.allXMeasures = []
         self.allYMeasures = []
         self.allTMeasures = []
-        self.drivetrainCtrl = DrivetrainControl()
+        if HAS_DRIVETRAIN:
+            self.drivetrainCtrl = DrivetrainControl()
         self.sd_record = 0
 
         addLog("ytest_speed_strafe_level", lambda: self.processedStrafe, "")
@@ -118,7 +121,7 @@ class DriverInterface:
 
             #locations would go here...
 
-            if what>0:
+            if what>0 and HAS_DRIVETRAIN:
                 posEst = self.drivetrainCtrl.poseEst.posEstLogs[3]
                 if self.sd_record==0: #turning on
                     self.allXMeasures = []
