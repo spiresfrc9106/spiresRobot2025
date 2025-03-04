@@ -5,7 +5,7 @@ import { LineGauge } from './lineGauge.js'
 import { Text } from './text.js'
 import { AutoChooser } from './autoChooser.js'
 import { SwerveState } from './swerveState.js'
-import { FieldPose } from './fieldPose.js'
+import { FieldPose } from './fieldPose.js?v=${VERSION_FRESH}'
 import { Sound } from './sound.js'
 import { NT4_Client } from "../interfaces/nt4.js";
 

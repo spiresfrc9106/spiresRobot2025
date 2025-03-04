@@ -4,6 +4,7 @@ from dashboardWidgets.autoChooser import AutoChooser
 from dashboardWidgets.swerveState import SwerveState
 from dashboardWidgets.icon import Icon
 from dashboardWidgets.text import Text
+from dashboardWidgets.fieldPose import FieldPose
 from utils.faults import FaultWrangler
 from utils.signalLogging import addLog
 from webserver.webserver import Webserver
@@ -18,6 +19,9 @@ class Dashboard:
 
         webServer.addDashboardWidget(Text(50, 75, "/SmartDashboard/faultDescription"))
         webServer.addDashboardWidget(SwerveState(85, 15))
+        webServer.addDashboardWidget(FieldPose(20, 40))
+
+
         webServer.addDashboardWidget(
             AutoChooser(
                 50,

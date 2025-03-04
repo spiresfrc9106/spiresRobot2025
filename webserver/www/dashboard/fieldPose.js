@@ -6,16 +6,16 @@ var POSE_ELEM_X_IDX = 0;
 var POSE_ELEM_Y_IDX = 1;
 var POSE_ELEM_R_IDX = 2;
 
-var FIELD_X_M = 16.4592;
-var FIELD_Y_M = FIELD_X_M/2.0;
+var FIELD_X_M = 17.5473;
+var FIELD_Y_M = 8.0498;
 
 var STYLE_FIELD = 0;
 var STYLE_BOT_DES = 1;
 var STYLE_BOT_ACT = 2;
 var STYLE_BOT_EST = 3;
 
-var BOT_X_LEN_M = 0.75;
-var BOT_Y_LEN_M = 0.5;
+var BOT_X_LEN_M = 0.8382;
+var BOT_Y_LEN_M = 0.6604;
 
 class RobotPose {
     constructor(){
@@ -35,12 +35,12 @@ export class FieldPose {
         this.title = title;
 
         this.poses = Array(3);
-        this.poses[POSE_TYPE_DES_IDX] = new RobotPose();
-        this.poses[POSE_TYPE_EST_IDX] = new RobotPose();
+        //this.poses[POSE_TYPE_DES_IDX] = new RobotPose();
+        //this.poses[POSE_TYPE_EST_IDX] = new RobotPose();
         this.poses[POSE_TYPE_ACT_IDX] = new RobotPose();
 
         // Drawing Constants
-        this.margin_px = 5;
+        this.margin_px = 0; //5 og
 
         // State Variable Defaults
         this.hasData = false;
@@ -52,7 +52,7 @@ export class FieldPose {
 
         // Set up drawing canvas within provided div
         this.canvas = document.createElement('canvas');
-        this.canvas.style.backgroundImage = "url('fields/2020.png')";
+        this.canvas.style.backgroundImage = "url('fields/2025.png')";
         this.canvas.style.backgroundSize = "cover";
         this.docElem = document.getElementById(this.draw_div_id );
         this.canvas.id = this.draw_div_id + "_canvas";
@@ -82,8 +82,8 @@ export class FieldPose {
         this.drawObj(STYLE_FIELD, FIELD_X_M/2.0, FIELD_Y_M/2.0, FIELD_X_M, FIELD_Y_M, 0.0);
 
         if(this.hasData){
-            this.drawObj(STYLE_BOT_DES, this.poses[POSE_TYPE_DES_IDX].comp[POSE_ELEM_X_IDX], this.poses[POSE_TYPE_DES_IDX].comp[POSE_ELEM_Y_IDX], BOT_X_LEN_M, BOT_Y_LEN_M, this.poses[POSE_TYPE_DES_IDX].comp[POSE_ELEM_R_IDX]);
-            this.drawObj(STYLE_BOT_EST, this.poses[POSE_TYPE_EST_IDX].comp[POSE_ELEM_X_IDX], this.poses[POSE_TYPE_EST_IDX].comp[POSE_ELEM_Y_IDX], BOT_X_LEN_M, BOT_Y_LEN_M, this.poses[POSE_TYPE_EST_IDX].comp[POSE_ELEM_R_IDX]);
+            //this.drawObj(STYLE_BOT_DES, this.poses[POSE_TYPE_DES_IDX].comp[POSE_ELEM_X_IDX], this.poses[POSE_TYPE_DES_IDX].comp[POSE_ELEM_Y_IDX], BOT_X_LEN_M, BOT_Y_LEN_M, this.poses[POSE_TYPE_DES_IDX].comp[POSE_ELEM_R_IDX]);
+            //this.drawObj(STYLE_BOT_EST, this.poses[POSE_TYPE_EST_IDX].comp[POSE_ELEM_X_IDX], this.poses[POSE_TYPE_EST_IDX].comp[POSE_ELEM_Y_IDX], BOT_X_LEN_M, BOT_Y_LEN_M, this.poses[POSE_TYPE_EST_IDX].comp[POSE_ELEM_R_IDX]);
             this.drawObj(STYLE_BOT_ACT, this.poses[POSE_TYPE_ACT_IDX].comp[POSE_ELEM_X_IDX], this.poses[POSE_TYPE_ACT_IDX].comp[POSE_ELEM_Y_IDX], BOT_X_LEN_M, BOT_Y_LEN_M, this.poses[POSE_TYPE_ACT_IDX].comp[POSE_ELEM_R_IDX]);
         }
 

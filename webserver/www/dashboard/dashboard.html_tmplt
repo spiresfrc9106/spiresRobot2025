@@ -3,10 +3,10 @@
 
 <head>
     <meta charset="utf-8"/>
-    <link rel="stylesheet" href="../common.css">
-    <link rel="stylesheet" href="dashboard.css">
-    <link rel="stylesheet" href="tooltip.css">
-    <link rel="stylesheet" href="dropdown.css">
+    <link rel="stylesheet" href="../common.css?v=${VERSION_FRESH}">
+    <link rel="stylesheet" href="dashboard.css?v=${VERSION_FRESH}">
+    <link rel="stylesheet" href="tooltip.css?v=${VERSION_FRESH}">
+    <link rel="stylesheet" href="dropdown.css?v=${VERSION_FRESH}">
     <title>Dashboard</title>
 </head>
 
