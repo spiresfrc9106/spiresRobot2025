@@ -7,9 +7,10 @@
 #2) get motor to not return to zero when no joystick is relaxed
 #3) get motor to only move + or - 90 degrees from its zero
 
-from enum import Enum
+from enum import IntEnun
 from wpimath.trajectory import TrapezoidProfile
 from wpilib import Timer
+from wpilib import TimedRobot
 import math
 
 
@@ -73,7 +74,7 @@ MAX_ARM_ACCEL_DEGPS2 = armDepConstants['MAX_ARM_ACCEL_DEGPS2']
 
 #will need to use abs encoder angle to find offset for 
 #Spark Max angle, then Spark Max angle can be used
-class ArmStates(Enum):
+class ArmStates(IntEnun):
     ARM_UNINITIALIZED = 0
     ARM_OPERATING = 2
 
@@ -98,7 +99,6 @@ class ArmControl(metaclass=Singleton):
 
         # Rev Relative Encoder
         self.Encoder = WrapperedRevThroughBoreEncoder(port=9, name="ArmRevRelEncoder", mountOffsetRad=0, dirInverted=False)
-        self.angleAbsSen = self.Encoder.getAngleRad()
 
         # FF and proportional gain constants
         self.kV = Calibration(name="Arm kV", default=0.02, units="V/rps")
@@ -144,6 +144,7 @@ class ArmControl(metaclass=Singleton):
 
         self.state = ArmStates.ARM_UNINITIALIZED
 
+        addLog("Arm State", lambda: self.state, "int")
         addLog("Arm Goal Degree", lambda: self.armGoalDeg, "deg")
         addLog("Arm Stopped", lambda: self.stopped, "bool")
         addLog("Arm act Degree", lambda: self.actTrapPState.position, "deg")
@@ -188,8 +189,8 @@ class ArmControl(metaclass=Singleton):
     
     #return the angle of the arm as measured by the absolute sensor in angles
     def _getAbsAngle(self) -> float:
-        self.angleAbsSen = (math.degrees(self.angleAbsSen))
-        return (self._angleInRange(self.angleAbsSen)) - ABS_SENSOR_CALIBRATION_OFFSET_DEG
+        self.angleAbsSenRad = (math.degrees(self.angleAbsSenRad))
+        return (self._angleInRange(self.angleAbsSenRad)) - ABS_SENSOR_CALIBRATION_OFFSET_DEG
 
     # This routine uses the absolute sensors to adjust the offsets for the relative sensors
     # so that the relative sensors match reality.
@@ -216,6 +217,7 @@ class ArmControl(metaclass=Singleton):
                 pass
 
     def _updateUninitialized(self) -> None:
+        self.angleAbsSenRad = self.Encoder.getAngleRad()
         self.trapProfiler = TrapezoidProfile(TrapezoidProfile.Constraints(self.maxVelocityDegps.get(), self.maxAccelerationDegps2.get()))
         self.lastStoppedTimeS = 0
         #self.lowestAngleDeg = -180
@@ -233,6 +235,13 @@ class ArmControl(metaclass=Singleton):
         vFF = 0
 
         self.Motor.setPosCmd(motorPosCmdRad, vFF)
+
+        # An ugly hack from Coach Mike. We should find a better way.
+        if TimedRobot.isSimulation():
+            limitMotorPosCmdRad = self._angleDegToMotorRad(-70)
+            if self.Motor.simActPos < limitMotorPosCmdRad:
+                self.Motor.simActPos = limitMotorPosCmdRad
+
         self.state = ArmStates.ARM_OPERATING
 
     def _updateOperating(self) -> None:
