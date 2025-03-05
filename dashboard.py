@@ -5,6 +5,8 @@ from dashboardWidgets.swerveState import SwerveState
 from dashboardWidgets.icon import Icon
 from dashboardWidgets.text import Text
 from dashboardWidgets.fieldPose import FieldPose
+from dashboardWidgets.lineGauge import LineGauge
+from dashboardWidgets.progressBar import ProgressBar
 from utils.faults import FaultWrangler
 from utils.signalLogging import addLog
 from webserver.webserver import Webserver
@@ -20,7 +22,7 @@ class Dashboard:
         webServer.addDashboardWidget(Text(50, 75, "/SmartDashboard/faultDescription"))
         webServer.addDashboardWidget(SwerveState(85, 15))
         webServer.addDashboardWidget(FieldPose(20, 40))
-
+        webServer.addDashboardWidget(ProgressBar(20,60,"/SmartDashboard/ytest_position_final_x", 0, 20, 0, 20))
 
         webServer.addDashboardWidget(
             AutoChooser(
