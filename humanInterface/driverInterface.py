@@ -49,6 +49,10 @@ class DriverInterface:
         self.drivetrainCtrl = DrivetrainControl()
         self.sd_record = 0
 
+        self.currentRobotState = 1
+
+        addLog("robot_current_state", lambda: self.currentRobotState, "")
+
         addLog("ytest_speed_strafe_level", lambda: self.processedStrafe, "")
         addLog("ytest_speed_rotate_level", lambda: self.processedRotate, "")
         addLog("ytest_standard_dev_x", lambda: self.tempStdDevX, "")
@@ -85,6 +89,11 @@ class DriverInterface:
             # TODO - if the driver wants a slow or sprint button, add it here.
             slowMult = 1.0 if (self.ctrl.getRightBumper()) else 0.75
             #slowMult = 1.0
+
+            self.currentRobotState = 1
+            if self.ctrl.getRightBumper():
+                self.currentRobotState = 2
+
 
             # Shape velocity command
             velCmdXRaw = vXJoyWithDeadband * MAX_STRAFE_SPEED_MPS * slowMult

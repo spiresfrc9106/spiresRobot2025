@@ -58,3 +58,31 @@ function mainRenderLoop(){
 }
 
 ${WIDGETS_CALLBACK}
+
+
+
+window.connectedForState = false
+function checkForStateChange() {
+var state = document.getElementById("widget0").innerText;
+
+if (state=="1") {
+window.connectedForState = true
+}
+
+if (window.connectedForState) {
+var state = Number(state)
+
+if (state==2) {
+document.getElementById("widget6").style.top="40%";document.getElementById("widget6").style.left="5%";document.getElementById("widget6").style.height=(15*2)+"vw"; document.getElementById("widget6").style.width=(32.7*2)+"vw";document.getElementById("widget6").style.opacity="1";
+}
+if (state==1) {
+document.getElementById("widget6").style.top="10%";document.getElementById("widget6").style.left="5%";document.getElementById("widget6").style.height=(15*0.5)+"vw"; document.getElementById("widget6").style.width=(32.7*0.5)+"vw";document.getElementById("widget6").style.opacity="1";
+}
+
+}
+}
+
+setInterval(checkForStateChange,10)
+
+
+

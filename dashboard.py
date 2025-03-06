@@ -15,6 +15,11 @@ from webserver.webserver import Webserver
 class Dashboard:
     def __init__(self):
         webServer = Webserver()
+
+        # THIS MUST GO ON TOP!
+        webServer.addDashboardWidget(Text(0,0,"/SmartDashboard/robot_current_state"))
+
+
         webServer.addDashboardWidget(Icon(45, 45, "/SmartDashboard/isRedIconState", "#FF0000", "allianceRed"))
         webServer.addDashboardWidget(Icon(55, 45, "/SmartDashboard/isBlueIconState", "#0000FF", "allianceBlue"))
         webServer.addDashboardWidget(Icon(65, 45, "/SmartDashboard/PE Vision Targets Seen", "#00FF00", "vision"))
