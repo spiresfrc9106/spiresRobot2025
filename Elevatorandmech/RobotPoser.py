@@ -1,18 +1,13 @@
-# from humanInterface.driverInterface import DriverInterface
-# from humanInterface.operatorInterface import OperatorInterface
-# from Elevatorandmech.ArmControl import ArmControl
-# from Elevatorandmech.ElevatorControl import ElevatorControl
-# from drivetrain.drivetrainControl import DrivetrainControl
 
 """
 NOAH TASK:
 
 Make a class in a new file, 
-two classes: SignalDirector and RobotPoser
+two classes:  and RobotPoser
 
 Both classes have __init__ functions
 
-for SignalDirector: 
+for :
 Init class will take driver interface, operator interface object, drivetrain object, elevator object, 
 arm object, going to know what button is being held down, if a button is being held down then it will 
 know to route the signal to only the buttons, Joysticks should not work when buttons held down, 2nd 
@@ -29,78 +24,67 @@ place at L2, L3, L4, for some of the poses you're going to override the driver c
 some you're going to override the operator control, while operator is holding the place on that level button, 
 will keep on doing the procedure as long as the button is held down, person can abort the procedure once button lifted up,   
 """
+
+
+from Elevatorandmech.replaceWithYavinsPosesClass import YavinsPoseClassNoChange, YavinsPoseClassPositionControl
+from humanInterface.operatorInterface import OperatorInterface, ElevArmCmdState
 from utils.singleton import Singleton
 
-controllerStates = {
-    "PositionControl" : 0,
-    "VelocityControl" : 1,
-    "ReceiveCoral" : 2,
-    "Plunge" : 3,
-    "L1" : 4,
-    "L2" : 5,
-    "L3" : 6,
-    "L4" : 7,
-}
+class PoseDirector(metaclass=Singleton):
 
-class SignalDirector(metaclass=Singleton):
-    def __init__(self):
-        self.controllerState = controllerStates["VelocityControl"]
-        self.defaultJoystickMovement = "VelocityControl"
+    def initialize(self, arm, driveTrain, elevator):
+        self.arm = arm
+        self.driveTrain = driveTrain
+        self.elevator = elevator
+        self.oInt = OperatorInterface()
+        self.controllerState = ElevArmCmdState.UNINITIALIZED
+        self.prevControllerState = self.controllerState
+        self.currentPositionScheme = YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator)
+        self.getDriveTrainCommand = lambda curCommand : curCommand
+        self.getElevatorCommand = lambda curCommand : curCommand
+        self.getArmCommand = lambda curCommand : curCommand
 
     def update(self):
-        print(self.defaultJoystickMovement)
-        pass
+        if self._isControllerStateChanging():
+            self.currentPositionScheme = self.pickTheNewScheme()
+            self.getDriveTrainCommand = lambda curCommand : self.currentPositionScheme.getDriveTrainCommand(curCommand)
+            self.getElevatorCommand = lambda curCommand: self.currentPositionScheme.getDriveTrainCommand(curCommand)
+            self.getArmCommand = lambda curCommand : self.currentPositionScheme.getArmCommand(curCommand)
+        self.currentPositionScheme.update()
 
-    def determineVelocityMovement(self, joyStickInput, elevatorCurrentHeight):
-        if joyStickInput > 0:
-            return elevatorCurrentHeight + 2
-        elif joyStickInput < 0:
-            return elevatorCurrentHeight - 2
-        else:
-            return elevatorCurrentHeight
+    def _isControllerStateChanging(self)->bool:
+        nextState = self.oInt.getElevArmCmdState()
+        if nextState==ElevArmCmdState.VEL_CONTROL or nextState == ElevArmCmdState.POS_CONTROL:
+            self.defaultJoystickMovement = nextState
+        changed = False
+        if nextState != self.controllerState:
+            print(
+                f" state changing from {self.controllerState.name}({self.controllerState}) to {nextState.name} ({nextState})")
+            self.prevControllerState = self.controllerState
+            self.controllerState = nextState
+            changed = True
+        return changed
 
-    def setControllerState(self, state):
-        if state == "VelocityControl" or state == "PositionControl":
-            self.defaultJoystickMovement = state
-        self.controllerState = controllerStates[state]
-
-
-    def getControllerState(self):
-        return self.controllerState
-
-    def getDefaultJoystickMovement(self):
-        return self.defaultJoystickMovement
-
-class RobotPoser:
-    def __init__(self):
-        pass
-
-    def update(self):
-        # A = L1
-        # x = L2
-        # b = L3
-        # y = L4
-        # LeftTrigger = Coral Station Alignmnet
-        # RightTrigger = Plunge
-        pass
-
-    def placeL1(self):
-        return 1
-
-    def placeL2(self):
-        return 2
-
-    def placeL3(self):
-        return 3
-
-    def placeL4(self):
-        return 4
-
-    def plunge(self):
-        return 5
-
-    def receiveFromCoralStation(self):
-        return 6
-
-
+    def pickTheNewScheme(self)->None:
+        match self.controllerState:
+            case ElevArmCmdState.UNINITIALIZED:
+                return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator)
+            case ElevArmCmdState.VEL_CONTROL:
+                return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator) # todo fix me
+            case ElevArmCmdState.POS_CONTROL:
+                return YavinsPoseClassPositionControl(self.arm, self.driveTrain, self.elevator)
+            case ElevArmCmdState.PLUNGE:
+                return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator) # todo fix me
+            case ElevArmCmdState.RECEIVE_CORAL:
+                return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator) # todo fix me
+            case ElevArmCmdState.L1:
+                return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator)  # todo fix me
+            case ElevArmCmdState.L2:
+                return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator)  # todo fix me
+            case ElevArmCmdState.L3:
+                return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator)  # todo fix me
+            case ElevArmCmdState.L4:
+                return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator)  # todo fix me
+            case _:
+                return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator)  # todo fix me
 

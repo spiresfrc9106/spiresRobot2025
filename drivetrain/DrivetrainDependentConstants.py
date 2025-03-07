@@ -71,3 +71,5 @@ class DrivetrainDependentConstants:
 
     def get(self):
         return self.drivetrainConstants[RobotIdentification().getRobotType()]
+
+drivetrainDepConstants = DrivetrainDependentConstants().get()

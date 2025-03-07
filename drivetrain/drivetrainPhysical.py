@@ -8,15 +8,11 @@ from utils.units import deg2Rad
 from utils.units import in2m
 from utils.robotIdentification import RobotIdentification, RobotTypes
 from wrappers.wrapperedRevThroughBoreEncoder import WrapperedRevThroughBoreEncoder
-from drivetrain.DrivetrainDependentConstants import DrivetrainDependentConstants
+from drivetrain.DrivetrainDependentConstants import drivetrainDepConstants
 
 """
 Defines the physical dimensions and characteristics of the drivetrain
 """
-
-###################################################################
-
-drivetrainDepConstants = DrivetrainDependentConstants().get()
 
 ###################################################################
 # Physical dimensions and mass distribution
