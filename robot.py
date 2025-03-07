@@ -21,8 +21,10 @@ from utils.singleton import destroyAllSingletonInstances
 from utils.powerMonitor import PowerMonitor
 from webserver.webserver import Webserver
 from AutoSequencerV2.autoSequencer import AutoSequencer
-
+from Elevatorandmech.armtest import ArmControl
+from Elevatorandmech.elevatortest import ElevatorControl
 from wpimath.geometry import Pose2d
+from poser.poser import Poser
 
 class MyRobot(wpilib.TimedRobot):
 
@@ -65,6 +67,11 @@ class MyRobot(wpilib.TimedRobot):
         self.logger1 = getNowLogger('now1', 'sec')
         self.logger2 = getNowLogger('now2', 'sec')
         self.logger3 = getNowLogger('now3', 'sec')
+
+        # test ones, not real!
+        self.arm = ArmControl()
+        self.elevator = ElevatorControl()
+        self.poser = Poser()
 
         gc.freeze()
         self.count=0
@@ -141,6 +148,7 @@ class MyRobot(wpilib.TimedRobot):
         # TODO - this is technically one loop delayed, which could induce lag
         # Probably not noticeable, but should be corrected.
         self.driveTrain.setManualCmd(self.dInt.getCmd())
+        self.poser.update()
 
         if self.dInt.getGyroResetCmd():
             self.driveTrain.resetGyro()
