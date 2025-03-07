@@ -6,12 +6,13 @@ from wpimath.geometry import Translation2d, Pose2d, Rotation2d
 from dashboard import Dashboard
 from Elevatorandmech.ElevatorControl import ElevatorControl, elevDepConstants
 from Elevatorandmech.NewArmControl import ArmControl, armDepConstants
+from Elevatorandmech.RobotPoser import PoseDirector
 from testingMotors.motorCtrl import MotorControl, motorDepConstants
 from drivetrain.controlStrategies.autoDrive import AutoDrive
 from drivetrain.controlStrategies.trajectory import Trajectory
 from drivetrain.drivetrainCommand import DrivetrainCommand
 from drivetrain.drivetrainControl import DrivetrainControl
-from drivetrain.DrivetrainDependentConstants import DrivetrainDependentConstants
+from drivetrain.DrivetrainDependentConstants import drivetrainDepConstants
 from humanInterface.driverInterface import DriverInterface
 from humanInterface.operatorInterface import OperatorInterface
 from humanInterface.ledControl import LEDControl
@@ -29,9 +30,6 @@ from utils.powerMonitor import PowerMonitor
 from webserver.webserver import Webserver
 from AutoSequencerV2.autoSequencer import AutoSequencer
 
-# TODO Refactor this so that it is more DRY.
-drivetrainDepConstants = DrivetrainDependentConstants().get()
-
 class MyRobot(wpilib.TimedRobot):
 
     #########################################################
@@ -42,18 +40,30 @@ class MyRobot(wpilib.TimedRobot):
         # pylint: disable=attribute-defined-outside-init
         remoteRIODebugSupport()
 
-        print(f"robot type = {RobotIdentification().getRobotType()}")
+        print(f"robot type = {RobotIdentification().getRobotType()} serialNumber={RobotIdentification().serialNumber}")
 
         self.crashLogger = CrashLogger()
         wpilib.LiveWindow.disableAllTelemetry()
         self.webserver = Webserver()
 
         if drivetrainDepConstants['HAS_DRIVETRAIN']:
+            print(f"drivetrainDepConstants['HAS_DRIVETRAIN']={drivetrainDepConstants['HAS_DRIVETRAIN']}")
             self.driveTrain = DrivetrainControl()
+        else:
+            self.driveTrain = None # todo make this cleaner
         if elevDepConstants['HAS_ELEVATOR']:
             self.elev= ElevatorControl()
+        else:
+            self.elev = None # todo make this cleaner
         if armDepConstants['HAS_ARM']:
             self.arm= ArmControl()
+        else:
+            self.arm = None # todo make this cleaner
+
+        #Noah
+        self.poseDirector = PoseDirector()
+        self.poseDirector.initialize(self.arm, self.driveTrain, self.elev)
+
 
         self.autodrive = AutoDrive()
 
@@ -102,7 +112,7 @@ class MyRobot(wpilib.TimedRobot):
         self.dInt.update()
         self.stt.mark("Driver Interface")
         self.oInt.update()
-        self.stt.mark("Driver Interface")
+        self.stt.mark("Operator Interface")
 
         if drivetrainDepConstants['HAS_DRIVETRAIN']:
             self.driveTrain.update()
@@ -181,9 +191,7 @@ class MyRobot(wpilib.TimedRobot):
         # Probably not noticeable, but should be corrected.
         if drivetrainDepConstants['HAS_DRIVETRAIN']:
             self.driveTrain.setManualCmd(self.dInt.getCmd())
-
-        if motorDepConstants['HAS_MOTOR_TEST']:
-            self.motorCtrlFun.update(self.dInt.getMotorTestPowerRpm())
+        self.poseDirector.update()
 
         if self.dInt.getGyroResetCmd():
             if drivetrainDepConstants['HAS_DRIVETRAIN']:
@@ -210,10 +218,12 @@ class MyRobot(wpilib.TimedRobot):
         self.autodrive.setRequest(self.dInt.getNavToSpeaker(), self.dInt.getNavToPickup())
         #self.elev.setHeightGoal(self.dInt.getL1(), self.dInt.getL2(), self.dInt.getL3(), self.dInt.getL4(), kylefunciton)
 
+
+        if motorDepConstants['HAS_MOTOR_TEST']:
+            self.motorCtrlFun.update(self.dInt.getMotorTestPowerRpm())
+
+
         if elevDepConstants['HAS_ELEVATOR']:
-            self.elev.setHeightGoal(self.oInt.getDesElevatorPosIn())
-            # if self.count == 1:
-            #    self.elev.forceStartAtHeightZeroIn()
             self.elev.update()
             self.stt.mark("Elevator-teleop")
 

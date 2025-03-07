@@ -8,8 +8,9 @@ MAX_ROTATE_SPEED_RAD_PER_SEC,MAX_TRANSLATE_ACCEL_MPS2,MAX_ROTATE_ACCEL_RAD_PER_S
 from utils.allianceTransformUtils import onRed
 from utils.faults import Fault
 from utils.signalLogging import addLog
+from utils.singleton import Singleton
 
-class DriverInterface:
+class DriverInterface(metaclass=Singleton):
     """Class to gather input from the driver of the robot"""
 
     def __init__(self):
