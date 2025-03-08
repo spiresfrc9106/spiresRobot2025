@@ -205,7 +205,6 @@ class ElevatorControl(metaclass=Singleton):
         if positionIn < self.lowestHeightIn:
             self.lowestHeightIn = positionIn
             self.timeWhenChangeS = Timer.getFPGATimestamp()
-
             self._setMotorPosAndFF()
             # change the time we last moved in seconds
         else:
@@ -215,8 +214,6 @@ class ElevatorControl(metaclass=Singleton):
                 self._changeState(ElevatorStates.OPERATING)
             else:
                 self._setMotorPosAndFF()
-
-        pass
 
     def _setMotorPosAndFF(self) -> None:
         oldVelocityInps = self.curTrapPState.velocity
@@ -269,7 +266,6 @@ class ElevatorControl(metaclass=Singleton):
             newDesVelocityInps = min(newDesVelocityInps, self.maxVelocityIps.get())
             newDesVelocityInps = max(newDesVelocityInps, -self.maxVelocityIps.get())
 
-
             # do these checks relative to the curTrapPState
             # if height goal is to go up, make sure that velocity goal is 0 or +
             if newDesHeightIn > self.curTrapPState.position:
@@ -284,7 +280,6 @@ class ElevatorControl(metaclass=Singleton):
 
             self.desTrapPState = self.trapProfiler.State(newDesHeightIn, newDesVelocityInps)
 
-
     def _updateOperating(self) -> None:
         if self.funRuns == 0:
             self.curTrapPState = TrapezoidProfile.State(self.getHeightIn(), 0)
@@ -296,8 +291,6 @@ class ElevatorControl(metaclass=Singleton):
             self.actAccLogger.logNow((self.actualVelInps - self.previousVelInps) / currentPeriodS)
 
         # The default is to go to the middle
-
-
         self.actTrapPState = TrapezoidProfile.State(self.getHeightIn(), self.actualVelInps)
         self.desTrapPState = TrapezoidProfile.State(self.lowestHeightIn + (TEST_ELEVATOR_RANGE_IN / 2),0)
 
@@ -329,7 +322,6 @@ class ElevatorControl(metaclass=Singleton):
             self.rMotor.setVoltage(self.kG.get() + manAdjVoltage)
             self.curTrapPState = TrapezoidProfile.State(self.actTrapPState.position,0)
         else:
-
             self._setMotorPosAndFF()
 
         self.previousVelInps = self.actualVelInps
