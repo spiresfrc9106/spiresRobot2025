@@ -10,7 +10,7 @@ from wpimath.geometry import Pose2d
 
 #if you can't find something here, it's probably in the _setup file.
 
-class PlungeV1(TemplateScheme):
+class Template(TemplateScheme):
     def __init__(self, arm, base, elev):
         self.arm = arm
         self.base = base

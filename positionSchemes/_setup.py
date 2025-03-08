@@ -9,9 +9,14 @@ from wpilib import Timer
 
 
 class TemplateScheme:
-
-    def __init__(self):
-        pass
+    def __init__(self, arm, base, elev):
+        self.startTime = Timer.getFPGATimestamp()
+        self.changeInTime = 0
+        self.waitTimes = {}
+        self.schemeProg = 0
+        self.baseCmd = None
+        self.armCmd = None
+        self.elevCmd = None
 
     def nextState(self):
         self.currentState = self.currentState + 1
@@ -54,9 +59,8 @@ class TemplateScheme:
             )
         return arm_cmd  # if we have nothing to change, we return the current command
 
-
 class ArmConsts:
-    def _init_(self):
+    def __init__(self):
         ## DEGS
         self.posLow = 1
         self.posMedium = 2
@@ -68,13 +72,13 @@ class ArmConsts:
 
 
 class ElevConsts:
-    def _init_(self):
+    def __init__(self):
         ## INCHES
         self.posLow = 1
         self.posLowMid = 1.5  # this is the location that the robot should be right before hitting coral
         self.posMedium = 2  # middle of elevator, default location.
-        ## INCHES/S
         self.posHigh = 3
+        ## INCHES/S
         self.velLow = 1
         self.velMedium = 2
         self.velHigh = 3
