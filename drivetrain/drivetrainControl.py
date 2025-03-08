@@ -35,6 +35,7 @@ from utils.constants import (DT_FL_WHEEL_CANID,
                              DT_FR_AZMTH_ENC_PORT,
                              DT_BL_AZMTH_ENC_PORT,
                              DT_BR_AZMTH_ENC_PORT)
+from wrappers.wrapperedGyro import wrapperedGyro
 
 class DrivetrainControl(metaclass=Singleton):
     """
@@ -42,6 +43,7 @@ class DrivetrainControl(metaclass=Singleton):
     """
 
     def __init__(self):
+        self.gyro = wrapperedGyro()
         self.modules = []
         self.modules.append(
             SwerveModuleControl("FL", DT_FL_WHEEL_CANID, DT_FL_AZMTH_CANID, DT_FL_AZMTH_ENC_PORT, 
@@ -73,7 +75,7 @@ class DrivetrainControl(metaclass=Singleton):
 
         self.gains = SwerveModuleGainSet()
 
-        self.poseEst = DrivetrainPoseEstimator(self.getModulePositions())
+        self.poseEst = DrivetrainPoseEstimator(self.getModulePositions(), self.gyro)
 
         self._updateAllCals()
 

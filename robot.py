@@ -22,6 +22,8 @@ from utils.powerMonitor import PowerMonitor
 from webserver.webserver import Webserver
 from AutoSequencerV2.autoSequencer import AutoSequencer
 
+from wpimath.geometry import Pose2d
+
 class MyRobot(wpilib.TimedRobot):
 
     #########################################################
@@ -142,6 +144,7 @@ class MyRobot(wpilib.TimedRobot):
 
         if self.dInt.getGyroResetCmd():
             self.driveTrain.resetGyro()
+
 
         if self.dInt.getCreateObstacle():
             # For test purposes, inject a series of obstacles around the current pose

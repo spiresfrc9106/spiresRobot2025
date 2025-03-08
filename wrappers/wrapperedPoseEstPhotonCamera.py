@@ -6,6 +6,9 @@ from photonlibpy.photonCamera import PhotonCamera
 from photonlibpy.photonCamera import setVersionCheckEnabled
 from utils.fieldTagLayout import FieldTagLayout
 from utils.faults import Fault
+from ntcore import NetworkTableInstance
+
+from utils.signalLogging import addLog
 
 # Describes one on-field pose estimate from the a camera at a specific time.
 @dataclass
@@ -29,6 +32,16 @@ class WrapperedPoseEstPhotonCamera:
         self.timeoutSec = 1.0
         self.poseEstimates:list[CameraPoseObservation] = []
         self.robotToCam = robotToCam
+
+        self.CamPublisher = (
+            NetworkTableInstance.getDefault()
+            .getStructTopic("/positionby"+camName, Pose2d)
+            .publish()
+        )
+
+        self.targetLength = 0
+        addLog("test_targets_seen_photon", lambda: self.targetLength, "")
+
 
     def update(self, prevEstPose:Pose2d):
 
@@ -61,6 +74,7 @@ class WrapperedPoseEstPhotonCamera:
         # We want to select the best possible pose per target
         # We should also filter out targets that are too far away, and poses which
         # don't make sense.
+        self.targetLength = len(res.getTargets())
         for target in res.getTargets():
             # Transform both poses to on-field poses
             tgtID = target.getFiducialId()
@@ -104,6 +118,7 @@ class WrapperedPoseEstPhotonCamera:
                         self.poseEstimates.append(
                             CameraPoseObservation(obsTime, bestCandidate)
                         )
+                        self.CamPublisher.set(bestCandidate)
 
     def getPoseEstimates(self):
         return self.poseEstimates

@@ -6,6 +6,7 @@ from drivetrain.drivetrainPhysical import MAX_FWD_REV_SPEED_MPS,MAX_STRAFE_SPEED
 MAX_ROTATE_SPEED_RAD_PER_SEC,MAX_TRANSLATE_ACCEL_MPS2,MAX_ROTATE_ACCEL_RAD_PER_SEC_2
 from utils.allianceTransformUtils import onRed
 from utils.faults import Fault
+from utils.signalLogging import addLog
 #from utils.signalLogging import addLog
 
 
@@ -35,6 +36,13 @@ class DriverInterface:
 
         # Utility - reset to zero-angle at the current pose
         self.gyroResetCmd = False
+
+        self.processedStrafe = 0
+        self.processedRotate = 0
+
+
+        addLog("test_strafe_speed_level", lambda: self.processedStrafe, "")
+        addLog("test_rotate_speed_level", lambda: self.processedRotate, "")
 
         # Logging
         #addLog("DI FwdRev Cmd", lambda: self.velXCmd, "mps")
@@ -104,6 +112,11 @@ class DriverInterface:
         retval.velX = self.velXCmd
         retval.velY = self.velYCmd
         retval.velT = self.velTCmd
+        ####TESTING PURPOSES
+        diagStrafe = pow(pow(self.velXCmd, 2) + pow(self.velYCmd, 2),0.5)
+        self.processedStrafe = abs(round(diagStrafe/MAX_FWD_REV_SPEED_MPS*10))
+        self.processedRotate = abs(round(self.velTCmd/MAX_ROTATE_SPEED_RAD_PER_SEC*10))
+
         return retval
 
     def getNavToSpeaker(self) -> bool:
