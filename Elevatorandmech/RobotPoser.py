@@ -30,6 +30,7 @@ from Elevatorandmech.replaceWithYavinsPosesClass import YavinsPoseClassNoChange,
 from humanInterface.operatorInterface import OperatorInterface, ElevArmCmdState
 from utils.singleton import Singleton
 from positionSchemes.plunge_v1 import PlungeV1
+from positionSchemes.pickup_v1 import PickupV1
 
 class PoseDirector(metaclass=Singleton):
 
@@ -77,7 +78,7 @@ class PoseDirector(metaclass=Singleton):
             case ElevArmCmdState.PLUNGE:
                 return PlungeV1(self.arm, self.driveTrain, self.elevator) # todo fix me
             case ElevArmCmdState.RECEIVE_CORAL:
-                return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator) # todo fix me
+                return PickupV1(self.arm, self.driveTrain, self.elevator) # todo fix me
             case ElevArmCmdState.L1:
                 return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator)  # todo fix me
             case ElevArmCmdState.L2:

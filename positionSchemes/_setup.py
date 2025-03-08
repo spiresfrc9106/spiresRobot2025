@@ -9,14 +9,9 @@ from wpilib import Timer
 
 
 class TemplateScheme:
+
     def __init__(self):
-        self.startTime = Timer.getFPGATimestamp()
-        self.changeInTime = 0
-        self.waitTimes = {}
-        self.schemeProg = 0
-        self.baseCmd = None
-        self.armCmd = None
-        self.elevCmd = None
+        pass
 
     def nextState(self):
         self.currentState = self.currentState + 1

@@ -7,6 +7,7 @@ from drivetrain.drivetrainCommand import DrivetrainCommand
 from Elevatorandmech.ElevatorCommand import ElevatorCommand
 from Elevatorandmech.ArmCommand import ArmCommand
 from wpimath.geometry import Pose2d
+from positionSchemes._posintelligence import PickupIntelligence
 
 #if you can't find something here, it's probably in the _setup file.
 
@@ -18,6 +19,14 @@ class PickupV1(TemplateScheme):
         self.armConst = ArmConsts()
         self.elevConst = ElevConsts()
         self.currentState = 0
+
+        self.startTime = Timer.getFPGATimestamp()
+        self.changeInTime = 0
+        self.waitTimes = {}
+        self.schemeProg = 0
+        self.baseCmd = None
+        self.armCmd = None
+        self.elevCmd = None
 
         # structure:
         #   base: (Pose2d, velx, vely, velt)
@@ -32,15 +41,17 @@ class PickupV1(TemplateScheme):
 
 
         self.totalRuns = 0
-        addLog("yvn_current_new_state", lambda: self.currentState, "")
-        addLog("yvn_new_runs", lambda: self.totalRuns, "")
+        self.bestTag = 0
+        addLog("yvn_current_pickup_state", lambda: self.currentState, "")
+        addLog("yvn_pickup_runs", lambda: self.totalRuns, "")
+        addLog("yvn_pickup_besttag", lambda: self.bestTag, "")
 
     def update(self):
         currentTime = Timer.getFPGATimestamp()
         time = currentTime - self.startTime
         match self.currentState:
             case 0: #initializing
-                pass
+                self.bestTag = PickupIntelligence(self.base).decidePickupPose()
             case 1:
                 pass
             case 2:

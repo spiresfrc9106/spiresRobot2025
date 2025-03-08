@@ -19,6 +19,14 @@ class PlungeV1(TemplateScheme):
         self.elevConst = ElevConsts()
         self.currentState = 0
 
+        self.startTime = Timer.getFPGATimestamp()
+        self.changeInTime = 0
+        self.waitTimes = {}
+        self.schemeProg = 0
+        self.baseCmd = None
+        self.armCmd = None
+        self.elevCmd = None
+
         # structure:
         #   base: (Pose2d, velx, vely, velt)
         #   arm: (position_deg, deg/s)
