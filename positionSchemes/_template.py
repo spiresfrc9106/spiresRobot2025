@@ -2,7 +2,7 @@ from Elevatorandmech.armtest import ArmControl
 from Elevatorandmech.elevatortest import ElevatorControl
 from wpilib import Timer
 from utils.signalLogging import addLog
-from positionSchemes._setup import TemplateScheme, ArmConsts, ElevConsts
+from positionSchemes._setup import SetupScheme, ArmConsts, ElevConsts
 from drivetrain.drivetrainCommand import DrivetrainCommand
 from Elevatorandmech.ElevatorCommand import ElevatorCommand
 from Elevatorandmech.ArmCommand import ArmCommand
@@ -10,8 +10,9 @@ from wpimath.geometry import Pose2d
 
 #if you can't find something here, it's probably in the _setup file.
 
-class Template(TemplateScheme):
+class Template(SetupScheme):
     def __init__(self, arm, base, elev):
+        super().__init__(arm, base, elev)
         self.arm = arm
         self.base = base
         self.elev = elev

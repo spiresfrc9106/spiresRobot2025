@@ -2,7 +2,7 @@ from Elevatorandmech.armtest import ArmControl
 from Elevatorandmech.elevatortest import ElevatorControl
 from wpilib import Timer
 from utils.signalLogging import addLog
-from positionSchemes._setup import TemplateScheme, ArmConsts, ElevConsts
+from positionSchemes._setup import SetupScheme, ArmConsts, ElevConsts
 from drivetrain.drivetrainCommand import DrivetrainCommand
 from Elevatorandmech.ElevatorCommand import ElevatorCommand
 from Elevatorandmech.ArmCommand import ArmCommand
@@ -11,8 +11,9 @@ from positionSchemes._posintelligence import PickupIntelligence
 
 #if you can't find something here, it's probably in the _setup file.
 
-class PickupV1(TemplateScheme):
+class PickupV1(SetupScheme):
     def __init__(self, arm, base, elev):
+        super().__init__(arm, base, elev)
         self.arm = arm
         self.base = base
         self.elev = elev
@@ -44,7 +45,6 @@ class PickupV1(TemplateScheme):
         self.bestTag = 0
         addLog("yvn_current_pickup_state", lambda: self.currentState, "")
         addLog("yvn_pickup_runs", lambda: self.totalRuns, "")
-        addLog("yvn_pickup_besttag", lambda: self.bestTag, "")
 
     def update(self):
         currentTime = Timer.getFPGATimestamp()
@@ -52,6 +52,7 @@ class PickupV1(TemplateScheme):
         match self.currentState:
             case 0: #initializing
                 self.bestTag = PickupIntelligence(self.base).decidePickupPose()
+                self.baseCmd = (self.bestTag.toPose2d(),0.5,0.5,0)
             case 1:
                 pass
             case 2:

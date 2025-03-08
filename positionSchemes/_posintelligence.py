@@ -11,7 +11,8 @@ class PickupIntelligence:
         self.curPoseEst = self.poseEst.getCurEstPose()
 
     def decidePickupPose(self):
-        self.bestTag = self.decidePickupTag()
+        self.bestTag = self.field.lookup(self.decidePickupTag())
+
         return self.bestTag
 
     def decidePickupTag(self):

@@ -1,14 +1,16 @@
+from wpimath.geometry import Pose2d
+from utils.fieldTagLayout import FieldTagLayout
 from drivetrain.drivetrainCommand import DrivetrainCommand
 from Elevatorandmech.ElevatorCommand import ElevatorCommand
 from Elevatorandmech.ArmCommand import ArmCommand
 from wpimath.geometry import Pose2d
 from wpilib import Timer
-
+from drivetrain.controlStrategies.trajectory import ChoreoTrajectoryState
 
 ### these are intrisic to any pos scheme class
 
 
-class TemplateScheme:
+class SetupScheme:
     def __init__(self, arm, base, elev):
         self.startTime = Timer.getFPGATimestamp()
         self.changeInTime = 0
@@ -30,16 +32,40 @@ class TemplateScheme:
         else:
             return False
 
+
+
     def getDriveTrainCommand(self, curCommand: DrivetrainCommand):
         drivetrain_cmd = curCommand
         if self.baseCmd is not None:
-            drivetrain_cmd = DrivetrainCommand(
-                velX=self.baseCmd[1],
-                velY=self.baseCmd[2],
-                velT=self.baseCmd[3],
-                desPose=Pose2d(self.baseCmd[0])
+            drivetrain_cmd = ChoreoTrajectoryState(
+                timestamp = 1, #TODO: no idea if this should be some sort of other type of time...
+                x=YPose(self.baseCmd[0]).x,
+                y=YPose(self.baseCmd[0]).y,
+                heading = YPose(self.baseCmd[0]).t,
+                velocityX=self.baseCmd[1],
+                velocityY=self.baseCmd[2],
+                angularVelocity=self.baseCmd[3]
             )
         return drivetrain_cmd  # if we have nothing to change, we return the current command
+
+        # self.timestamp = timestamp
+        # self.x = x
+        # self.y = y
+        # self.heading = heading
+        # self.velocityX = velocityX
+        # self.velocityY = velocityY
+        # self.angularVelocity = angularVelocity
+
+    # def getDriveTrainCommand(self, curCommand: DrivetrainCommand):
+    #     drivetrain_cmd = curCommand
+    #     if self.baseCmd is not None:
+    #         drivetrain_cmd = DrivetrainCommand(
+    #             velX=self.baseCmd[1],
+    #             velY=self.baseCmd[2],
+    #             velT=self.baseCmd[3],
+    #             desPose=self.baseCmd[0]
+    #         )
+    #     return drivetrain_cmd  # if we have nothing to change, we return the current command
 
     def getElevatorCommand(self, curCommand: ElevatorCommand):
         elev_cmd = curCommand
@@ -82,3 +108,9 @@ class ElevConsts:
         self.velLow = 1
         self.velMedium = 2
         self.velHigh = 3
+
+class YPose:
+    def __init__(self, position: Pose2d):
+        self.x = position.X()
+        self.y = position.Y()
+        self.t = position.rotation().radians()
