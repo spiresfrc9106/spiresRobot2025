@@ -4,14 +4,14 @@
 
 from enum import IntEnum
 from wpilib import XboxController
-from playingwithfusion import TimeOfFlight
+#from playingwithfusion import TimeOfFlight
 from utils.calibration import Calibration
 from utils.units import sign
 from utils.signalLogging import  addLog, getNowLogger
 #from utils.constants import ELEV_LM_CANID, ELEV_RM_CANID, ELEV_TOF_CANID
 from utils.singleton import Singleton
 from wrappers.wrapperedSparkMax import WrapperedSparkMax
-from rev import SparkLowLevel
+#from rev import SparkLowLevel
 from wpimath.trajectory import TrapezoidProfile
 from wpilib import Timer
 TEST_ELEVATOR_RANGE_IN = 5.2
@@ -19,12 +19,12 @@ TEST_ELEVATOR_RANGE_IN = 5.2
 ELEV_GEARBOX_GEAR_RATIO = 5.0/1.0
 ELEV_SPOOL_RADIUS_IN = 1.92/2.0
 
-MAX_ELEV_VEL_INPS = 62500
+MAX_ELEV_VEL_INPS = 25
 MAX_ELEV_ACCEL_INPS2 = 250
 
 REEF_L1_HEIGHT_M = 0.5842
 REEF_L2_HEIGHT_M = 0.9398
-REEF_L3_HEIGHT_M = 1.397 
+REEF_L3_HEIGHT_M = 1.397
 REEF_L4_HEIGHT_M = 2.159
 ELEV_MIN_HEIGHT_M = REEF_L1_HEIGHT_M  # TODO - is elevator's bottom position actually L1?
 
@@ -38,6 +38,7 @@ class ElevatorStates(IntEnum):
     OPERATING = 2
     NO_CMD = -1
 
+TIME_STEP_S = 0.02
 
 class ElevatorControl(metaclass=Singleton):
     def __init__(self):
@@ -53,12 +54,11 @@ class ElevatorControl(metaclass=Singleton):
 
         self.manAdjMaxVoltage = Calibration(name="Elevator Manual Adj Max Voltage", default=1.0, units="V")
 
-        self.heightGoalIn = 0.0
         self.coralSafe = True
         self.manualAdjCmd = 0.0
 
         # See: https://docs.wpilib.org/en/stable/docs/software/advanced-controls/controllers/trapezoidal-profiles.html
-        self.desTrapPState = TrapezoidProfile.State(self.heightGoalIn,0)
+        self.desTrapPState = TrapezoidProfile.State(0,0)
 
         # Elevator Motors
         self.rMotor = WrapperedSparkMax(ELEV_RM_CANID, "ElevatorMotorRight", brakeMode=False, currentLimitA=5)
@@ -111,15 +111,11 @@ class ElevatorControl(metaclass=Singleton):
         # Create a motion profile with the given maximum velocity and maximum
         # acceleration constraints for the next setpoint.
 
-        self.heightGoalIn = 0.0
-
         self.profiledPos = 0.0
         self.curUnprofiledPosCmd = 0.0
         self.previousUpdateTimeS = None  # TOOD See if Michael needs this
 
         self.elevatorState = ElevatorStates.UNINITIALIZED
-
-        self.HeightGoalIn = 1000
 
         self.timeWhenChangeS = 0
 
@@ -129,8 +125,8 @@ class ElevatorControl(metaclass=Singleton):
         self.funRuns = 0
 
 
+        addLog("Elevator lowestHeightIn", lambda: self.lowestHeightIn, "in")
         addLog("Elevator State", lambda: float(int(self.elevatorState)), "int")
-        addLog("Elevator Goal Height", lambda: self.heightGoalIn, "in")
         addLog("Elevator Stopped", lambda: self.stopped, "bool")
         addLog("Elevator act Height", lambda: self.actTrapPState.position, "in")
         addLog("Elevator act Velocity", lambda: self.actTrapPState.velocity, "inps")
@@ -209,6 +205,7 @@ class ElevatorControl(metaclass=Singleton):
         if positionIn < self.lowestHeightIn:
             self.lowestHeightIn = positionIn
             self.timeWhenChangeS = Timer.getFPGATimestamp()
+
             self._setMotorPosAndFF()
             # change the time we last moved in seconds
         else:
@@ -223,8 +220,32 @@ class ElevatorControl(metaclass=Singleton):
 
     def _setMotorPosAndFF(self) -> None:
         oldVelocityInps = self.curTrapPState.velocity
-        self.curTrapPState = self.trapProfiler.calculate(0.02, self.curTrapPState, self.desTrapPState)
-        self.curTrapPAccLogger.logNow((self.curTrapPState.velocity - oldVelocityInps) / 0.02)
+
+        # This method is called both when initializing the elevator in the uninitialized state and when operating
+        # In the initializing state we always have a target velocity at the end. In the operating state we might
+        # have a target velocity that is not zero. If the target velocity is not zero we limit the velocity to be a
+        # velocity that won't overrun the end limits based upon our current profiled position and the max acceleration.
+        # Rather than solving with calculus, we just run an extra profiler and select the result with the smallest
+        # magnitude of velocity.
+
+        # TODO make sure all of the self. that we reference here are actually set before we touch
+
+        possibleNextTrapPState = self.trapProfiler.calculate(TIME_STEP_S, self.curTrapPState, self.desTrapPState)
+
+        if self.desTrapPState.velocity == 0:
+            self.curTrapPState = possibleNextTrapPState
+        else:
+            perhapsSmallerNextTrapPState = self.trapProfiler.calculate(TIME_STEP_S, self.curTrapPState,
+                                                                       TrapezoidProfile.State(
+                                                                           position=self.desTrapPState.position,
+                                                                           velocity=0))
+
+            if abs(perhapsSmallerNextTrapPState.velocity) < abs(possibleNextTrapPState.velocity):
+                self.curTrapPState = perhapsSmallerNextTrapPState
+            else:
+                self.curTrapPState = possibleNextTrapPState
+
+        self.curTrapPAccLogger.logNow((self.curTrapPState.velocity - oldVelocityInps) / TIME_STEP_S)
 
         motorPosCmdRad = self._heightInToMotorRad(self.curTrapPState.position)
         motorVelCmdRadps = self._heightVelInpsToMotorVelRadps(self.curTrapPState.velocity)
@@ -238,6 +259,32 @@ class ElevatorControl(metaclass=Singleton):
 
         self.rMotor.setPosCmd(motorPosCmdRad, vFF)
 
+    def _perhapsWeHaveANewRangeCheckedDesiredState(self, newDesHeightIn, newDesVelocityInps):
+        if (self.elevatorState == ElevatorStates.OPERATING) and (self.desTrapPState.position != newDesHeightIn or self.desTrapPState.velocity != newDesHeightIn):
+            # limit the height goal so that it is less than max height
+            # limit the height goal so that is more than 0
+            newDesHeightIn = min(newDesHeightIn, TEST_ELEVATOR_RANGE_IN)
+            newDesHeightIn = max(newDesHeightIn, self.lowestHeightIn)
+
+            newDesVelocityInps = min(newDesVelocityInps, self.maxVelocityIps.get())
+            newDesVelocityInps = max(newDesVelocityInps, -self.maxVelocityIps.get())
+
+
+            # do these checks relative to the curTrapPState
+            # if height goal is to go up, make sure that velocity goal is 0 or +
+            if newDesHeightIn > self.curTrapPState.position:
+                newDesVelocityInps = max(0, newDesVelocityInps)
+
+            # if height goals is to go down, make sure that the velocity goal is 0 or -
+            elif newDesHeightIn < self.curTrapPState.position:
+                newDesVelocityInps = min(0, newDesVelocityInps)
+            # if height goals is to stay at current height goal
+            else:
+                newDesVelocityInps = 0
+
+            self.desTrapPState = self.trapProfiler.State(newDesHeightIn, newDesVelocityInps)
+
+
     def _updateOperating(self) -> None:
         if self.funRuns == 0:
             self.curTrapPState = TrapezoidProfile.State(self.getHeightIn(), 0)
@@ -247,29 +294,27 @@ class ElevatorControl(metaclass=Singleton):
         if self.previousUpdateTimeS is not None:
             currentPeriodS = self.currentUpdateTimeS - self.previousUpdateTimeS
             self.actAccLogger.logNow((self.actualVelInps - self.previousVelInps) / currentPeriodS)
-        self.heightGoalIn = self.lowestHeightIn + (TEST_ELEVATOR_RANGE_IN / 2)
+
+        # The default is to go to the middle
+
 
         self.actTrapPState = TrapezoidProfile.State(self.getHeightIn(), self.actualVelInps)
-        self.desTrapPState = TrapezoidProfile.State(self.heightGoalIn,0)
+        self.desTrapPState = TrapezoidProfile.State(self.lowestHeightIn + (TEST_ELEVATOR_RANGE_IN / 2),0)
 
-        # A X B Y ARE FOR L1 L2 L3 L4 RESPECTIVELY
-        # REPLACE MULTIPLICATION BY 1 WITH MULT BY 39.3700787402 ON THE ACTUAL ELEV TO CONVERT FROM M TO IN
-        # TODO: ADD A LITTLE MORE HEIGHT TO THE L1 L2 L3 AND EVEN MORE TO THE L4
-        #   SO THAT WE CAN ANGLE THE ARM DOWNWARDS INTO THE CORAL BETTER
+        # The default is to go to the middle
         if self.ctrl.getAButton():
-            self.heightGoalIn = REEF_L1_HEIGHT_M * 1 + self.lowestHeightIn
+            self.desTrapPState = TrapezoidProfile.State(REEF_L1_HEIGHT_M * 1 + self.lowestHeightIn, 0)
         if self.ctrl.getXButton():
-            self.heightGoalIn = REEF_L2_HEIGHT_M * 1 + self.lowestHeightIn
+            self.desTrapPState = TrapezoidProfile.State(REEF_L2_HEIGHT_M * 1 + self.lowestHeightIn, 0)
         if self.ctrl.getBButton():
-            self.heightGoalIn = REEF_L3_HEIGHT_M * 1 + self.lowestHeightIn
+            self.desTrapPState = TrapezoidProfile.State(REEF_L3_HEIGHT_M * 1 + self.lowestHeightIn, 0)
         if self.ctrl.getYButton():
-            self.heightGoalIn = REEF_L4_HEIGHT_M * 1 + self.lowestHeightIn
+            self.desTrapPState = TrapezoidProfile.State(REEF_L4_HEIGHT_M * 1 + self.lowestHeightIn, 0)
 
         # PLUNGE USING THE RIGHT TRIGGER
         if self.ctrl.getRightTriggerAxis():
-            self.heightGoalIn = self.lowestHeightIn
+            self.desTrapPState = TrapezoidProfile.State(self.lowestHeightIn, 0)
 
-        self.desTrapPState = TrapezoidProfile.State(self.heightGoalIn, 0)
         self._setMotorPosAndFF()
 
         # Update motor closed-loop calibration
@@ -284,16 +329,20 @@ class ElevatorControl(metaclass=Singleton):
             self.rMotor.setVoltage(self.kG.get() + manAdjVoltage)
             self.curTrapPState = TrapezoidProfile.State(self.actTrapPState.position,0)
         else:
+
             self._setMotorPosAndFF()
 
         self.previousVelInps = self.actualVelInps
         self.previousUpdateTimeS = self.currentUpdateTimeS
 
-
-
     # API to set current height goal
     def setHeightGoal(self, heightGoalIn:float) -> None:
-        self.heightGoalIn = heightGoalIn
+        self._perhapsWeHaveANewRangeCheckedDesiredState(newDesHeightIn=heightGoalIn, newDesVelocityInps = 0.0)
+
+    # todo make an new API function:
+    def setHeightVelocityGoal(self, heightGoalIn:float, velocityGoalInps:float) -> None:
+        self._perhapsWeHaveANewRangeCheckedDesiredState(newDesHeightIn=heightGoalIn, newDesVelocityInps=velocityGoalInps)
+
 
     # API to confirm we are oK to be at a height other than L1
     def setSafeToLeaveL1(self, safe:bool) -> None:
