@@ -24,6 +24,7 @@ from utils.robotIdentification import RobotTypes
 
 class ArmDependentConstants:
     def __init__(self):
+
         self.armDepConstants = {
             RobotTypes.Spires2023: {
                 "HAS_ARM": False,
@@ -75,6 +76,11 @@ class ArmStates(Enum):
 
 class ArmControl(metaclass=Singleton):
     def __init__(self):
+
+
+        # please do not delete this
+        self.atAboutDown = False
+
         #there will not be preset angles for heights,
         #it will just be going to the angle given by Noah's code
         

@@ -2,11 +2,27 @@ from Elevatorandmech.armtest import ArmControl
 from Elevatorandmech.elevatortest import ElevatorControl
 from wpilib import Timer
 from utils.signalLogging import addLog
+from positionSchemes._setup import TemplateScheme, ArmConsts, ElevConsts
+from drivetrain.drivetrainCommand import DrivetrainCommand
+from Elevatorandmech.ElevatorCommand import ElevatorCommand
+from Elevatorandmech.ArmCommand import ArmCommand
+from wpimath.geometry import Pose2d
 
-class PlungeV1():
-    def __init__(self):
-        self.arm = ArmControl()
-        self.elev = ElevatorControl()
+#if you can't find something here, it's probably in the _setup file.
+
+class PlungeV1(TemplateScheme):
+    def __init__(self, arm, base, elev):
+        self.arm = arm
+        self.base = base
+        self.elev = elev
+        self.armConst = ArmConsts()
+        self.elevConst = ElevConsts()
+        self.currentState = 0
+
+        # structure:
+        #   base: (Pose2d, velx, vely, velt)
+        #   arm: (position_deg, deg/s)
+        #   elev: (pasition_in, in/s)
 
         #PROCESS:
         #  base: no action
@@ -19,22 +35,7 @@ class PlungeV1():
         #  4) elevator up (medium v)
         #  5) arm up (medium v), to a medium point (medium raised)
 
-        self.baseCmd = None
-        self.armCmd = None
-        self.elevCmd = None
-
-        self.startTime = Timer.getFPGATimestamp()
-        self.changeInTime = 0
-
-        self.waitTimes = {}
-        self.currentState = 0
-        self.schemeProg = 0
-
-        self.armConst = ArmConsts()
-        self.elevConst = ElevConsts()
-
         self.totalRuns = 0
-
         addLog("yvn_current_plunge_state", lambda: self.currentState, "")
         addLog("yvn_runs", lambda: self.totalRuns, "") # test purposes, not needed at all.
 
@@ -74,36 +75,6 @@ class PlungeV1():
         state_max = 5
         self.schemeProg = min(self.currentState/state_max, 1)
 
-    def nextState(self):
-        self.currentState = self.currentState + 1
-
-    def completedAwait(self, waitName, duration):
-        now = Timer.getFPGATimestamp()
-        if self.waitTimes.get(waitName, -1) == -1:
-            self.waitTimes[waitName] = now
-        if now - self.waitTimes[waitName] >= duration:
-            return True
-        else:
-            return False
 
 
-class ArmConsts:
-    def __init__(self):
-        self.posLow = 1
-        self.posMedium = 2
-        self.posHigh = 3
-        self.velLow = 1
-        self.velMedium = 2
-        self.velHigh = 3
-
-
-class ElevConsts:
-    def __init__(self):
-        self.posLow = 1
-        self.posLowMid = 1.5 # this is the location that the robot should be right before hitting coral
-        self.posMedium = 2 # middle of elevator, default location.
-        self.posHigh = 3
-        self.velLow = 1
-        self.velMedium = 2
-        self.velHigh = 3
 

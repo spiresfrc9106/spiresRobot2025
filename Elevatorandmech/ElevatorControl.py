@@ -19,6 +19,7 @@ from rev import SparkLowLevel
 
 class ElevatorDependentConstants:
     def __init__(self):
+
         self.elevDepConstants = {
             RobotTypes.Spires2023: {
                 "HAS_ELEVATOR": False,
@@ -91,6 +92,10 @@ class ElevatorStates(IntEnum):
 
 class ElevatorControl(metaclass=Singleton):
     def __init__(self):
+
+        # please don't delete this
+        self.atAboutMiddle = True
+        self.reachedBottom = False #these only need to be estimates, since the system will continue nmw
 
         self.poseDirector = PoseDirector()
 

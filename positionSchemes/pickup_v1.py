@@ -10,7 +10,7 @@ from wpimath.geometry import Pose2d
 
 #if you can't find something here, it's probably in the _setup file.
 
-class PlungeV1(TemplateScheme):
+class PickupV1(TemplateScheme):
     def __init__(self, arm, base, elev):
         self.arm = arm
         self.base = base
@@ -25,15 +25,11 @@ class PlungeV1(TemplateScheme):
         #   elev: (pasition_in, in/s)
 
         #PROCESS:
-        #  base: no action
-        #  starting: arm dnm, elevator high enough to come down
-        #  1) arm down (fast)
-        #  await down
-        #  2) elevator down (fast)
-        #  await down
-        #  3) wait 0.5s
-        #  4) elevator up (medium v)
-        #  5) arm up (medium v), to a medium point (medium raised)
+        # in
+        #  1) find the closest april tag designated as pickup (ignore grid system idea)
+        #  -- ignore the camera system to pick the best place to go to... we'll do this later.
+        #     -> based on the arrow on which side to go to (determined by the class but currently user input)
+
 
         self.totalRuns = 0
         addLog("yvn_current_new_state", lambda: self.currentState, "")

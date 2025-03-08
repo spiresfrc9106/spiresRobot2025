@@ -2,6 +2,7 @@ from wpimath.geometry import Pose2d
 from drivetrain.drivetrainCommand import DrivetrainCommand
 from Elevatorandmech.ElevatorCommand import ElevatorCommand
 from Elevatorandmech.ArmCommand import ArmCommand
+from wpimath.geometry import Pose2d, Rotation2d, Twist2d
 
 from humanInterface.operatorInterface import OperatorInterface
 class YavinsPoseClassNoChange():
@@ -37,16 +38,32 @@ class YavinsPoseClassPositionControl():
     def update(self):
         pass
 
+
+
+
+
+    ##### FIX THESE!!!!!! RIGHT NOW THEY AREN'T IMMUNE TO NONE!!!!
+
     def getDriveTrainCommand(self, curCommand: DrivetrainCommand):
+        drivetrainCommand = DrivetrainCommand(
+            velX=0.0,
+            velY=0.0,
+            velT=0.0,
+            desPose=Pose2d(0,0,0)
+        )
         return curCommand # if we have nothing to change, we return the current command
 
     def getElevatorCommand(self, curCommand: ElevatorCommand):
         elevatorCommand = ElevatorCommand(
-            heightIn=self.oInt.getDesElevatorPosIn(),
+            heightIn=0.0,
             velocityInps=0.0
         )
-        return elevatorCommand
+        return elevatorCommand # if we have nothing to change, we return the current command
 
     # TODO change this so the arm is a position control loop
     def getArmCommand(self, curCommand: ArmCommand):
+        armCommand = ArmCommand(
+            angleDeg=0,
+            velocityDegps=0.0
+        )
         return curCommand # if we have nothing to change, we return the current command
