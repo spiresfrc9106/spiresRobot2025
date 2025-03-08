@@ -151,5 +151,5 @@ def wrapperedLimilightCameraFactory(camName:str, robotToCam):
         print(f"In simulation substituting PhotonCamera for LimeLight Camera {camName}")
         wrapperedCam = WrapperedPoseEstPhotonCamera(camName, robotToCam)
     else:
-        wrapperedCame = WrapperedPoseEstLimelight(robotToCam, camName)
+        wrapperedCam = WrapperedPoseEstLimelight(robotToCam, camName)
     return wrapperedCam

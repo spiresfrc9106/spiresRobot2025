@@ -80,8 +80,6 @@ class MyRobot(wpilib.TimedRobot):
         self.rioMonitor = RIOMonitor()
         self.pwrMon = PowerMonitor()
 
-        self.arm = ArmControl()
-
         if motorDepConstants['HAS_MOTOR_TEST']:
             self.motorCtrlFun = MotorControl()
 
@@ -189,8 +187,10 @@ class MyRobot(wpilib.TimedRobot):
     def teleopPeriodic(self):
         # TODO - this is technically one loop delayed, which could induce lag
         # Probably not noticeable, but should be corrected.
+
         if drivetrainDepConstants['HAS_DRIVETRAIN']:
             self.driveTrain.setManualCmd(self.dInt.getCmd())
+
         self.poseDirector.update()
 
         if self.dInt.getGyroResetCmd():

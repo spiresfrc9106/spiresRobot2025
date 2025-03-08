@@ -19,6 +19,7 @@ from sensors.limelight import Limelight
 from wrappers.wrapperedLimelightCamera import wrapperedLimilightCameraFactory
 from ytests.logging import YTestForPosition
 
+
 # Convienent abreviations for the types that we'll be passing around here.
 # This is primarily driven by wpilib's conventions:
 # 1) Swerve objects will be put into a tuple, with the length of the tuple equal to the number of modules
@@ -71,6 +72,8 @@ class DrivetrainPoseEstimator:
             YTestForPosition("photonF"),
             YTestForPosition("limeli1")
         ]
+
+        self.finalPosEst = YTestForPosition("final")
 
         self._camTargetsVisible = False
         self._useAprilTags = True
@@ -137,8 +140,7 @@ class DrivetrainPoseEstimator:
                 self._telemetry.addVisionObservations(observations)
                 self.posEstLogs[index].update(cam.getPoseEstFormatted())
                 index = index + 1
-
-
+        self.finalPosEst.update(self.getCurEstPose())
         self._gyroDisconFault.set(not self._gyro.isConnected())
         if wpilib.TimedRobot.isSimulation():
             # Simulated Gyro
