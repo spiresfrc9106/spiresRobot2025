@@ -90,9 +90,9 @@ class ArmControl(metaclass=Singleton):
         self.manAdjMaxVoltage = Calibration(name="Arm Manual Adj Max Voltage", default=1.0, units="V")
 
         self.armGoalDeg = 0.0
-        
+
         # See: https://docs.wpilib.org/en/stable/docs/software/advanced-controls/controllers/trapezoidal-profiles.html
-        self.desTrapPState = TrapezoidProfile.State(self.armGoalDeg,0)
+        self.desTrapPState = TrapezoidProfile.State(self.armGoalDeg, 0)
 
         # Arm Motors
         self.motor = WrapperedSparkMax(armDepConstants['ARM_M_CANID'], "ArmMotor", brakeMode=False, currentLimitA=5)
@@ -100,24 +100,26 @@ class ArmControl(metaclass=Singleton):
         self.motor.setInverted(MotorIsInverted)
 
         # Rev Relative Encoder
-        self.encoder = WrapperedRevThroughBoreEncoder(port=9, name="ArmRevAbsEncoder", mountOffsetRad=0, dirInverted=True)
+        self.encoder = WrapperedRevThroughBoreEncoder(port=9, name="ArmRevAbsEncoder", mountOffsetRad=0,
+                                                      dirInverted=True)
 
         # FF and proportional gain constants
         self.kV = Calibration(name="Arm kV", default=0.02, units="V/rps")
         self.kS = Calibration(name="Arm kS", default=0.1, units="V")
         self.kG = Calibration(name="Arm kG", default=0.25, units="V")
-        self.kP = Calibration(name="Arm kP", default=0.4, units="V/rad error") # Per 0.001 seconds
+        self.kP = Calibration(name="Arm kP", default=0.4, units="V/rad error")  # Per 0.001 seconds
+        self.maxVelocityDegps = Calibration(name="Arm Max Vel", default=MAX_ARM_VEL_DEGPS, units="degps")
+        self.maxAccelerationDegps2 = Calibration(name="Arm Max Accel", default=MAX_ARM_ACCEL_DEGPS2, units="degps2")
+
+    def initialize(self):
 
         # Set P gain on motor
         self.motor.setPID(self.kP.get(), 0.0, 0.0)
+        # when we re-initialize tell motor to stay where it is at.
+        self.motor.setVoltage(0)
+        #vFF  = 0
+        #self.motor.setPosCmd(self.motor.getMotorPositionRad(), vFF)
 
-        # Profiler
-        #change eg velocity inches per second to degrees per second
-        self.maxVelocityDegps = Calibration(name="Arm Max Vel", default=MAX_ARM_VEL_DEGPS, units="degps")
-        self.maxAccelerationDegps2 = Calibration(name="Arm Max Accel", default=MAX_ARM_ACCEL_DEGPS2, units="degps2")
-        
-        #no need for search, so it can go away
-        #will read abs encoder instead
 
         # units for trapezoidal will be degrees per second (velocity) and degrees per second squared (acceleration)
         self.trapProfiler = TrapezoidProfile(TrapezoidProfile.Constraints(self.maxVelocityDegps.get(), self.maxAccelerationDegps2.get()))
@@ -151,11 +153,13 @@ class ArmControl(metaclass=Singleton):
         addLog(f"{self.name}/abs_encoder_act_pos_deg", lambda: self.getAbsAngleDeg(), "deg")
         addLog(f"{self.name}/rel_encoder_offset_deg", lambda: self.relEncOffsetAngleDeg, "deg")
         addLog(f"{self.name}/state", lambda: self.state, "int")
+        self.stateNowLogger = getNowLogger(f"{self.name}/stateNow", int)
+        self.stateNowLogger.logNow(self.state)
         addLog(f"{self.name}/goal_pos_deg", lambda: self.armGoalDeg, "deg")
         addLog(f"{self.name}/stopped", lambda: self.stopped, "bool")
         addLog(f"{self.name}/act_pos_degps", lambda: self.actTrapPState.position, "deg")
         addLog(f"{self.name}/act_vel_degps", lambda: self.actTrapPState.velocity, "degps")
-        self.actAccLogger = getNowLogger(f"{self.name}/act Acceleration", "degps2")
+        self.actAccLogger = getNowLogger(f"{self.name}/act acceleration", "degps2")
         addLog(f"{self.name}/curProfile_pos_Deg", lambda: self.curTrapPState.position, "deg")
         addLog(f"{self.name}/curProfile_vel_Degps", lambda: self.curTrapPState.velocity, "degps")
         self.curTrapPAccLogger = getNowLogger(f"{self.name}/curProfile_acc_degps2", "degps2")
@@ -170,6 +174,10 @@ class ArmControl(metaclass=Singleton):
         self.count = 0
 
         print(f"Init {self.name} complete")
+
+    def disable(self):
+        self.motor.setPosCmd(self.motor.getMotorPositionRad())
+        self.motor.setVoltage(0)
 
     def _noOffsetMotorRadToAngleDeg(self, MotorRad: float) -> float:
         return  math.degrees(MotorRad * (1.0/ARM_GEARBOX_GEAR_RATIO))
@@ -244,7 +252,13 @@ class ArmControl(metaclass=Singleton):
         self.relEncOffsetAngleDeg = self.getRelToAbsoluteSensorOffsetDeg()
         self.curTrapPState = TrapezoidProfile.State(self.getRelAngleWithOffsetDeg(),0)
 
+        # when we re-initialize tell motor to stay where it is at.
+        self.motor.setVoltage(0)
+        vFF  = 0
+        self.motor.setPosCmd(self.motor.getMotorPositionRad(), vFF)
+
         self.state = ArmStates.ARM_OPERATING
+        self.stateNowLogger.logNow(self.state)
 
     def _updateOperating(self) -> None:
         self.encoder.update()

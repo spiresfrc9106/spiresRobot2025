@@ -37,6 +37,7 @@ class MyRobot(wpilib.TimedRobot):
     #########################################################
     ## Common init/update for all modes
     def robotInit(self):
+        print("robotInit has run")
         # Since we're defining a bunch of new things here, tell pylint
         # to ignore these instantiations in a method.
         # pylint: disable=attribute-defined-outside-init
@@ -51,8 +52,11 @@ class MyRobot(wpilib.TimedRobot):
         if drivetrainDepConstants['HAS_DRIVETRAIN']:
             print(f"drivetrainDepConstants['HAS_DRIVETRAIN']={drivetrainDepConstants['HAS_DRIVETRAIN']}")
             self.driveTrain = DrivetrainControl()
+
         if elevDepConstants['HAS_ELEVATOR']:
             self.elev= ElevatorControl()
+
+        self.arm = None
         if armDepConstants['HAS_ARM']:
             self.arm= ArmControl()
 
@@ -70,8 +74,6 @@ class MyRobot(wpilib.TimedRobot):
 
         self.rioMonitor = RIOMonitor()
         self.pwrMon = PowerMonitor()
-
-        self.arm = ArmControl()
 
         if motorDepConstants['HAS_MOTOR_TEST']:
             self.motorCtrlFun = MotorControl()
@@ -129,6 +131,7 @@ class MyRobot(wpilib.TimedRobot):
     #########################################################
     ## Autonomous-Specific init and update
     def autonomousInit(self):
+        print("autonomousInit has run")
 
         # Start up the autonomous sequencer
         self.autoSequencer.initialize()
@@ -139,6 +142,10 @@ class MyRobot(wpilib.TimedRobot):
 
         # Mark we at least started autonomous
         self.autoHasRun = True # pylint: disable=attribute-defined-outside-init
+
+        if armDepConstants['HAS_ARM']:
+            self.arm.initialize()
+
 
     def autonomousPeriodic(self):
 
@@ -161,9 +168,11 @@ class MyRobot(wpilib.TimedRobot):
     def autonomousExit(self):
         self.autoSequencer.end()
 
+
     #########################################################
     ## Teleop-Specific init and update
     def teleopInit(self):
+        print("teleopInit has run")
         # clear existing telemetry trajectory
         if drivetrainDepConstants['HAS_DRIVETRAIN']:
             self.driveTrain.poseEst._telemetry.setCurAutoTrajectory(None)
@@ -176,6 +185,8 @@ class MyRobot(wpilib.TimedRobot):
                     Pose2d(1.0, 1.0, Rotation2d(0.0))
                 )
 
+        if armDepConstants['HAS_ARM']:
+            self.arm.initialize()
 
     def teleopPeriodic(self):
         # TODO - this is technically one loop delayed, which could induce lag
@@ -232,8 +243,11 @@ class MyRobot(wpilib.TimedRobot):
         self.autoSequencer.updateMode()
         Trajectory().trajHDC.updateCals()
 
+
     def disabledInit(self):
         self.autoSequencer.updateMode(True)
+        if armDepConstants['HAS_ARM'] and self.arm is not None:
+            self.arm.disable()
 
     #########################################################
     ## Test-Specific init and update
