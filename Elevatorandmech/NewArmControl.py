@@ -84,7 +84,8 @@ class ArmControl(metaclass=Singleton):
     def __init__(self):
         # there will not be preset angles for heights,
         # it will just be going to the angle given by Noah's code
-        
+
+        self.name = "arm"
 
         self.manAdjMaxVoltage = Calibration(name="Arm Manual Adj Max Voltage", default=1.0, units="V")
 
@@ -99,7 +100,7 @@ class ArmControl(metaclass=Singleton):
         self.motor.setInverted(MotorIsInverted)
 
         # Rev Relative Encoder
-        self.encoder = WrapperedRevThroughBoreEncoder(port=9, name="ArmRevRelEncoder", mountOffsetRad=0, dirInverted=False)
+        self.encoder = WrapperedRevThroughBoreEncoder(port=9, name="ArmRevAbsEncoder", mountOffsetRad=0, dirInverted=True)
 
         # FF and proportional gain constants
         self.kV = Calibration(name="Arm kV", default=0.02, units="V/rps")
@@ -146,30 +147,29 @@ class ArmControl(metaclass=Singleton):
 
         self.state = ArmStates.ARM_UNINITIALIZED
 
-        # Arm curProfile Degree maxes out at 90, but goes up very slow
-        # Arm act Degree seems to be more accurate to degree of real motor
-
-        addLog("Arm Motor Pos Cmd Deg", lambda: math.degrees(self.motorPosCmdRad), "deg")
-        addLog("Arm Abs Angle Deg", lambda: math.degrees(self.encoder.getAngleRad()), "deg")
-        addLog("Arm Rel Enc Offset Angle Deg", lambda: self.relEncOffsetAngleDeg, "deg")
-        addLog("Arm State", lambda: self.state, "int")
-        addLog("Arm Goal Degree", lambda: self.armGoalDeg, "deg")
-        addLog("Arm Stopped", lambda: self.stopped, "bool")
-        addLog("Arm act Degree", lambda: self.actTrapPState.position, "deg")
-        addLog("Arm act Velocity", lambda: self.actTrapPState.velocity, "degps")
-        self.actAccLogger = getNowLogger("Arm act Acceleration", "degps2")
-        addLog("Arm curProfile Degree", lambda: self.curTrapPState.position, "deg")
-        addLog("Arm curProfile Velocity", lambda: self.curTrapPState.velocity, "degps")
-        self.curTrapPAccLogger = getNowLogger("Arm curProfile Acceleration", "degps2")
-        addLog("Arm Desired Degree", lambda: self.desTrapPState.position, "deg")
-        addLog("Arm Desired Velocity", lambda: self.desTrapPState.velocity, "degps")
-        addLog("Arm Degree Error", lambda: self.actTrapPState.position-self.curTrapPState.position, "deg")
-        addLog("Arm Velocity Error", lambda: self.actTrapPState.velocity-self.curTrapPState.velocity, "deg")
+        addLog(f"{self.name}/motor_pos_cmd_deg", lambda: math.degrees(self.motorPosCmdRad), "deg")
+        addLog(f"{self.name}/abs_encoder_act_pos_deg", lambda: self.getAbsAngleDeg(), "deg")
+        addLog(f"{self.name}/rel_encoder_offset_deg", lambda: self.relEncOffsetAngleDeg, "deg")
+        addLog(f"{self.name}/state", lambda: self.state, "int")
+        addLog(f"{self.name}/goal_pos_deg", lambda: self.armGoalDeg, "deg")
+        addLog(f"{self.name}/stopped", lambda: self.stopped, "bool")
+        addLog(f"{self.name}/act_pos_degps", lambda: self.actTrapPState.position, "deg")
+        addLog(f"{self.name}/act_vel_degps", lambda: self.actTrapPState.velocity, "degps")
+        self.actAccLogger = getNowLogger(f"{self.name}/act Acceleration", "degps2")
+        addLog(f"{self.name}/curProfile_pos_Deg", lambda: self.curTrapPState.position, "deg")
+        addLog(f"{self.name}/curProfile_vel_Degps", lambda: self.curTrapPState.velocity, "degps")
+        self.curTrapPAccLogger = getNowLogger(f"{self.name}/curProfile_acc_degps2", "degps2")
+        addLog(f"{self.name}/des_pos_deg", lambda: self.desTrapPState.position, "deg")
+        addLog(f"{self.name}/des_vel_degps", lambda: self.desTrapPState.velocity, "degps")
 
         self.profiledPos = 0.0
         self.curUnprofiledPosCmd = 0.0
         self.previousUpdateTimeS = None
         self.previousVelDegps = None
+
+        self.count = 0
+
+        print(f"Init {self.name} complete")
 
     def _noOffsetMotorRadToAngleDeg(self, MotorRad: float) -> float:
         return  math.degrees(MotorRad * (1.0/ARM_GEARBOX_GEAR_RATIO))
@@ -178,8 +178,7 @@ class ArmControl(metaclass=Singleton):
         return  self._noOffsetMotorRadToAngleDeg(MotorRad) + self.relEncOffsetAngleDeg
 
     def _angleDegToMotorRad(self, armAngleDeg: float) -> float:
-        return math.radians(armAngleDeg * ARM_GEARBOX_GEAR_RATIO - self.relEncOffsetAngleDeg)
-
+        return math.radians((armAngleDeg - self.relEncOffsetAngleDeg) * ARM_GEARBOX_GEAR_RATIO )
     
     def _angleVelDegpsToMotorVelRadps(self, armAngleDeg: float) -> float:
         return armAngleDeg * ARM_GEARBOX_GEAR_RATIO
@@ -188,16 +187,14 @@ class ArmControl(metaclass=Singleton):
         return self._noOffsetMotorRadToAngleDeg(self.motor.getMotorPositionRad())
 
     def getRelAngleWithOffsetDeg(self) -> float:
-        #return wrapAngleDeg(self._motorRadToAngleWithOffsetDeg(self.motor.getMotorPositionRad()))
         return self._motorRadToAngleWithOffsetDeg(self.motor.getMotorPositionRad())
 
     def getVelocityDegps(self) -> float:
         return self._noOffsetMotorRadToAngleDeg(self.motor.getMotorVelocityRadPerSec())
     
     #return the angle of the arm as measured by the absolute sensor in angles
-    def _getAbsAngleDeg(self) -> float:
-        angleAbsSenDeg = (math.degrees(self.encoder.getAngleRad()))
-        #return wrapAngleDeg(angleAbsSenDeg - ABS_SENSOR_MOUNT_OFFSET_DEG)
+    def getAbsAngleDeg(self) -> float:
+        angleAbsSenDeg = math.degrees(self.encoder.getAngleRad())
         return angleAbsSenDeg - ABS_SENSOR_MOUNT_OFFSET_DEG
 
     # def limitToMaxes(self, valueRad: float) -> float:
@@ -212,15 +209,16 @@ class ArmControl(metaclass=Singleton):
     # This routine uses the absolute sensors to adjust the offsets for the relative sensors
     # so that the relative sensors match reality.
     # It should be called.... infrequently. Likely once shortly after robot init.
-    def initFromAbsoluteSensor(self) -> None:
-        # New Offset = real angle - what angle says??
-
+    def getRelToAbsoluteSensorOffsetDeg(self) -> float:
         relAngleWithNoOffsetDeg = self.getRelAngleWithNoOffsetDeg()
-        absAngleDeg = self._getAbsAngleDeg()
+        absAngleDeg = self.getAbsAngleDeg()
 
-        self.relEncOffsetAngleDeg = absAngleDeg - relAngleWithNoOffsetDeg
+        relEncOffsetAngleDeg = absAngleDeg - relAngleWithNoOffsetDeg
 
-        print(f"{self.relEncOffsetAngleDeg}=absAngleDeg({absAngleDeg} - relAngleWithNoOffsetDeg({relAngleWithNoOffsetDeg})  ... motorPositionRad={self.motor.getMotorPositionRad()}->{self._noOffsetMotorRadToAngleDeg(self.motor.getMotorPositionRad())}")
+        #if self.count % 1000 == 0:
+        #    print(f"count={self.count} {relEncOffsetAngleDeg:+10.1f}=absAngleDeg({absAngleDeg:+10.1f} - relAngleWithNoOffsetDeg({relAngleWithNoOffsetDeg:+10.1f})\n... motorPositionRad={self.motor.getMotorPositionRad():+10.1f}->{self._noOffsetMotorRadToAngleDeg(self.motor.getMotorPositionRad()):+10.1f}")
+
+        return relEncOffsetAngleDeg
 
     def update(self) -> None:
         self.encoder.update()
@@ -236,33 +234,15 @@ class ArmControl(metaclass=Singleton):
             case _:
                 pass
 
+        self.count = self.count + 1
+
     def _updateUninitialized(self) -> None:
         self.encoder.update()
 
         self.trapProfiler = TrapezoidProfile(TrapezoidProfile.Constraints(self.maxVelocityDegps.get(), self.maxAccelerationDegps2.get()))
         self.lastStoppedTimeS = 0
-        #self.lowestAngleDeg = -180
-
-        # going to try and use abs sensor to provide offset for rel encoder, not what is commented below
-        #self.forceStartAtAngleZeroDeg()
-        self.initFromAbsoluteSensor()
-        # self.motorPosCmdRad = wrapAngleRad(self._angleDegToMotorRad(0))
-        self.motorPosCmdRad = self._angleDegToMotorRad(0)
-        #motorVelCmdRadps = self._angleVelDegpsToMotorVelRadps(0)
-
-        # set our feed forward to 0 at the start so we're not throwing extra voltage into the motor, then see if their feed forward calc makes sense
-        # vFF = self.kV.get() * motorVelCmdRadps  + self.kS.get() * sign(motorVelCmdRadps) \
-        #    + self.kG.get()
-
-        #vFF = 0
-
-        #self.motor.setPosCmd(self.motorPosCmdRad, vFF)
-
-        # An ugly hack from Coach Mike. We should find a better way.
-        # if TimedRobot.isSimulation():
-        #    limitMotorPosCmdRad = self._angleDegToMotorRad(-70)
-        #    if self.motor.simActPos < limitMotorPosCmdRad:
-        #        self.motor.simActPos = limitMotorPosCmdRad
+        self.relEncOffsetAngleDeg = self.getRelToAbsoluteSensorOffsetDeg()
+        self.curTrapPState = TrapezoidProfile.State(self.getRelAngleWithOffsetDeg(),0)
 
         self.state = ArmStates.ARM_OPERATING
 
