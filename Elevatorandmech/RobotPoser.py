@@ -31,6 +31,7 @@ from humanInterface.operatorInterface import OperatorInterface, ElevArmCmdState
 from utils.singleton import Singleton
 from positionSchemes.plunge_v1 import PlungeV1
 from positionSchemes.pickup_v1 import PickupV1
+from positionSchemes.place_L4_v1 import PlaceL4V1
 
 class PoseDirector(metaclass=Singleton):
 
@@ -86,7 +87,7 @@ class PoseDirector(metaclass=Singleton):
             case ElevArmCmdState.L3:
                 return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator)  # todo fix me
             case ElevArmCmdState.L4:
-                return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator)  # todo fix me
+                return PlaceL4V1(self.arm, self.driveTrain, self.elevator)  # todo fix me
             case _:
                 return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator)  # todo fix me
 
