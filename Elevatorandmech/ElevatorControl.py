@@ -94,6 +94,8 @@ TIME_STEP_S = 0.02
 
 class ElevatorControl(metaclass=Singleton):
     def __init__(self):
+        
+        self.name = "elev"
 
         ctrlIdx = 1
         self.ctrl = XboxController(ctrlIdx)
@@ -131,60 +133,62 @@ class ElevatorControl(metaclass=Singleton):
 
         self.initialized = False
 
-        def initialize(self):
-            if not self.initialized:
-                # Set P gain on motor
-                self.rMotor.setPID(self.kP.get(), 0.0, 0.0)
+    def initialize(self):
+        if not self.initialized:
+            # Set P gain on motor
+            self.rMotor.setPID(self.kP.get(), 0.0, 0.0)
 
-                # Profiler
-                self.maxVelocityIps = Calibration(name="Elevator Max Vel", default=MAX_ELEV_VEL_INPS, units="inps")
-                self.maxAccelerationIps2 = Calibration(name="Elevator Max Accel", default=MAX_ELEV_ACCEL_INPS2, units="inps2")
+            # Profiler
+            self.maxVelocityIps = Calibration(name="Elevator Max Vel", default=MAX_ELEV_VEL_INPS, units="inps")
+            self.maxAccelerationIps2 = Calibration(name="Elevator Max Accel", default=MAX_ELEV_ACCEL_INPS2, units="inps2")
 
-                self.searchMaxVelocityIps = Calibration(name="Elevator Max Vel", default=4, units="inps")
-                self.searchMaxAccelerationIps2 = Calibration(name="Elevator Max Accel", default=4, units="inps2")
+            self.searchMaxVelocityIps = Calibration(name="Elevator Max Vel", default=4, units="inps")
+            self.searchMaxAccelerationIps2 = Calibration(name="Elevator Max Accel", default=4, units="inps2")
 
-                self.trapProfiler = TrapezoidProfile(TrapezoidProfile.Constraints(self.maxVelocityIps.get(), self.maxAccelerationIps2.get()))
-                self.actTrapPState = self.trapProfiler.State()
-                self.curTrapPState = self.trapProfiler.State()
+            self.trapProfiler = TrapezoidProfile(TrapezoidProfile.Constraints(self.maxVelocityIps.get(), self.maxAccelerationIps2.get()))
+            self.actTrapPState = self.trapProfiler.State()
+            self.curTrapPState = self.trapProfiler.State()
 
-                self.stopped = False
+            self.stopped = False
 
-                # Relative Encoder Offsets
-                # Relative encoders always start at 0 at power-on
-                # However, we may or may not have the mechanism at the "zero" position when we powered on
-                # These variables store an offset which is calculated from the absolute sensors
-                # to make sure the relative sensors inside the encoders accurately reflect
-                # the actual position of the mechanism
-                self.relEncOffsetRad = 0.0
+            # Relative Encoder Offsets
+            # Relative encoders always start at 0 at power-on
+            # However, we may or may not have the mechanism at the "zero" position when we powered on
+            # These variables store an offset which is calculated from the absolute sensors
+            # to make sure the relative sensors inside the encoders accurately reflect
+            # the actual position of the mechanism
+            self.relEncOffsetRad = 0.0
 
-                # Create a motion profile with the given maximum velocity and maximum
-                # acceleration constraints for the next setpoint.
+            # Create a motion profile with the given maximum velocity and maximum
+            # acceleration constraints for the next setpoint.
 
-                self.profiledPos = 0.0
-                self.curUnprofiledPosCmd = 0.0
-                self.previousUpdateTimeS = None  # TOOD See if Michael needs this
+            self.profiledPos = 0.0
+            self.curUnprofiledPosCmd = 0.0
+            self.previousUpdateTimeS = None  # TOOD See if Michael needs this
 
-                self.elevatorState = ElevatorStates.UNINITIALIZED
+            self.elevatorState = ElevatorStates.UNINITIALIZED
 
-                self.timeWhenChangeS = 0
+            self.timeWhenChangeS = 0
 
-                self.lowestHeightIn = 1000
+            self.lowestHeightIn = 1000
 
-                self.funRuns = 0
+            self.funRuns = 0
 
-                addLog("Elevator/lowestHeightIn", lambda: self.lowestHeightIn, "in")
-                addLog("Elevator/state", lambda: float(int(self.elevatorState)), "int")
-                addLog("Elevator/stopped", lambda: self.stopped, "bool")
-                addLog("Elevator/act_pos_in", lambda: self.actTrapPState.position, "in")
-                addLog("Elevator/act_vel_inps", lambda: self.actTrapPState.velocity, "inps")
-                self.actAccLogger = getNowLogger("Elevator/act_acc_inps2", "inps2")
-                addLog("Elevator/curProfile_pos_in", lambda: self.curTrapPState.position, "in")
-                addLog("Elevator/curProfile_vel_inps", lambda: self.curTrapPState.velocity, "inps")
-                self.curTrapPAccLogger = getNowLogger("Elevator/curProfile_acc_inps2", "inps2")
-                addLog("Elevator/des_pos_in", lambda: self.desTrapPState.position, "in")
-                addLog("Elevator/des_vel_inps", lambda: self.desTrapPState.velocity, "inps")
+            addLog(f"{self.name}/lowestHeightIn", lambda: self.lowestHeightIn, "in")
+            addLog(f"{self.name}/state", lambda: float(int(self.elevatorState)), "int")
+            addLog(f"{self.name}/stopped", lambda: self.stopped, "bool")
+            addLog(f"{self.name}/act_pos_in", lambda: self.actTrapPState.position, "in")
+            addLog(f"{self.name}/act_vel_inps", lambda: self.actTrapPState.velocity, "inps")
+            self.actAccLogger = getNowLogger(f"{self.name}/act_acc_inps2", "inps2")
+            addLog(f"{self.name}/curProfile_pos_in", lambda: self.curTrapPState.position, "in")
+            addLog(f"{self.name}/curProfile_vel_inps", lambda: self.curTrapPState.velocity, "inps")
+            self.curTrapPAccLogger = getNowLogger(f"{self.name}/curProfile_acc_inps2", "inps2")
+            addLog(f"{self.name}/des_pos_in", lambda: self.desTrapPState.position, "in")
+            addLog(f"{self.name}/des_vel_inps", lambda: self.desTrapPState.velocity, "inps")
 
-                self.initialized = True
+            self.initialized = True
+
+            print(f"Init {self.name} complete")
 
     def disable(self):
         self.rMotor.setPosCmd(self.rMotor.getMotorPositionRad())
