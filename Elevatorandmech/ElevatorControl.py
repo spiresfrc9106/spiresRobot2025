@@ -129,56 +129,62 @@ class ElevatorControl(metaclass=Singleton):
         self.kG = Calibration(name="Elevator kG", default=0.25, units="V")
         self.kP = Calibration(name="Elevator kP", default=0.4, units="V/rad error") # Per 0.001 seconds
 
-        # Set P gain on motor
-        self.rMotor.setPID(self.kP.get(), 0.0, 0.0)
+        self.initialized = False
 
-        # Profiler
-        self.maxVelocityIps = Calibration(name="Elevator Max Vel", default=MAX_ELEV_VEL_INPS, units="inps")
-        self.maxAccelerationIps2 = Calibration(name="Elevator Max Accel", default=MAX_ELEV_ACCEL_INPS2, units="inps2")
+        def initialize(self):
+            if not self.initialized:
+                # Set P gain on motor
+                self.rMotor.setPID(self.kP.get(), 0.0, 0.0)
 
-        self.searchMaxVelocityIps = Calibration(name="Elevator Max Vel", default=4, units="inps")
-        self.searchMaxAccelerationIps2 = Calibration(name="Elevator Max Accel", default=4, units="inps2")
+                # Profiler
+                self.maxVelocityIps = Calibration(name="Elevator Max Vel", default=MAX_ELEV_VEL_INPS, units="inps")
+                self.maxAccelerationIps2 = Calibration(name="Elevator Max Accel", default=MAX_ELEV_ACCEL_INPS2, units="inps2")
 
-        self.trapProfiler = TrapezoidProfile(TrapezoidProfile.Constraints(self.maxVelocityIps.get(), self.maxAccelerationIps2.get()))
-        self.actTrapPState = self.trapProfiler.State()
-        self.curTrapPState = self.trapProfiler.State()
+                self.searchMaxVelocityIps = Calibration(name="Elevator Max Vel", default=4, units="inps")
+                self.searchMaxAccelerationIps2 = Calibration(name="Elevator Max Accel", default=4, units="inps2")
 
-        self.stopped = False
+                self.trapProfiler = TrapezoidProfile(TrapezoidProfile.Constraints(self.maxVelocityIps.get(), self.maxAccelerationIps2.get()))
+                self.actTrapPState = self.trapProfiler.State()
+                self.curTrapPState = self.trapProfiler.State()
 
-        # Relative Encoder Offsets
-        # Relative encoders always start at 0 at power-on
-        # However, we may or may not have the mechanism at the "zero" position when we powered on
-        # These variables store an offset which is calculated from the absolute sensors
-        # to make sure the relative sensors inside the encoders accurately reflect
-        # the actual position of the mechanism
-        self.relEncOffsetRad = 0.0
+                self.stopped = False
 
-        # Create a motion profile with the given maximum velocity and maximum
-        # acceleration constraints for the next setpoint.
+                # Relative Encoder Offsets
+                # Relative encoders always start at 0 at power-on
+                # However, we may or may not have the mechanism at the "zero" position when we powered on
+                # These variables store an offset which is calculated from the absolute sensors
+                # to make sure the relative sensors inside the encoders accurately reflect
+                # the actual position of the mechanism
+                self.relEncOffsetRad = 0.0
 
-        self.profiledPos = 0.0
-        self.curUnprofiledPosCmd = 0.0
-        self.previousUpdateTimeS = None  # TOOD See if Michael needs this
+                # Create a motion profile with the given maximum velocity and maximum
+                # acceleration constraints for the next setpoint.
 
-        self.elevatorState = ElevatorStates.UNINITIALIZED
+                self.profiledPos = 0.0
+                self.curUnprofiledPosCmd = 0.0
+                self.previousUpdateTimeS = None  # TOOD See if Michael needs this
 
-        self.timeWhenChangeS = 0
+                self.elevatorState = ElevatorStates.UNINITIALIZED
 
-        self.lowestHeightIn = 1000
+                self.timeWhenChangeS = 0
 
-        self.funRuns = 0
+                self.lowestHeightIn = 1000
 
-        addLog("Elevator/lowestHeightIn", lambda: self.lowestHeightIn, "in")
-        addLog("Elevator/state", lambda: float(int(self.elevatorState)), "int")
-        addLog("Elevator/stopped", lambda: self.stopped, "bool")
-        addLog("Elevator/act_pos_in", lambda: self.actTrapPState.position, "in")
-        addLog("Elevator/act_vel_inps", lambda: self.actTrapPState.velocity, "inps")
-        self.actAccLogger = getNowLogger("Elevator/act_acc_inps2", "inps2")
-        addLog("Elevator/curProfile_pos_in", lambda: self.curTrapPState.position, "in")
-        addLog("Elevator/curProfile_vel_inps", lambda: self.curTrapPState.velocity, "inps")
-        self.curTrapPAccLogger = getNowLogger("Elevator/curProfile_acc_inps2", "inps2")
-        addLog("Elevator/des_pos_in", lambda: self.desTrapPState.position, "in")
-        addLog("Elevator/des_vel_inps", lambda: self.desTrapPState.velocity, "inps")
+                self.funRuns = 0
+
+                addLog("Elevator/lowestHeightIn", lambda: self.lowestHeightIn, "in")
+                addLog("Elevator/state", lambda: float(int(self.elevatorState)), "int")
+                addLog("Elevator/stopped", lambda: self.stopped, "bool")
+                addLog("Elevator/act_pos_in", lambda: self.actTrapPState.position, "in")
+                addLog("Elevator/act_vel_inps", lambda: self.actTrapPState.velocity, "inps")
+                self.actAccLogger = getNowLogger("Elevator/act_acc_inps2", "inps2")
+                addLog("Elevator/curProfile_pos_in", lambda: self.curTrapPState.position, "in")
+                addLog("Elevator/curProfile_vel_inps", lambda: self.curTrapPState.velocity, "inps")
+                self.curTrapPAccLogger = getNowLogger("Elevator/curProfile_acc_inps2", "inps2")
+                addLog("Elevator/des_pos_in", lambda: self.desTrapPState.position, "in")
+                addLog("Elevator/des_vel_inps", lambda: self.desTrapPState.velocity, "inps")
+
+                self.initialized = True
 
     def disable(self):
         self.rMotor.setPosCmd(self.rMotor.getMotorPositionRad())

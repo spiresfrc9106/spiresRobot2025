@@ -53,12 +53,14 @@ class MyRobot(wpilib.TimedRobot):
             print(f"drivetrainDepConstants['HAS_DRIVETRAIN']={drivetrainDepConstants['HAS_DRIVETRAIN']}")
             self.driveTrain = DrivetrainControl()
 
+        self.arm = None
+        if armDepConstants['HAS_ARM']:
+            self.arm = ArmControl()
+
+        self.elev = None
         if elevDepConstants['HAS_ELEVATOR']:
             self.elev= ElevatorControl()
 
-        self.arm = None
-        if armDepConstants['HAS_ARM']:
-            self.arm= ArmControl()
 
         self.autodrive = AutoDrive()
 
@@ -146,6 +148,8 @@ class MyRobot(wpilib.TimedRobot):
         if armDepConstants['HAS_ARM']:
             self.arm.initialize()
 
+        if elevDepConstants['HAS_ELEVATOR']:
+            self.elev.initialize()
 
     def autonomousPeriodic(self):
 
@@ -155,15 +159,13 @@ class MyRobot(wpilib.TimedRobot):
         if drivetrainDepConstants['HAS_DRIVETRAIN']:
             self.driveTrain.setManualCmd(DrivetrainCommand())
 
-        if elevDepConstants['HAS_ELEVATOR']:
-            #if self.count == 1:
-            #    self.elev.forceStartAtHeightZeroIn()
-            self.elev.update()
-            self.stt.mark("Elevator-auto")
-
         if armDepConstants['HAS_ARM']:
             self.arm.update()
             self.stt.mark("Arm-auto")
+
+        if elevDepConstants['HAS_ELEVATOR']:
+            self.elev.update()
+            self.stt.mark("Elevator-auto")
 
     def autonomousExit(self):
         self.autoSequencer.end()
@@ -187,6 +189,9 @@ class MyRobot(wpilib.TimedRobot):
 
         if armDepConstants['HAS_ARM']:
             self.arm.initialize()
+
+        if elevDepConstants['HAS_ELEVATOR']:
+            self.elev.initialize()
 
     def teleopPeriodic(self):
         # TODO - this is technically one loop delayed, which could induce lag
@@ -220,19 +225,17 @@ class MyRobot(wpilib.TimedRobot):
                     self.autodrive.rfp.addObstacleObservation(obs)
 
         self.autodrive.setRequest(self.dInt.getNavToSpeaker(), self.dInt.getNavToPickup())
-        #self.elev.setHeightGoal(self.dInt.getL1(), self.dInt.getL2(), self.dInt.getL3(), self.dInt.getL4(), kylefunciton)
-
-        if elevDepConstants['HAS_ELEVATOR']:
-            self.elev.setHeightGoal(self.oInt.getDesElevatorPosIn())
-            # if self.count == 1:
-            #    self.elev.forceStartAtHeightZeroIn()
-            self.elev.update()
-            self.stt.mark("Elevator-teleop")
 
         if armDepConstants['HAS_ARM']:
             self.arm.setAngleGoal(self.oInt.getDesArmAngleDeg())
             self.arm.update()
             self.stt.mark("Arm-teleop")
+
+        if elevDepConstants['HAS_ELEVATOR']:
+            self.elev.setHeightGoal(self.oInt.getDesElevatorPosIn())
+            self.elev.update()
+            self.stt.mark("Elevator-teleop")
+
 
         # No trajectory in Teleop
         Trajectory().setCmd(None)
@@ -248,6 +251,9 @@ class MyRobot(wpilib.TimedRobot):
         self.autoSequencer.updateMode(True)
         if armDepConstants['HAS_ARM'] and self.arm is not None:
             self.arm.disable()
+
+        if elevDepConstants['HAS_ELEVATOR'] and self.elev is not None:
+            self.elev.disable()
 
     #########################################################
     ## Test-Specific init and update
