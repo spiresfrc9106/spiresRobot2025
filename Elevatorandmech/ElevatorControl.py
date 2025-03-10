@@ -305,6 +305,10 @@ class ElevatorControl(metaclass=Singleton):
         if (self.elevatorState == ElevatorStates.OPERATING) and (self.desTrapPState.position != newDesHeightIn or self.desTrapPState.velocity != newDesVelocityInps):
             # limit the height goal so that it is less than max height
             # limit the height goal so that is more than 0
+
+            a = newDesHeightIn
+            b = newDesVelocityInps
+
             newDesHeightIn = min(newDesHeightIn, TEST_ELEVATOR_RANGE_IN)
             newDesHeightIn = max(newDesHeightIn, self.lowestHeightIn)
 
@@ -323,6 +327,8 @@ class ElevatorControl(metaclass=Singleton):
             else:
                 newDesVelocityInps = 0
 
+            print(f" a={a} b={b} newDesHeightIn={newDesHeightIn} newDesVelocityInps={newDesVelocityInps}")
+
             self.desTrapPState = self.trapProfiler.State(newDesHeightIn, newDesVelocityInps)
 
     def _updateOperating(self) -> None:
@@ -337,8 +343,9 @@ class ElevatorControl(metaclass=Singleton):
 
         # The default is to go to the middle
         self.actTrapPState = TrapezoidProfile.State(self.getHeightIn(), self.actualVelInps)
-        self.desTrapPState = TrapezoidProfile.State(self.lowestHeightIn + (TEST_ELEVATOR_RANGE_IN / 2),0)
+        #self.desTrapPState = TrapezoidProfile.State(self.lowestHeightIn + (TEST_ELEVATOR_RANGE_IN / 2),0)
 
+        """
         if self.ctrl.getAButton():
             self.desTrapPState = TrapezoidProfile.State(REEF_L1_HEIGHT_M * 1 + self.lowestHeightIn, 0)
         if self.ctrl.getXButton():
@@ -351,6 +358,7 @@ class ElevatorControl(metaclass=Singleton):
         # PLUNGE USING THE RIGHT TRIGGER
         if self.ctrl.getRightTriggerAxis():
             self.desTrapPState = TrapezoidProfile.State(self.lowestHeightIn, 0)
+        """
 
         self._setMotorPosAndFF()
 

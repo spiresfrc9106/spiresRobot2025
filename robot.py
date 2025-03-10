@@ -232,7 +232,7 @@ class MyRobot(wpilib.TimedRobot):
             self.stt.mark("Arm-teleop")
 
         if elevDepConstants['HAS_ELEVATOR']:
-            self.elev.setHeightGoal(self.oInt.getDesElevatorPosIn())
+            self.elev.setHeightVelocityGoal(self.oInt.getDesElevatorPosIn(),0)
             self.elev.update()
             self.stt.mark("Elevator-teleop")
 

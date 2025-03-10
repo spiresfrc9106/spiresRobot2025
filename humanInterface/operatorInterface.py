@@ -29,6 +29,7 @@ class OperatorInterface:
 
         # Logging
         addLog("OI Elevator Pos Cmd", lambda: self.elevatorPosYCmd, "frac")
+        addLog("OI Elevator Pos In", lambda: self.getDesElevatorPosIn(), "in")
         addLog("OI Arm Pos Cmd", lambda: self.armPosYCmd, "frac")
         addLog("armPosYCmd", lambda: self.armPosYCmd, "frac")
 

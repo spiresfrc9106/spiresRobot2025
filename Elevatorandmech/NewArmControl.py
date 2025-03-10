@@ -46,14 +46,14 @@ class ArmDependentConstants:
                 "ABS_SENSOR_MOUNT_OFFSET_DEG": 0.0,
             },
             RobotTypes.SpiresTestBoard: {
-                "HAS_ARM": False,  # xyzzy talk to Benjamin about switching dev test setups
+                "HAS_ARM": True,
                 "ARM_GEARBOX_GEAR_RATIO": 5.0 / 1.0,
-                "ARM_M_CANID": 99,  # xyzzy fix me
+                "ARM_M_CANID": 18,
                 "MAX_ARM_POS_DEG": 90,
                 "MIN_ARM_POS_DEG": -90,
-                "MAX_ARM_VEL_DEGPS": 20,
-                "MAX_ARM_ACCEL_DEGPS2": 4,
-                "ABS_SENSOR_MOUNT_OFFSET_DEG": 0.0,
+                "MAX_ARM_VEL_DEGPS": 90,
+                "MAX_ARM_ACCEL_DEGPS2": 90,
+                "ABS_SENSOR_MOUNT_OFFSET_DEG": -90.0,
             },
             RobotTypes.SpiresRoboRioV1: {
                 "HAS_ARM": True,
@@ -265,8 +265,8 @@ class ArmControl(metaclass=Singleton):
             newDesPosDeg = min(newDesPosDeg, self.maxPosDeg.get())
             newDesPosDeg = max(newDesPosDeg, self.minPosDeg.get())
 
-            newDesVelocityDegs = min(newDesVelocityDegs, self.maxVelocityIps.get())
-            newDesVelocityDegs = max(newDesVelocityDegs, -self.maxVelocityIps.get())
+            newDesVelocityDegs = min(newDesVelocityDegs, self.maxVelocityDegps.get())
+            newDesVelocityDegs = max(newDesVelocityDegs, -self.maxVelocityDegps.get())
 
             # do these checks relative to the curTrapPState
             # if height goal is to go up, make sure that velocity goal is 0 or +
