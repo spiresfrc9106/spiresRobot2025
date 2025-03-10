@@ -227,7 +227,7 @@ class MyRobot(wpilib.TimedRobot):
         self.autodrive.setRequest(self.dInt.getNavToSpeaker(), self.dInt.getNavToPickup())
 
         if armDepConstants['HAS_ARM']:
-            self.arm.setAngleGoal(self.oInt.getDesArmAngleDeg())
+            self.arm.setPosVelocityGoal(posGoalDeg=self.oInt.getDesArmAngleDeg(), velocityGoalDegps=0.0)
             self.arm.update()
             self.stt.mark("Arm-teleop")
 

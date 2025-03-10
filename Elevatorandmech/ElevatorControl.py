@@ -137,6 +137,8 @@ class ElevatorControl(metaclass=Singleton):
         if not self.initialized:
             # Set P gain on motor
             self.rMotor.setPID(self.kP.get(), 0.0, 0.0)
+            # when we re-initialize tell motor to stay where it is at.
+            self.rMotor.setVoltage(0)
 
             # Profiler
             self.maxVelocityIps = Calibration(name="Elevator Max Vel", default=MAX_ELEV_VEL_INPS, units="inps")
@@ -208,6 +210,7 @@ class ElevatorControl(metaclass=Singleton):
     
     def getHeightIn(self) -> float:
         return self._rMotorRadToHeightIn(self.rMotor.getMotorPositionRad())
+
     def getVelocityInps(self) -> float:
         return self._offsetFreeRMotorRadToHeightIn(self.rMotor.getMotorVelocityRadPerSec())
 
@@ -299,7 +302,7 @@ class ElevatorControl(metaclass=Singleton):
         self.rMotor.setPosCmd(motorPosCmdRad, vFF)
 
     def _perhapsWeHaveANewRangeCheckedDesiredState(self, newDesHeightIn, newDesVelocityInps):
-        if (self.elevatorState == ElevatorStates.OPERATING) and (self.desTrapPState.position != newDesHeightIn or self.desTrapPState.velocity != newDesHeightIn):
+        if (self.elevatorState == ElevatorStates.OPERATING) and (self.desTrapPState.position != newDesHeightIn or self.desTrapPState.velocity != newDesVelocityInps):
             # limit the height goal so that it is less than max height
             # limit the height goal so that is more than 0
             newDesHeightIn = min(newDesHeightIn, TEST_ELEVATOR_RANGE_IN)
