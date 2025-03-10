@@ -51,20 +51,20 @@ class PickupV1(SetupScheme):
         time = currentTime - self.startTime
         match self.currentState:
             case 0: #initializing
+                #self.armCmd/elevCmd could be called here to prep for the fun thing.
                 self.bestTag = PickupIntelligence(self.base).decidePickupPose()
-                self.baseCmd = (self.bestTag.toPose2d(),0.5,0.5,0)
+                self.baseCmd = (self.bestTag, 0, 0, 0)
+                # CAN WE DO BETTER?  YES OF COURSE WE CAN.
+                # one thing that comes to mind is perhaps breaking down
+                # 1) long commutes or 2) big rotation distances
+                # into two or more seperate trajectory commands.
+                # however, since this won't be as likely on the field,
+                # we're leaving it here
             case 1:
-                pass
-            case 2:
-                pass
-            case 3:
-                pass
-            case 4:
-                pass
-            case 5:
+                # complete.
                 pass
             case _:
                 pass
 
-        state_max = 5 #change for needs
+        state_max = 1
         self.schemeProg = min(self.currentState/state_max, 1)

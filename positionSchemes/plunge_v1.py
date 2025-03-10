@@ -45,6 +45,13 @@ class PlungeV1(SetupScheme):
         currentTime = Timer.getFPGATimestamp()
         time = currentTime - self.startTime
         self.baseCmd = None  # because this never changes, we're not going to bother with it.
+        #
+        #
+        #
+        #  THE WHOLE THING HERE IS INCORRECT SEQUENCING. PLEASE REVISE FOR FUNCTIONALITY AND SAFETY.
+        #
+        #
+        #
         match self.currentState:
             case 0:  # initializing
                 self.armCmd = None
