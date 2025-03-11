@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import wpilib
 from wpimath.units import feetToMeters, degreesToRadians
-from wpimath.geometry import Pose2d
+from wpimath.geometry import Pose2d, Transform3d
 from photonlibpy.photonCamera import PhotonCamera
 from photonlibpy.photonCamera import setVersionCheckEnabled
 from utils.fieldTagLayout import FieldTagLayout
@@ -23,7 +23,7 @@ class CameraPoseObservation:
 # 2 - Convert pose estimates to the field
 # 3 - Handle recording latency of when the image was actually seen
 class WrapperedPoseEstPhotonCamera:
-    def __init__(self, camName, robotToCam):
+    def __init__(self, camName:str, robotToCam:Transform3d):
         setVersionCheckEnabled(False)
 
         self.cam = PhotonCamera(camName)
@@ -40,7 +40,8 @@ class WrapperedPoseEstPhotonCamera:
         )
 
         self.targetLength = 0
-        addLog("test_targets_seen_photon", lambda: self.targetLength, "")
+        self.recordedBestCandidate = Pose2d()
+        addLog("ytest_targets_photon_seen", lambda: self.targetLength, "")
 
 
     def update(self, prevEstPose:Pose2d):
@@ -118,10 +119,14 @@ class WrapperedPoseEstPhotonCamera:
                         self.poseEstimates.append(
                             CameraPoseObservation(obsTime, bestCandidate)
                         )
+                        self.recordedBestCandidate = bestCandidate
                         self.CamPublisher.set(bestCandidate)
 
     def getPoseEstimates(self):
         return self.poseEstimates
+
+    def getPoseEstFormatted(self):
+        return self.recordedBestCandidate
 
     def _toFieldPose(self, tgtPose, camToTarget):
         camPose = tgtPose.transformBy(camToTarget.inverse())

@@ -46,6 +46,7 @@ class SwerveModuleControl:
     def __init__(
         self,
         moduleName:str,
+        wheelMotorWrapper:...,
         wheelMotorCanID:int,
         azmthMotorCanID:int,
         azmthEncoderPortIdx:int,
@@ -67,7 +68,7 @@ class SwerveModuleControl:
             invertAzmthEncoder (bool): Inverts the direction of the steering azimuth encoder
         """
         print(f"{moduleName} azmthOffset={rad2Deg(azmthOffset):7.1f} deg")
-        self.wheelMotor = WrapperedSparkMax(
+        self.wheelMotor = wheelMotorWrapper(
             wheelMotorCanID, moduleName + "_wheel", False
         )
         self.azmthMotor = WrapperedSparkMax(

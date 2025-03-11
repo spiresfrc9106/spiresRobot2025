@@ -17,6 +17,7 @@ from drivetrain.drivetrainPhysical import (
     INVERT_AZMTH_MOTOR,
     INVERT_AZMTH_ENCODER,
     kinematics,
+    WHEEL_MOTOR_WRAPPER,
 )
 from drivetrain.drivetrainCommand import DrivetrainCommand
 from drivetrain.controlStrategies.autoDrive import AutoDrive
@@ -36,6 +37,7 @@ from utils.constants import (DT_FL_WHEEL_CANID,
                              DT_BL_AZMTH_ENC_PORT,
                              DT_BR_AZMTH_ENC_PORT)
 from wrappers.wrapperedGyro import wrapperedGyro
+from Elevatorandmech.RobotPoser import PoseDirector
 
 class DrivetrainControl(metaclass=Singleton):
     """
@@ -46,22 +48,22 @@ class DrivetrainControl(metaclass=Singleton):
         self.gyro = wrapperedGyro()
         self.modules = []
         self.modules.append(
-            SwerveModuleControl("FL", DT_FL_WHEEL_CANID, DT_FL_AZMTH_CANID, DT_FL_AZMTH_ENC_PORT, 
+            SwerveModuleControl("FL", WHEEL_MOTOR_WRAPPER, DT_FL_WHEEL_CANID, DT_FL_AZMTH_CANID, DT_FL_AZMTH_ENC_PORT,
                                 FL_ENCODER_MOUNT_OFFSET_RAD,
                                 FL_INVERT_WHEEL_MOTOR, INVERT_AZMTH_MOTOR, INVERT_AZMTH_ENCODER)
         )
         self.modules.append(
-            SwerveModuleControl("FR", DT_FR_WHEEL_CANID, DT_FR_AZMTH_CANID, DT_FR_AZMTH_ENC_PORT, 
+            SwerveModuleControl("FR", WHEEL_MOTOR_WRAPPER, DT_FR_WHEEL_CANID, DT_FR_AZMTH_CANID, DT_FR_AZMTH_ENC_PORT,
                                 FR_ENCODER_MOUNT_OFFSET_RAD,
                                 FR_INVERT_WHEEL_MOTOR, INVERT_AZMTH_MOTOR, INVERT_AZMTH_ENCODER)
         )
         self.modules.append(
-            SwerveModuleControl("BL", DT_BL_WHEEL_CANID, DT_BL_AZMTH_CANID, DT_BL_AZMTH_ENC_PORT, 
+            SwerveModuleControl("BL", WHEEL_MOTOR_WRAPPER, DT_BL_WHEEL_CANID, DT_BL_AZMTH_CANID, DT_BL_AZMTH_ENC_PORT,
                                 BL_ENCODER_MOUNT_OFFSET_RAD,
                                 BL_INVERT_WHEEL_MOTOR, INVERT_AZMTH_MOTOR, INVERT_AZMTH_ENCODER)
         )
         self.modules.append(
-            SwerveModuleControl("BR", DT_BR_WHEEL_CANID, DT_BR_AZMTH_CANID, DT_BR_AZMTH_ENC_PORT, 
+            SwerveModuleControl("BR", WHEEL_MOTOR_WRAPPER, DT_BR_WHEEL_CANID, DT_BR_AZMTH_CANID, DT_BR_AZMTH_ENC_PORT,
                                 BR_ENCODER_MOUNT_OFFSET_RAD,
                                 BR_INVERT_WHEEL_MOTOR, INVERT_AZMTH_MOTOR, INVERT_AZMTH_ENCODER)
         )
@@ -78,6 +80,7 @@ class DrivetrainControl(metaclass=Singleton):
         self.poseEst = DrivetrainPoseEstimator(self.getModulePositions(), self.gyro)
 
         self._updateAllCals()
+        self.poser = PoseDirector()
 
     def setManualCmd(self, cmd: DrivetrainCommand):
         """Send commands to the robot for motion relative to the field
@@ -103,6 +106,12 @@ class DrivetrainControl(metaclass=Singleton):
         self.curCmd = self.curManCmd
         self.curCmd = Trajectory().update(self.curCmd, curEstPose)
         self.curCmd = AutoDrive().update(self.curCmd, curEstPose)
+
+        #yavin's interpret
+        self.curCmd = self.poser.getDriveTrainCommand(self.curCmd)
+        if hasattr(self.curCmd, "heading"):
+            Trajectory().setCmd(self.curCmd)
+            self.curCmd = Trajectory().update(self.curCmd, curEstPose)
 
         # Transform the current command to be robot relative
         tmp = ChassisSpeeds.fromFieldRelativeSpeeds(

@@ -74,7 +74,7 @@ kRadiansPerDegree = kRadiansPerRevolution / kDegeersPerRevolution
 kCameraFOVHorizontal = 75.9  # degrees
 kCameraFOVVertical = 47.4  # degrees
 
-kApriltagFieldLayout = AprilTagFieldLayout.loadField(AprilTagField.k2025Reefscape)
+kApriltagFieldLayout = AprilTagFieldLayout.loadField(AprilTagField.k2025ReefscapeWelded)
 kApriltagPositionDict = {
     1: Pose3d(
         (kMetersPerInch * 657.37),

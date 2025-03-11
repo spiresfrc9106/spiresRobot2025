@@ -12,7 +12,8 @@ RobotTypes = Enum('RobotTypes', [
     'Practice',
     'TestBoard',
     'Spires2023',
-    'Spires2024',
+    'Spires2025',
+    'Spires2025Sim',
     'SpiresMain',
     'SpiresPractice',
     'SpiresTestBoard',
@@ -31,32 +32,38 @@ class RobotIdentification(metaclass=Singleton):
         self.roboControl = wpilib.RobotController
         self.robotType = None
         self.serialFault = Fault("RoboRIO serial number not recognized")
+        self.serialNumber = None
         self._configureValue()
 
     def _configureValue(self):
 
         self.serialFault.setNoFault()
+        self.serialNumber = self._getRobotSerialNumber()
+        print(f"self.roboControl.getSerialNumber()={self.serialNumber}")
 
-        print(f"self.roboControl.getSerialNumber()={self.roboControl.getSerialNumber()}")
-
-        if self.roboControl.getSerialNumber() == "030e2cb0":
+        if FRC_TEAM_NUMBER == 9106 and wpilib.TimedRobot.isSimulation():
+            #self.robotType = RobotTypes.Spires2023
+            #self.robotType = RobotTypes.Spires2025
+            self.robotType = RobotTypes.Spires2025Sim
+            #self.robotType = RobotTypes.SpiresTestBoard
+            #self.robotType = RobotTypes.SpiresRoboRioV1
+        elif self.serialNumber == "030e2cb0":
             #Test to see if the RoboRio serial number is the main/"Production" bot.
             self.robotType = RobotTypes.Main 
-        elif self.roboControl.getSerialNumber() == "03064e3f" \
+        elif self.serialNumber == "03064e3f" \
                 or FRC_TEAM_NUMBER==1736 and wpilib.TimedRobot.isSimulation():
             #Test to see if the RoboRio serial number is the practice bot.
             self.robotType = RobotTypes.Practice
-        elif self.roboControl.getSerialNumber() == "0316b37c":
+        elif self.serialNumber == "0316b37c":
             #Test to see if the RoboRio serial number is our testboard's serial number.
             self.robotType = RobotTypes.TestBoard
-        elif self.roboControl.getSerialNumber() == "032430C5" \
-                or FRC_TEAM_NUMBER==9106 and wpilib.TimedRobot.isSimulation():
+        elif self.serialNumber == "032430C5":
             self.robotType = RobotTypes.Spires2023
-        elif self.roboControl.getSerialNumber() == "032B1F4B":
-            self.robotType = RobotTypes.Spires2024
-        elif self.roboControl.getSerialNumber() == "032B1FBB":
+        elif self.serialNumber == "032B1F4B":
+            self.robotType = RobotTypes.Spires2025
+        elif self.serialNumber == "032B1FBB":
             self.robotType = RobotTypes.SpiresTestBoard
-        elif self.roboControl.getSerialNumber() == "03057ab7":
+        elif self.serialNumber == "03057ab7":
             self.robotType = RobotTypes.SpiresRoboRioV1
         else:
             # If the Robo Rio's serial number is not equal to any of our known serial numbers, 

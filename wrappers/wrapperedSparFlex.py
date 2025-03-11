@@ -1,5 +1,5 @@
 import time
-from rev import SparkMax, SparkBase, SparkMaxConfig, REVLibError, ClosedLoopSlot, SparkBaseConfig
+from rev import SparkFlex, SparkBase, SparkFlexConfig, REVLibError, ClosedLoopSlot, SparkBaseConfig
 from rev import SparkClosedLoopController
 from wpilib import TimedRobot
 from utils.signalLogging import addLog
@@ -7,16 +7,16 @@ from utils.units import rev2Rad, rad2Rev, radPerSec2RPM, RPM2RadPerSec
 from utils.faults import Fault
 
 
-## Wrappered Spark Max
+## Wrappered Spark Flex
 # Wrappers REV's libraries to add the following functionality for spark max controllers:
 # Grouped PID controller, Encoder, and motor controller objects
 # Physical unit conversions into SI units (radians)
 # Retry logic for initial configuration
 # Fault handling for not crashing code if the motor controller is disconnected
 # Fault annunication logic to trigger warnings if a motor couldn't be configured
-class WrapperedSparkMax:
+class WrapperedSparkFlex:
     def __init__(self, canID, name, brakeMode=False, currentLimitA=40):
-        self.ctrl = SparkMax(canID, SparkMax.MotorType.kBrushless)
+        self.ctrl = SparkFlex(canID, SparkFlex.MotorType.kBrushless)
         self.closedLoopCtrl = self.ctrl.getClosedLoopController()
         self.encoder = self.ctrl.getEncoder()
         self.name = name
@@ -33,7 +33,7 @@ class WrapperedSparkMax:
         self.actVelRadps = 0
         self.actVolt = 0
 
-        self.cfg = SparkMaxConfig()
+        self.cfg = SparkFlexConfig()
         self.cfg.signals.appliedOutputPeriodMs(200)
         self.cfg.signals.busVoltagePeriodMs(200)
         self.cfg.signals.primaryEncoderPositionPeriodMs(20)
@@ -41,7 +41,7 @@ class WrapperedSparkMax:
         self.cfg.setIdleMode(SparkBaseConfig.IdleMode.kBrake if brakeMode else SparkBaseConfig.IdleMode.kCoast)
         self.cfg.smartCurrentLimit(round(currentLimitA),0,5700)
 
-        self._sparkmax_config(retries=10, resetMode=SparkBase.ResetMode.kResetSafeParameters, persistMode=SparkBase.PersistMode.kPersistParameters, step="Initial Config")
+        self._spark_config(retries=10, resetMode=SparkBase.ResetMode.kResetSafeParameters, persistMode=SparkBase.PersistMode.kPersistParameters, step="Initial Config")
 
         addLog(self.name + "_outputCurrent", self.ctrl.getOutputCurrent, "A")
         addLog(self.name + "_desVolt", lambda: self.desVolt, "V")
@@ -50,9 +50,10 @@ class WrapperedSparkMax:
         addLog(self.name + "_actVolt", lambda: self.actVolt, "V")
         addLog(self.name + "_actPos", lambda: self.actPosRad, "rad")
         addLog(self.name + "_actVel", lambda: RPM2RadPerSec(self.encoder.getVelocity()), "radps")
-        print(f"Init of SparkMax {self.name} CANID={self.canID} is finished")
 
-    def _sparkmax_config(self, retries, resetMode, persistMode, printResults=True, step=""):
+        print(f"Init of SparkFlex {self.name} CANID={self.canID} is finished")
+
+    def _spark_config(self, retries, resetMode, persistMode, printResults=True, step=""):
         # Perform motor configuration, tracking errors and retrying until we have success
         # Clear previous configuration, and persist anything set in this config.
         retryCounter = 0
@@ -121,7 +122,7 @@ class WrapperedSparkMax:
         if self.configSuccess:
             err = self.closedLoopCtrl.setReference(
                 posCmdRev,
-                SparkMax.ControlType.kPosition,
+                SparkFlex.ControlType.kPosition,
                 ClosedLoopSlot.kSlot0,
                 arbFF,
                 SparkClosedLoopController.ArbFFUnits.kVoltage,
@@ -146,7 +147,7 @@ class WrapperedSparkMax:
         if self.configSuccess:
             err = self.closedLoopCtrl.setReference(
                 desVelRPM,
-                SparkMax.ControlType.kVelocity,
+                SparkFlex.ControlType.kVelocity,
                 ClosedLoopSlot.kSlot0,
                 arbFF,
                 SparkClosedLoopController.ArbFFUnits.kVoltage,
@@ -183,4 +184,4 @@ class WrapperedSparkMax:
 
     def setSmartCurrentLimit(self, currentLimitA: int):
         self.cfg.smartCurrentLimit(round(currentLimitA),0,5700)
-        self._sparkmax_config(retries=4, resetMode=SparkBase.ResetMode.kNoResetSafeParameters, persistMode=SparkBase.PersistMode.kNoPersistParameters, printResults=True, step="Current Limit")
+        self._spark_config(retries=4, resetMode=SparkBase.ResetMode.kNoResetSafeParameters, persistMode=SparkBase.PersistMode.kNoPersistParameters, printResults=True, step="Current Limit")
