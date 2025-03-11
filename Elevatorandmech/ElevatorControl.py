@@ -42,8 +42,8 @@ class ElevatorDependentConstants:
             },
             RobotTypes.Spires2025Sim: {
                 "HAS_ELEVATOR": True,
-                "ELEV_RM_CANID": 97,
-                "ELEV_LM_CANID": 98,
+                "ELEV_RM_CANID": 28,
+                "ELEV_LM_CANID": 29,
                 "ELEVATOR_RANGE_IN": 30, # xyzzy fix me up
                 "ELEV_GEARBOX_GEAR_RATIO": 3.0 / 1.0,
                 "ELEV_SPOOL_RADIUS_IN": 1.660 / 2.0,

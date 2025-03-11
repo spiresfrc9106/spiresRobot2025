@@ -50,6 +50,7 @@ class WrapperedSparkMax:
         addLog(self.name + "_actVolt", lambda: self.actVolt, "V")
         addLog(self.name + "_actPos", lambda: self.actPosRad, "rad")
         addLog(self.name + "_actVel", lambda: RPM2RadPerSec(self.encoder.getVelocity()), "radps")
+        print(f"Init of SparkMax {self.name} CANID={self.canID} is finished")
 
     def _sparkmax_config(self, retries, resetMode, persistMode, printResults=True, step=""):
         # Perform motor configuration, tracking errors and retrying until we have success

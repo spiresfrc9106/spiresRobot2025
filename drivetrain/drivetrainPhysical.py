@@ -177,6 +177,8 @@ def wrapperedSwerveDriveAzmthEncoder(azmthEncoderPortIdx, moduleName, azmthOffse
         dirInverted=inverted
     )
 
+WHEEL_MOTOR_WRAPPER = drivetrainDepConstants["WHEEL_MOTOR_WRAPPER"]
+
 
 CAMS = drivetrainDepConstants["CAMS"]
 

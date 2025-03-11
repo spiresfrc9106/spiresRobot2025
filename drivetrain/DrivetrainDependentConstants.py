@@ -6,6 +6,8 @@ from wpimath.geometry import Pose3d, Transform3d, Translation3d, Rotation3d
 from utils.robotIdentification import RobotIdentification, RobotTypes
 from wrappers.wrapperedPoseEstPhotonCamera import WrapperedPoseEstPhotonCamera
 from wrappers.wrapperedLimelightCamera import wrapperedLimilightCameraFactory
+from wrappers.wrapperedSparkMax import WrapperedSparkMax
+from wrappers.wrapperedSparFlex import WrapperedSparkFlex
 
 # Camera Mount Offsets
 # These are relative to the robot origin
@@ -89,6 +91,7 @@ class DrivetrainDependentConstants:
     def __init__(self):
         self.drivetrainConstants = {
             RobotTypes.Spires2023: {
+                "WHEEL_MOTOR_WRAPPER": WrapperedSparkMax,
                 "SWERVE_WHEEL_GEAR_RATIO": 5.50,   # Base Low
                 #"SWERVE_WHEEL_GEAR_RATIO": 5.08,  # Base Medium
                 #"SWERVE_WHEEL_GEAR_RATIO": 4.71,  # Base High
@@ -102,22 +105,11 @@ class DrivetrainDependentConstants:
                 "BL_OFFSET_DEG": -56.2+180,
                 "BR_OFFSET_DEG": -11.2-90+180,
                 "GYRO": "NAVX", # "NAVX", # "ADIS16470_IMU",
-                "CAMS": [
-                    #WrapperedPoseEstPhotonCamera("LEFT_CAM", ROBOT_TO_LEFT_CAM),
-                    #WrapperedPoseEstPhotonCamera("RIGHT_CAM", ROBOT_TO_RIGHT_CAM),
-                    #WrapperedPoseEstPhotonCamera("FRONT_CAM", ROBOT_TO_FRONT_CAM),
-                    #wrapperedLimilightCameraFactory("limelight", ROBOT_TO_LIME_1), #limelight-three
-                ],
-                # don't include "_"
-                "POSE_EST_LOG_NAMES": [
-                    #"photonL",
-                    #"photonR",
-                    #"photonF",
-                    #"limeli1",
-                ],
+                "CAMS": [],
                 "HAS_DRIVETRAIN": True,
             },
             RobotTypes.Spires2025: {
+                "WHEEL_MOTOR_WRAPPER": WrapperedSparkFlex,
                 # "SWERVE_WHEEL_GEAR_RATIO": 5.50, # Base Low
                 # "SWERVE_WHEEL_GEAR_RATIO": 5.08, # Base Medium
                 "SWERVE_WHEEL_GEAR_RATIO": 4.71, # Base High
@@ -131,22 +123,11 @@ class DrivetrainDependentConstants:
                 "BL_OFFSET_DEG": 125.4-180,
                 "BR_OFFSET_DEG": 117.5-90-180,
                 "GYRO": "ADIS16470_IMU",
-                "CAMS": [
-                    #WrapperedPoseEstPhotonCamera("LEFT_CAM", ROBOT_TO_LEFT_CAM),
-                    #WrapperedPoseEstPhotonCamera("RIGHT_CAM", ROBOT_TO_RIGHT_CAM),
-                    #WrapperedPoseEstPhotonCamera("FRONT_CAM", ROBOT_TO_FRONT_CAM),
-                    #wrapperedLimilightCameraFactory("limelight", ROBOT_TO_LIME_1), #limelight-three
-                ],
-                # don't include "_"
-                "POSE_EST_LOG_NAMES": [
-                    #"photonL",
-                    #"photonR",
-                    #"photonF",
-                    #"limeli1",
-                ],
+                "CAMS": [],
                 "HAS_DRIVETRAIN": True,
             },
             RobotTypes.Spires2025Sim: {
+                "WHEEL_MOTOR_WRAPPER": WrapperedSparkFlex,
                 # "SWERVE_WHEEL_GEAR_RATIO": 5.50, # Base Low
                 # "SWERVE_WHEEL_GEAR_RATIO": 5.08, # Base Medium
                 "SWERVE_WHEEL_GEAR_RATIO": 4.71, # Base High
@@ -164,6 +145,7 @@ class DrivetrainDependentConstants:
                 "HAS_DRIVETRAIN": True,
             },
             RobotTypes.SpiresTestBoard: {
+                "WHEEL_MOTOR_WRAPPER": WrapperedSparkMax,
                 # "SWERVE_WHEEL_GEAR_RATIO": 5.50, # Base Low
                 # "SWERVE_WHEEL_GEAR_RATIO": 5.08, # Base Medium
                 "SWERVE_WHEEL_GEAR_RATIO": 4.71,  # Base High
@@ -177,22 +159,11 @@ class DrivetrainDependentConstants:
                 "BL_OFFSET_DEG": 0,
                 "BR_OFFSET_DEG": 0,
                 "GYRO": "NoGyro",
-                "CAMS": [
-                    #WrapperedPoseEstPhotonCamera("LEFT_CAM", ROBOT_TO_LEFT_CAM),
-                    #WrapperedPoseEstPhotonCamera("RIGHT_CAM", ROBOT_TO_RIGHT_CAM),
-                    #WrapperedPoseEstPhotonCamera("FRONT_CAM", ROBOT_TO_FRONT_CAM),
-                    #wrapperedLimilightCameraFactory("limelight", ROBOT_TO_LIME_1), #limelight-three
-                ],
-                # don't include "_"
-                "POSE_EST_LOG_NAMES": [
-                    #"photonL",
-                    #"photonR",
-                    #"photonF",
-                    #"limeli1",
-                ],
+                "CAMS": [],
                 "HAS_DRIVETRAIN": False,
             },
             RobotTypes.SpiresRoboRioV1: {
+                "WHEEL_MOTOR_WRAPPER": WrapperedSparkMax,
                 # "SWERVE_WHEEL_GEAR_RATIO": 5.50, # Base Low
                 # "SWERVE_WHEEL_GEAR_RATIO": 5.08, # Base Medium
                 "SWERVE_WHEEL_GEAR_RATIO": 4.71,  # Base High
@@ -206,19 +177,7 @@ class DrivetrainDependentConstants:
                 "BL_OFFSET_DEG": 0,
                 "BR_OFFSET_DEG": 0,
                 "GYRO": "NoGyro",
-                "CAMS": [
-                    #WrapperedPoseEstPhotonCamera("LEFT_CAM", ROBOT_TO_LEFT_CAM),
-                    #WrapperedPoseEstPhotonCamera("RIGHT_CAM", ROBOT_TO_RIGHT_CAM),
-                    #WrapperedPoseEstPhotonCamera("FRONT_CAM", ROBOT_TO_FRONT_CAM),
-                    #wrapperedLimilightCameraFactory("limelight", ROBOT_TO_LIME_1), #limelight-three
-                ],
-                # don't include "_"
-                "POSE_EST_LOG_NAMES": [
-                    #"photonL",
-                    #"photonR",
-                    #"photonF",
-                    #"limeli1",
-                ],
+                "CAMS": [],
                 "HAS_DRIVETRAIN": False,
             },
         }

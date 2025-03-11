@@ -48,7 +48,7 @@ class ArmDependentConstants:
             RobotTypes.Spires2025Sim: {
                 "HAS_ARM": True,
                 "ARM_GEARBOX_GEAR_RATIO": 50.0 / 1.0,
-                "ARM_M_CANID": 99,  # xyzzy fix me
+                "ARM_M_CANID": 27,  # xyzzy fix me
                 "MAX_ARM_POS_DEG": 90,
                 "MIN_ARM_POS_DEG": -90,
                 "MAX_ARM_VEL_DEGPS": 20,
