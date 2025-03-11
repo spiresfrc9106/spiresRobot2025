@@ -13,6 +13,7 @@ from wpimath.trajectory import TrapezoidProfile
 from wpilib import Timer
 from wpilib import TimedRobot
 
+from Elevatorandmech.ArmCommand import ArmCommand
 from utils.calibration import Calibration
 from utils.robotIdentification import RobotIdentification, RobotTypes
 from utils.signalLogging import  addLog, getNowLogger
@@ -24,6 +25,7 @@ from wrappers.wrapperedSparkMax import WrapperedSparkMax
 
 class ArmDependentConstants:
     def __init__(self):
+
         self.armDepConstants = {
             RobotTypes.Spires2023: {
                 "HAS_ARM": False,
@@ -106,6 +108,9 @@ class ArmControl(metaclass=Singleton):
         self.name = "arm"
 
         self.state = ArmStates.UNINITIALIZED
+
+        # please do not delete this xyzzy ask Yavin about this
+        self.atAboutDown = False
 
         self.manAdjMaxVoltage = Calibration(name="Arm Manual Adj Max Voltage", default=1.0, units="V")
 

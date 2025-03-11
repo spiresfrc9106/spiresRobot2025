@@ -3,10 +3,11 @@
 # It is definitely buggy and untested, but it gives us a great framework on how to control an elevator.
 
 from enum import IntEnum
-from wpilib import XboxController
 from wpilib import Timer
 from wpimath.trajectory import TrapezoidProfile
 
+from Elevatorandmech.ElevatorCommand import ElevatorCommand
+from Elevatorandmech.RobotPoser import PoseDirector
 from utils.calibration import Calibration
 from utils.robotIdentification import RobotIdentification
 from utils.signalLogging import  addLog, getNowLogger
@@ -19,6 +20,7 @@ TEST_ELEVATOR_RANGE_IN = 5.2
 
 class ElevatorDependentConstants:
     def __init__(self):
+
         self.elevDepConstants = {
             RobotTypes.Spires2023: {
                 "HAS_ELEVATOR": False,
@@ -87,11 +89,6 @@ ELEV_SPOOL_RADIUS_IN = elevDepConstants['ELEV_SPOOL_RADIUS_IN']
 MAX_ELEV_VEL_INPS = elevDepConstants['MAX_ELEV_VEL_INPS']
 MAX_ELEV_ACCEL_INPS2 = elevDepConstants['MAX_ELEV_ACCEL_INPS2']
 
-REEF_L1_HEIGHT_M = 0.5842
-REEF_L2_HEIGHT_M = 0.9398
-REEF_L3_HEIGHT_M = 1.397
-REEF_L4_HEIGHT_M = 2.159
-ELEV_MIN_HEIGHT_M = REEF_L1_HEIGHT_M  # TODO - is elevator's bottom position actually L1?
 
 
 class ElevatorStates(IntEnum):
@@ -107,14 +104,15 @@ class ElevatorControl(metaclass=Singleton):
         
         self.name = "elev"
 
-        ctrlIdx = 1
-        self.ctrl = XboxController(ctrlIdx)
+        # please don't delete this - xyzzy TODO Mike ask Yavin about this.
+        self.atAboutMiddle = True
+        self.reachedBottom = False #these only need to be estimates, since the system will continue nmw
 
-        # Coral Scoring Heights in meters
-        self.L1_Height = Calibration(name="Elevator Preset Height L1", units="m", default=REEF_L1_HEIGHT_M - ELEV_MIN_HEIGHT_M)
-        self.L2_Height = Calibration(name="Elevator Preset Height L2", units="m", default=REEF_L2_HEIGHT_M - ELEV_MIN_HEIGHT_M)
-        self.L3_Height = Calibration(name="Elevator Preset Height L3", units="m", default=REEF_L3_HEIGHT_M - ELEV_MIN_HEIGHT_M)
-        self.L4_Height = Calibration(name="Elevator Preset Height L4", units="m", default=REEF_L4_HEIGHT_M - ELEV_MIN_HEIGHT_M)
+        self.poseDirector = PoseDirector()
+
+        self.elevatorRangeIn = elevDepConstants['ELEVATOR_RANGE_IN']
+
+        # TODO Talk to Michael Vu about letting the Operator interface manage the Xbox Controllers
 
         self.manAdjMaxVoltage = Calibration(name="Elevator Manual Adj Max Voltage", default=1.0, units="V")
 
@@ -122,7 +120,7 @@ class ElevatorControl(metaclass=Singleton):
         self.manualAdjCmd = 0.0
 
         # See: https://docs.wpilib.org/en/stable/docs/software/advanced-controls/controllers/trapezoidal-profiles.html
-        self.desTrapPState = TrapezoidProfile.State(0,0)
+        self.desTrapPState = TrapezoidProfile.State(0,0) # Height 0 in, Velocity 0 in per s
 
         # Elevator Motors
         self.rMotor = WrapperedSparkMax(ELEV_RM_CANID, "ElevatorMotorRight", brakeMode=False, currentLimitA=5)
@@ -224,7 +222,6 @@ class ElevatorControl(metaclass=Singleton):
     def getVelocityInps(self) -> float:
         return self._offsetFreeRMotorRadToHeightIn(self.rMotor.getMotorVelocityRadPerSec())
 
-
     def update(self) -> None:
         match self.elevatorState:
             case ElevatorStates.UNINITIALIZED:
@@ -263,7 +260,7 @@ class ElevatorControl(metaclass=Singleton):
             self._setMotorPosAndFF()
             # change the time we last moved in seconds
         else:
-            # because we didnt go any lower, maybe we have been at the lowest height for a second
+            # because we didn't go any lower, maybe we have been at the lowest height for a second
             nowS = Timer.getFPGATimestamp()
             if nowS - 1 >= self.timeWhenChangeS:
                 self._changeState(ElevatorStates.OPERATING)
@@ -351,24 +348,15 @@ class ElevatorControl(metaclass=Singleton):
             currentPeriodS = self.currentUpdateTimeS - self.previousUpdateTimeS
             self.actAccLogger.logNow((self.actualVelInps - self.previousVelInps) / currentPeriodS)
 
-        # The default is to go to the middle
+        # default to not moving
+        heightGoalIn = self.curTrapPState.position
+        velocityGoalInps = 0.0
+
+        elevatorCommand = ElevatorCommand(heightGoalIn, velocityGoalInps)
+
+        elevatorCommand = self.poseDirector.getElevatorCommand(elevatorCommand)
+
         self.actTrapPState = TrapezoidProfile.State(self.getHeightIn(), self.actualVelInps)
-        #self.desTrapPState = TrapezoidProfile.State(self.lowestHeightIn + (TEST_ELEVATOR_RANGE_IN / 2),0)
-
-        """
-        if self.ctrl.getAButton():
-            self.desTrapPState = TrapezoidProfile.State(REEF_L1_HEIGHT_M * 1 + self.lowestHeightIn, 0)
-        if self.ctrl.getXButton():
-            self.desTrapPState = TrapezoidProfile.State(REEF_L2_HEIGHT_M * 1 + self.lowestHeightIn, 0)
-        if self.ctrl.getBButton():
-            self.desTrapPState = TrapezoidProfile.State(REEF_L3_HEIGHT_M * 1 + self.lowestHeightIn, 0)
-        if self.ctrl.getYButton():
-            self.desTrapPState = TrapezoidProfile.State(REEF_L4_HEIGHT_M * 1 + self.lowestHeightIn, 0)
-
-        # PLUNGE USING THE RIGHT TRIGGER
-        if self.ctrl.getRightTriggerAxis():
-            self.desTrapPState = TrapezoidProfile.State(self.lowestHeightIn, 0)
-        """
 
         self._setMotorPosAndFF()
 
@@ -409,5 +397,5 @@ class ElevatorControl(metaclass=Singleton):
         self.relEncOffsetRad = self.rMotor.getMotorPositionRad()
 
     def _changeState(self, newState: ElevatorStates) -> None:
-        print(f"time = {Timer.getFPGATimestamp():.3f}s changing from elevator state {self.elevatorState} to {newState}")
+        print(f"time = {Timer.getFPGATimestamp():.3f}s changing from elevator state {self.elevatorState.name}({self.elevatorState}) to {newState.name}({newState})")
         self.elevatorState = newState

@@ -25,7 +25,14 @@ class WrapperedPoseEstLimelight:
     def __init__(self, camName:str, robotToCam:Transform3d):
         setVersionCheckEnabled(False)
 
-        self.cam = Limelight(robotToCam, camName)
+        print(f"WrapperedPoseEstLimelight camName {type(camName)} = {camName}")
+
+        try:
+            self.cam = Limelight(robotToCam, camName)
+        except Exception as e:
+            # Handle any exception
+            print(f"An error occurred: {e}")
+            self.cam = None
 
         self.disconFault = Fault(f"LL Camera {camName} not sending data")
         self.timeoutSec = 1.0
@@ -61,7 +68,7 @@ class WrapperedPoseEstLimelight:
 
         self.poseEstimates = []
 
-        if not self.cam.isConnected():
+        if self.cam is None or not self.cam.isConnected():
             # Faulted - no estimates, just return.
             self.disconFault.setFaulted()
             return
@@ -98,7 +105,10 @@ class WrapperedPoseEstLimelight:
         return Pose2d(botpose[0], botpose[1], Rotation2d(math.radians(botpose[5]))) # initially: self._adjust(Pose3d())
 
     def getPoseEstFormatted(self):
-        return self._toPose2d(botpose=self.cam.botpose)
+        if self.cam is not None:
+            return self._toPose2d(botpose=self.cam.botpose)
+        else:
+            return None
 
     def getPoseEstimates(self):
         return self.poseEstimates
@@ -134,5 +144,5 @@ def wrapperedLimilightCameraFactory(camName:str, robotToCam):
         print(f"In simulation substituting PhotonCamera for LimeLight Camera {camName}")
         wrapperedCam = WrapperedPoseEstPhotonCamera(camName, robotToCam)
     else:
-        wrapperedCame = WrapperedPoseEstLimelight(robotToCam, camName)
+        wrapperedCam = WrapperedPoseEstLimelight(camName, robotToCam)
     return wrapperedCam

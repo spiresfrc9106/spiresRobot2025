@@ -1,7 +1,7 @@
 from wpilib import ADIS16470_IMU
 from wpimath.geometry import Rotation2d
 import navx
-from drivetrain.DrivetrainDependentConstants import DrivetrainDependentConstants
+from drivetrain.DrivetrainDependentConstants import drivetrainDepConstants
 
 from utils.robotIdentification import RobotIdentification
 
@@ -33,7 +33,6 @@ class WrapperedAdis16470Imu(ADIS16470_IMU):
 def wrapperedGyro():
     result = None
     if RobotIdentification().isSpiresRobot():
-        drivetrainDepConstants = DrivetrainDependentConstants().get()
         print(f'GYRO is {drivetrainDepConstants["GYRO"]}')
         if drivetrainDepConstants["GYRO"] == "NAVX":
             result = WrapperedNavx()

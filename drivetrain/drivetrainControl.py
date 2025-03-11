@@ -37,6 +37,7 @@ from utils.constants import (DT_FL_WHEEL_CANID,
                              DT_BL_AZMTH_ENC_PORT,
                              DT_BR_AZMTH_ENC_PORT)
 from wrappers.wrapperedGyro import wrapperedGyro
+from Elevatorandmech.RobotPoser import PoseDirector
 
 class DrivetrainControl(metaclass=Singleton):
     """
@@ -79,6 +80,7 @@ class DrivetrainControl(metaclass=Singleton):
         self.poseEst = DrivetrainPoseEstimator(self.getModulePositions(), self.gyro)
 
         self._updateAllCals()
+        self.poser = PoseDirector()
 
     def setManualCmd(self, cmd: DrivetrainCommand):
         """Send commands to the robot for motion relative to the field
@@ -104,6 +106,12 @@ class DrivetrainControl(metaclass=Singleton):
         self.curCmd = self.curManCmd
         self.curCmd = Trajectory().update(self.curCmd, curEstPose)
         self.curCmd = AutoDrive().update(self.curCmd, curEstPose)
+
+        #yavin's interpret
+        self.curCmd = self.poser.getDriveTrainCommand(self.curCmd)
+        if hasattr(self.curCmd, "heading"):
+            Trajectory().setCmd(self.curCmd)
+            self.curCmd = Trajectory().update(self.curCmd, curEstPose)
 
         # Transform the current command to be robot relative
         tmp = ChassisSpeeds.fromFieldRelativeSpeeds(

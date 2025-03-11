@@ -4,7 +4,7 @@ from wpimath.system.plant import DCMotor
 from wpimath.geometry import Translation2d, Transform3d, Translation3d, Rotation3d
 from wpimath.kinematics import SwerveDrive4Kinematics
 
-from drivetrain.DrivetrainDependentConstants import DrivetrainDependentConstants
+from drivetrain.DrivetrainDependentConstants import drivetrainDepConstants
 from utils.units import lbsToKg
 from utils.units import deg2Rad
 from utils.units import in2m
@@ -17,10 +17,6 @@ from sensors.limelight import Limelight
 """
 Defines the physical dimensions and characteristics of the drivetrain
 """
-
-###################################################################
-
-drivetrainDepConstants = DrivetrainDependentConstants().get()
 
 ###################################################################
 # Physical dimensions and mass distribution

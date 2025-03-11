@@ -2,10 +2,11 @@ import { CircularGauge } from './circularGauge.js'
 import { Icon } from './icon.js'
 import { Camera } from './camera.js'
 import { LineGauge } from './lineGauge.js'
+import { ProgressBar } from './progressBar.js'
 import { Text } from './text.js'
 import { AutoChooser } from './autoChooser.js'
 import { SwerveState } from './swerveState.js'
-import { FieldPose } from './fieldPose.js'
+import { FieldPose } from './fieldPose.js?v=${VERSION_FRESH}'
 import { Sound } from './sound.js'
 import { NT4_Client } from "../interfaces/nt4.js";
 

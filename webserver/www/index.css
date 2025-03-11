@@ -8,6 +8,8 @@ topLevelContainer {
 
 robotStatusBox {
     flex-grow: 2;
+    background: #feb800
+    color: #0122d2
 }
 
 .buildInfoTextDiv {
@@ -17,31 +19,35 @@ robotStatusBox {
 
 linksBox {
     flex-grow: 1;
+    padding-top: 10px;
 }
 
 a.bigLinkButton {
     display: block;
     width: auto;
     height: auto;
-    background: #222222;
+    background: #feb800;
     padding: 10px 5px;
     margin: 10px 5px;
     text-align: center;
     border-radius: 5px;
     border: 1px solid #FFFFFF;
-    color: white;
+    color: #0122d2;
     font-weight: bold;
     line-height: 25px;
+    opacity: 0;
+    transition: 0.8s;
+    margin: 30px 5px;
+    text-decoration: none;
 }
 
 a.bigLinkButton:hover {
-    background: #533;
-    color: white;
+    opacity: 0.9;
  }
  a.bigLinkButton:active {
-    background: #555;
+    color: white;
  }
  a.bigLinkButton:disabled {
-    background: black;
-    color: #555;
+    background: grey;
+    color: white;
  }

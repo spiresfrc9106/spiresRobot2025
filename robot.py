@@ -6,12 +6,13 @@ from wpimath.geometry import Translation2d, Pose2d, Rotation2d
 from dashboard import Dashboard
 from Elevatorandmech.ElevatorControl import ElevatorControl, elevDepConstants
 from Elevatorandmech.NewArmControl import ArmControl, armDepConstants
+from Elevatorandmech.RobotPoser import PoseDirector
 from testingMotors.motorCtrl import MotorControl, motorDepConstants
 from drivetrain.controlStrategies.autoDrive import AutoDrive
 from drivetrain.controlStrategies.trajectory import Trajectory
 from drivetrain.drivetrainCommand import DrivetrainCommand
 from drivetrain.drivetrainControl import DrivetrainControl
-from drivetrain.DrivetrainDependentConstants import DrivetrainDependentConstants
+from drivetrain.DrivetrainDependentConstants import drivetrainDepConstants
 from humanInterface.driverInterface import DriverInterface
 from humanInterface.operatorInterface import OperatorInterface
 from humanInterface.ledControl import LEDControl
@@ -29,9 +30,6 @@ from utils.powerMonitor import PowerMonitor
 from webserver.webserver import Webserver
 from AutoSequencerV2.autoSequencer import AutoSequencer
 
-# TODO Refactor this so that it is more DRY.
-drivetrainDepConstants = DrivetrainDependentConstants().get()
-
 class MyRobot(wpilib.TimedRobot):
 
     #########################################################
@@ -43,7 +41,7 @@ class MyRobot(wpilib.TimedRobot):
         # pylint: disable=attribute-defined-outside-init
         remoteRIODebugSupport()
 
-        print(f"robot type = {RobotIdentification().getRobotType()} {RobotIdentification().serialNumber}")
+        print(f"robot type = {RobotIdentification().getRobotType()} serialNumber={RobotIdentification().serialNumber}")
 
         self.crashLogger = CrashLogger()
         wpilib.LiveWindow.disableAllTelemetry()
@@ -60,6 +58,9 @@ class MyRobot(wpilib.TimedRobot):
         self.elev = None
         if elevDepConstants['HAS_ELEVATOR']:
             self.elev= ElevatorControl()
+
+        self.poseDirector = PoseDirector()
+        self.poseDirector.initialize(self.arm, self.driveTrain, self.elev)
 
 
         self.autodrive = AutoDrive()
@@ -107,7 +108,7 @@ class MyRobot(wpilib.TimedRobot):
         self.dInt.update()
         self.stt.mark("Driver Interface")
         self.oInt.update()
-        self.stt.mark("Driver Interface")
+        self.stt.mark("Operator Interface")
 
         if drivetrainDepConstants['HAS_DRIVETRAIN']:
             self.driveTrain.update()
@@ -196,11 +197,11 @@ class MyRobot(wpilib.TimedRobot):
     def teleopPeriodic(self):
         # TODO - this is technically one loop delayed, which could induce lag
         # Probably not noticeable, but should be corrected.
+
         if drivetrainDepConstants['HAS_DRIVETRAIN']:
             self.driveTrain.setManualCmd(self.dInt.getCmd())
 
-        if motorDepConstants['HAS_MOTOR_TEST']:
-            self.motorCtrlFun.update(self.dInt.getMotorTestPowerRpm())
+        self.poseDirector.update()
 
         if self.dInt.getGyroResetCmd():
             if drivetrainDepConstants['HAS_DRIVETRAIN']:
@@ -231,8 +232,12 @@ class MyRobot(wpilib.TimedRobot):
             self.arm.update()
             self.stt.mark("Arm-teleop")
 
+
+        if motorDepConstants['HAS_MOTOR_TEST']:
+            self.motorCtrlFun.update(self.dInt.getMotorTestPowerRpm())
+
+
         if elevDepConstants['HAS_ELEVATOR']:
-            self.elev.setHeightVelocityGoal(self.oInt.getDesElevatorPosIn(),0)
             self.elev.update()
             self.stt.mark("Elevator-teleop")
 
