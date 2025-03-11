@@ -62,7 +62,7 @@ class PoseDirector(metaclass=Singleton):
         changed = False
         if nextState != self.controllerState:
             print(
-                f" state changing from {self.controllerState.name}({self.controllerState}) to {nextState.name} ({nextState})")
+                f"RobotPoser: state changing from {self.controllerState.name}({self.controllerState}) to {nextState.name} ({nextState})")
             self.prevControllerState = self.controllerState
             self.controllerState = nextState
             changed = True
