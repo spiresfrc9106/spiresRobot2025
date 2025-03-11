@@ -14,6 +14,7 @@ from wpilib import Timer
 from wpilib import TimedRobot
 
 from Elevatorandmech.ArmCommand import ArmCommand
+from Elevatorandmech.RobotPoser import PoseDirector
 from utils.calibration import Calibration
 from utils.robotIdentification import RobotIdentification, RobotTypes
 from utils.signalLogging import  addLog, getNowLogger
@@ -99,6 +100,7 @@ class ArmStates(IntEnum):
     UNINITIALIZED = 0
     OPERATING = 2
 
+TIME_STEP_S = 0.02
 
 class ArmControl(metaclass=Singleton):
     def __init__(self):
@@ -111,6 +113,8 @@ class ArmControl(metaclass=Singleton):
 
         # please do not delete this xyzzy ask Yavin about this
         self.atAboutDown = False
+
+        self.poseDirector = PoseDirector()
 
         self.manAdjMaxVoltage = Calibration(name="Arm Manual Adj Max Voltage", default=1.0, units="V")
 
@@ -150,9 +154,6 @@ class ArmControl(metaclass=Singleton):
         self.motor.setPID(self.kP.get(), 0.0, 0.0)
         # when we re-initialize tell motor to stay where it is at.
         self.motor.setVoltage(0)
-        #vFF  = 0
-        #self.motor.setPosCmd(self.motor.getMotorPositionRad(), vFF)
-
 
         # units for trapezoidal will be degrees per second (velocity) and degrees per second squared (acceleration)
         self.trapProfiler = TrapezoidProfile(TrapezoidProfile.Constraints(self.maxVelocityDegps.get(), self.maxAccelerationDegps2.get()))
@@ -184,11 +185,11 @@ class ArmControl(metaclass=Singleton):
         self.stateNowLogger = getNowLogger(f"{self.name}/stateNow", int)
         self.stateNowLogger.logNow(self.state)
         addLog(f"{self.name}/stopped", lambda: self.stopped, "bool")
-        addLog(f"{self.name}/act_pos_degps", lambda: self.actTrapPState.position, "deg")
+        addLog(f"{self.name}/act_pos_"deg, lambda: self.actTrapPState.position, "deg")
         addLog(f"{self.name}/act_vel_degps", lambda: self.actTrapPState.velocity, "degps")
         self.actAccLogger = getNowLogger(f"{self.name}/act acceleration", "degps2")
-        addLog(f"{self.name}/curProfile_pos_Deg", lambda: self.curTrapPState.position, "deg")
-        addLog(f"{self.name}/curProfile_vel_Degps", lambda: self.curTrapPState.velocity, "degps")
+        addLog(f"{self.name}/curProfile_pos_deg", lambda: self.curTrapPState.position, "deg")
+        addLog(f"{self.name}/curProfile_vel_degps", lambda: self.curTrapPState.velocity, "degps")
         self.curTrapPAccLogger = getNowLogger(f"{self.name}/curProfile_acc_degps2", "degps2")
         addLog(f"{self.name}/des_pos_deg", lambda: self.desTrapPState.position, "deg")
         addLog(f"{self.name}/des_vel_degps", lambda: self.desTrapPState.velocity, "degps")
@@ -297,6 +298,46 @@ class ArmControl(metaclass=Singleton):
 
             self.desTrapPState = self.trapProfiler.State(newDesPosDeg, newDesVelocityDegs)
 
+    def _setMotorPosAndFF(self) -> None:
+        oldVelocityDegps = self.curTrapPState.velocity
+
+        # This method is called both when initializing the object in the uninitialized state and when operating
+        # In the initializing state we always have a target velocity at the end. In the operating state we might
+        # have a target velocity that is not zero. If the target velocity is not zero we limit the velocity to be a
+        # velocity that won't overrun the end limits based upon our current profiled position and the max acceleration.
+        # Rather than solving with calculus, we just run an extra profiler and select the result with the smallest
+        # magnitude of velocity.
+
+        possibleNextTrapPState = self.trapProfiler.calculate(TIME_STEP_S, self.curTrapPState, self.desTrapPState)
+
+        if self.desTrapPState.velocity == 0:
+            self.curTrapPState = possibleNextTrapPState
+        else:
+            perhapsSmallerNextTrapPState = self.trapProfiler.calculate(TIME_STEP_S, self.curTrapPState,
+                                                                       TrapezoidProfile.State(
+                                                                           position=self.desTrapPState.position,
+                                                                           velocity=0))
+
+            if abs(perhapsSmallerNextTrapPState.velocity) < abs(possibleNextTrapPState.velocity):
+                self.curTrapPState = perhapsSmallerNextTrapPState
+            else:
+                self.curTrapPState = possibleNextTrapPState
+
+        self.curTrapPAccLogger.logNow((self.curTrapPState.velocity - oldVelocityDegps) / TIME_STEP_S)
+
+        motorPosCmdRad = self._angleDegToMotorRad(self.curTrapPState.position)
+        motorVelCmdRadps = self._angleDegToMotorRad(self.curTrapPState.velocity)
+
+        # set our feed forward to 0 at the start so we're not throwing extra voltage into the motor
+        # then see if their feed forward calc makes sense
+        vFF = self.kV.get() * motorVelCmdRadps  + self.kS.get() * sign(motorVelCmdRadps) \
+            + self.kG.get()
+
+        vFF = 0
+
+        self.motor.setPosCmd(motorPosCmdRad, vFF)
+
+
     def _updateOperating(self) -> None:
         self.encoder.update()
         self.currentUpdateTimeS = Timer.getFPGATimestamp()
@@ -306,6 +347,24 @@ class ArmControl(metaclass=Singleton):
             self.actAccLogger.logNow((self.actualVelDegps - self.previousVelDegps) / currentPeriodS)
 
         self.actTrapPState = TrapezoidProfile.State(self.getRelAngleWithOffsetDeg(), self.actualVelDegps)
+
+
+        # default to not moving
+        posGoalDeg = self.curTrapPState.position
+        velocityGoalDegps = 0.0
+
+        armCommand = ArmCommand(posGoalDeg, velocityGoalDegps)
+
+        armCommand = self.poseDirector.getArmCommand(armCommand)
+
+        if armCommand.angleDeg is None and armCommand.velocityDegps == 0.0:
+            armCommand.angleDeg = posGoalDeg
+        elif armCommand.angleDeg is None and armCommand.velocityDegps > 0.0:
+            armCommand.angleDeg = self.maxPosDeg.get()
+        else:
+            armCommand.angleDeg = self.minPosDeg.get()
+
+        self.desTrapPState = TrapezoidProfile.State(armCommand.angleDeg, armCommand.velocityDegps)
 
         # Update motor closed-loop calibration
         if self.kP.isChanged():
@@ -321,29 +380,7 @@ class ArmControl(metaclass=Singleton):
             self.curTrapPState = TrapezoidProfile.State(self.actTrapPState.position, 0)
         else:
             # this case does happen
-            oldVelocityDegps = self.curTrapPState.velocity
-
-            # this line does the main work of the profiler. It steps through
-            # each of the target positions and velocities to get self.curTrapPState.position
-            # through the set of positions you need to run the profile
-
-            # search for self.trapProfiler initialization for the definition of the profile
-            timeStepSeconds = 0.02
-            self.curTrapPState = self.trapProfiler.calculate(timeStepSeconds, self.curTrapPState, self.desTrapPState)
-
-            self.curTrapPAccLogger.logNow((self.curTrapPState.velocity - oldVelocityDegps) / 0.02)
-
-            self.motorPosCmdRad = self._angleDegToMotorRad(self.curTrapPState.position)
-            #self.motorPosCmdRad = self.limitToMaxes(self._angleDegToMotorRad(self.curTrapPState.position))
-            motorVelCmdRadps = self._angleVelDegpsToMotorVelRadps(self.curTrapPState.velocity)
-
-            # set our feed forward to 0 at the start so we're not throwing extra voltage into the motor, then see if their feed forward calc makes sense
-            # vFF = self.kV.get() * motorVelCmdRadps  + self.kS.get() * sign(motorVelCmdRadps) \
-            #    + self.kG.get()
-
-            vFF = 0
-
-            self.motor.setPosCmd(self.motorPosCmdRad, vFF)
+            self._setMotorPosAndFF()
 
         self.previousVelDegps = self.actualVelDegps
         self.previousUpdateTimeS = self.currentUpdateTimeS

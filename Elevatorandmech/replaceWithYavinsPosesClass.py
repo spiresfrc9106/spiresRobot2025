@@ -39,9 +39,6 @@ class YavinsPoseClassPositionControl():
         pass
 
 
-
-
-
     ##### FIX THESE!!!!!! RIGHT NOW THEY AREN'T IMMUNE TO NONE!!!!
 
     def getDriveTrainCommand(self, curCommand: DrivetrainCommand):
@@ -67,3 +64,41 @@ class YavinsPoseClassPositionControl():
             velocityDegps=0.0
         )
         return curCommand # if we have nothing to change, we return the current command
+
+
+class YavinsPoseClassVelocityControl():
+
+    def __init__(self, arm, driveTrain, elevator):
+        self.arm = arm
+        self.driveTrain = driveTrain
+        self.elevator = elevator
+        self.oInt = OperatorInterface()
+        self.elevatorVelocityInps = 0
+        self.armVelocityDegps = 0
+
+    # Every frame the update will be called, and then later, the updates for the Drivetrain, Elevator, and Arm will be called and they will all "get" their commands.
+    def update(self):
+        self.elevatorVelocityInps = self.oInt.elevatorPosYCmd * 10
+        self.armVelocityDegps = self.oInt.armPosYCmd * 30
+
+
+    ##### FIX THESE!!!!!! RIGHT NOW THEY AREN'T IMMUNE TO NONE!!!!
+
+    def getDriveTrainCommand(self, curCommand: DrivetrainCommand):
+        return curCommand # if we have nothing to change, we return the current command
+
+    def getElevatorCommand(self, curCommand: ElevatorCommand):
+        elevatorCommand = ElevatorCommand(
+            heightIn=None,
+            velocityInps=self.elevatorVelocityInps
+        )
+        #print(f"velocityControl={elevatorCommand.heightIn} {elevatorCommand.velocityInps}")
+        return elevatorCommand # if we have nothing to change, we return the current command
+
+    # TODO change this so the arm is a position control loop
+    def getArmCommand(self, curCommand: ArmCommand):
+        armCommand = ArmCommand(
+            angleDeg=None,
+            velocityDegps=self.armVelocityDegps
+        )
+        return armCommand # if we have nothing to change, we return the current command

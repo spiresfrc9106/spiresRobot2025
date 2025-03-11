@@ -26,12 +26,13 @@ will keep on doing the procedure as long as the button is held down, person can 
 """
 
 
-from Elevatorandmech.replaceWithYavinsPosesClass import YavinsPoseClassNoChange, YavinsPoseClassPositionControl
+from Elevatorandmech.replaceWithYavinsPosesClass import YavinsPoseClassNoChange, YavinsPoseClassPositionControl, YavinsPoseClassVelocityControl
 from humanInterface.operatorInterface import OperatorInterface, ElevArmCmdState
-from utils.singleton import Singleton
 from positionSchemes.plunge_v1 import PlungeV1
 from positionSchemes.pickup_v1 import PickupV1
 from positionSchemes.place_L4_v1 import PlaceL4V1
+from utils.signalLogging import addLog
+from utils.singleton import Singleton
 
 class PoseDirector(metaclass=Singleton):
 
@@ -43,15 +44,16 @@ class PoseDirector(metaclass=Singleton):
         self.controllerState = ElevArmCmdState.UNINITIALIZED
         self.prevControllerState = self.controllerState
         self.currentPositionScheme = YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator)
-        self.getDriveTrainCommand = lambda curCommand : curCommand
-        self.getElevatorCommand = lambda curCommand : curCommand
-        self.getArmCommand = lambda curCommand : curCommand
+        self.getDriveTrainCommand = lambda curCommand : self.currentPositionScheme.getDriveTrainCommand(curCommand)
+        self.getElevatorCommand = lambda curCommand :  self.currentPositionScheme.getElevatorCommand(curCommand)
+        self.getArmCommand = lambda curCommand : self.currentPositionScheme.getArmCommand(curCommand)
+        addLog("RP/controllerState", lambda: self.controllerState, "int")
 
     def update(self):
         if self._isControllerStateChanging():
             self.currentPositionScheme = self.pickTheNewScheme()
             self.getDriveTrainCommand = lambda curCommand : self.currentPositionScheme.getDriveTrainCommand(curCommand)
-            self.getElevatorCommand = lambda curCommand: self.currentPositionScheme.getDriveTrainCommand(curCommand)
+            self.getElevatorCommand = lambda curCommand: self.currentPositionScheme.getElevatorCommand(curCommand)
             self.getArmCommand = lambda curCommand : self.currentPositionScheme.getArmCommand(curCommand)
         self.currentPositionScheme.update()
 
@@ -73,7 +75,7 @@ class PoseDirector(metaclass=Singleton):
             case ElevArmCmdState.UNINITIALIZED:
                 return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator)
             case ElevArmCmdState.VEL_CONTROL:
-                return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator) # todo fix me
+                return YavinsPoseClassVelocityControl(self.arm, self.driveTrain, self.elevator) # todo fix me
             case ElevArmCmdState.POS_CONTROL:
                 return YavinsPoseClassPositionControl(self.arm, self.driveTrain, self.elevator)
             case ElevArmCmdState.PLUNGE:

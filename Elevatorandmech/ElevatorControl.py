@@ -3,6 +3,7 @@
 # It is definitely buggy and untested, but it gives us a great framework on how to control an elevator.
 
 from enum import IntEnum
+import wpilib
 from wpilib import Timer
 from wpimath.trajectory import TrapezoidProfile
 
@@ -180,9 +181,7 @@ class ElevatorControl(metaclass=Singleton):
 
             self.timeWhenChangeS = 0
 
-            self.lowestHeightIn = 1000
-
-            self.funRuns = 0
+            self.lowestHeightIn = 0
 
             addLog(f"{self.name}/lowestHeightIn", lambda: self.lowestHeightIn, "in")
             addLog(f"{self.name}/state", lambda: float(int(self.elevatorState)), "int")
@@ -239,19 +238,15 @@ class ElevatorControl(metaclass=Singleton):
         self.startTime = Timer.getFPGATimestamp()
         self._changeState(ElevatorStates.INIT_GOING_DOWN)
         self.forceStartAtHeightZeroIn()
-        self.desTrapPState = TrapezoidProfile.State(-1000,0)
+        if wpilib.RobotBase.isSimulation():
+            self.desTrapPState = TrapezoidProfile.State(self.getHeightIn(),0)
+        else:
+            self.desTrapPState = TrapezoidProfile.State(self.getHeightIn()-1000,0)
         self.curTrapPState = TrapezoidProfile.State(self.getHeightIn(), 0)
+        self.lowestHeightIn = self.getHeightIn()
         self._setMotorPosAndFF()
-        self.lowestHeightIn = 1000
 
     def _updateInitGoingDown(self) -> None:
-        self.funRuns = 0
-        # in going down, check to see if how long since we last moved, if we haven't moved in 1 seocond stop
-            # make a new self.lowestHeightIn
-            # set to 100,000 in when first start
-            # make var of time since last change of height, use getFPGATimestamp whenever it gets lower to get the time
-            # when lowest height hasn't changed for 1s (current time - last changed time >= 1s) then switch to found bottom state
-        positionRad = self.rMotor.getMotorPositionRad()
         positionIn = self.getHeightIn()
 
         if positionIn < self.lowestHeightIn:
@@ -263,6 +258,9 @@ class ElevatorControl(metaclass=Singleton):
             # because we didn't go any lower, maybe we have been at the lowest height for a second
             nowS = Timer.getFPGATimestamp()
             if nowS - 1 >= self.timeWhenChangeS:
+                self.forceStartAtHeightZeroIn()
+                self.desTrapPState = TrapezoidProfile.State(self.getHeightIn(), 0)
+                self.curTrapPState = TrapezoidProfile.State(self.getHeightIn(), 0)
                 self._changeState(ElevatorStates.OPERATING)
             else:
                 self._setMotorPosAndFF()
@@ -270,14 +268,12 @@ class ElevatorControl(metaclass=Singleton):
     def _setMotorPosAndFF(self) -> None:
         oldVelocityInps = self.curTrapPState.velocity
 
-        # This method is called both when initializing the elevator in the uninitialized state and when operating
+        # This method is called both when initializing the object in the uninitialized state and when operating
         # In the initializing state we always have a target velocity at the end. In the operating state we might
         # have a target velocity that is not zero. If the target velocity is not zero we limit the velocity to be a
         # velocity that won't overrun the end limits based upon our current profiled position and the max acceleration.
         # Rather than solving with calculus, we just run an extra profiler and select the result with the smallest
         # magnitude of velocity.
-
-        # TODO make sure all of the self. that we reference here are actually set before we touch
 
         possibleNextTrapPState = self.trapProfiler.calculate(TIME_STEP_S, self.curTrapPState, self.desTrapPState)
 
@@ -317,7 +313,7 @@ class ElevatorControl(metaclass=Singleton):
             b = newDesVelocityInps
 
             newDesHeightIn = min(newDesHeightIn, TEST_ELEVATOR_RANGE_IN)
-            newDesHeightIn = max(newDesHeightIn, self.lowestHeightIn)
+            newDesHeightIn = max(newDesHeightIn, 0)
 
             newDesVelocityInps = min(newDesVelocityInps, self.maxVelocityIps.get())
             newDesVelocityInps = max(newDesVelocityInps, -self.maxVelocityIps.get())
@@ -339,14 +335,13 @@ class ElevatorControl(metaclass=Singleton):
             self.desTrapPState = self.trapProfiler.State(newDesHeightIn, newDesVelocityInps)
 
     def _updateOperating(self) -> None:
-        if self.funRuns == 0:
-            self.curTrapPState = TrapezoidProfile.State(self.getHeightIn(), 0)
-        self.funRuns = self.funRuns + 1
         self.currentUpdateTimeS = Timer.getFPGATimestamp()
         self.actualVelInps = self.getVelocityInps()
         if self.previousUpdateTimeS is not None:
             currentPeriodS = self.currentUpdateTimeS - self.previousUpdateTimeS
             self.actAccLogger.logNow((self.actualVelInps - self.previousVelInps) / currentPeriodS)
+
+        self.actTrapPState = TrapezoidProfile.State(self.getHeightIn(), self.actualVelInps)
 
         # default to not moving
         heightGoalIn = self.curTrapPState.position
@@ -356,9 +351,16 @@ class ElevatorControl(metaclass=Singleton):
 
         elevatorCommand = self.poseDirector.getElevatorCommand(elevatorCommand)
 
-        self.actTrapPState = TrapezoidProfile.State(self.getHeightIn(), self.actualVelInps)
 
-        self._setMotorPosAndFF()
+        #print(f"elevator {elevatorCommand.heightIn} {elevatorCommand.velocityInps}")
+        if elevatorCommand.heightIn is None and elevatorCommand.velocityInps == 0.0:
+            elevatorCommand.heightIn = heightGoalIn
+        elif elevatorCommand.heightIn is None and elevatorCommand.velocityInps > 0.0:
+            elevatorCommand.heightIn = TEST_ELEVATOR_RANGE_IN
+        else:
+            elevatorCommand.heightIn = 0
+
+        self.desTrapPState = TrapezoidProfile.State(elevatorCommand.heightIn, elevatorCommand.velocityInps)
 
         # Update motor closed-loop calibration
         if self.kP.isChanged():

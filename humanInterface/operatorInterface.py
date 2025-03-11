@@ -51,10 +51,11 @@ class OperatorInterface(metaclass=Singleton):
 
 
         # Logging
-        addLog("OI Elevator Pos Cmd", lambda: self.elevatorPosYCmd, "frac")
-        addLog("OI Elevator Pos In", lambda: self.getDesElevatorPosIn(), "in")
-        addLog("OI Arm Pos Cmd", lambda: self.armPosYCmd, "frac")
-        addLog("armPosYCmd", lambda: self.armPosYCmd, "frac")
+        addLog("OI/Elevator Pos Cmd", lambda: self.elevatorPosYCmd, "frac")
+        addLog("OI/Elevator Pos In", lambda: self.getDesElevatorPosIn(), "in")
+        addLog("OI/Arm Pos Cmd", lambda: self.armPosYCmd, "frac")
+        addLog("OI/armPosYCmd", lambda: self.armPosYCmd, "frac")
+        addLog("OI/elevArmCmdState", lambda: self.elevArmCmdState, "int")
 
 
     def update(self):
@@ -63,12 +64,12 @@ class OperatorInterface(metaclass=Singleton):
 
         if self.ctrl.isConnected():
             # Convert from  joystick sign/axis conventions to robot conventions
-            vYJoyRaw = self.ctrl.getLeftY() * -1
-            vYJoyRaw2 = self.ctrl.getRightY() * -1 # TODO xyzzy talk to Benjamin about a better name for this
+            leftYJoyRaw = self.ctrl.getLeftY() * -1
+            rightYJoyRaw = self.ctrl.getRightY() * -1 # TODO xyzzy talk to Benjamin about a better name for this
 
             # deadband
-            vYJoyWithDeadband = applyDeadband(vYJoyRaw, 0.15)
-            vYJoy2WithDeadband = applyDeadband(vYJoyRaw2, 0.15) # TODO xyzzy talk to Benjamin about a better name for this
+            vYJoyWithDeadband = applyDeadband(leftYJoyRaw, 0.15)
+            vYJoy2WithDeadband = applyDeadband(rightYJoyRaw, 0.15) # TODO xyzzy talk to Benjamin about a better name for this
 
             self.elevatorPosYCmd = vYJoyWithDeadband
             self.armPosYCmd = vYJoy2WithDeadband
