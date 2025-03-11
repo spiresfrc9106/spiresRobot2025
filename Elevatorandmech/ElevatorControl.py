@@ -31,6 +31,16 @@ class ElevatorDependentConstants:
                 "MAX_ELEV_ACCEL_INPS2": None,
             },
             RobotTypes.Spires2025: {
+                "HAS_ELEVATOR": False,
+                "ELEV_RM_CANID": 97,
+                "ELEV_LM_CANID": 98,
+                "ELEVATOR_RANGE_IN": 30, # xyzzy fix me up
+                "ELEV_GEARBOX_GEAR_RATIO": 3.0 / 1.0,
+                "ELEV_SPOOL_RADIUS_IN": 1.660 / 2.0,
+                "MAX_ELEV_VEL_INPS": 5.0,  # TODO xyzzy - talk to Micahel Vu - must be a units issue
+                "MAX_ELEV_ACCEL_INPS2": 5.0,
+            },
+            RobotTypes.Spires2025Sim: {
                 "HAS_ELEVATOR": True,
                 "ELEV_RM_CANID": 97,
                 "ELEV_LM_CANID": 98,

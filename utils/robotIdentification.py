@@ -13,6 +13,7 @@ RobotTypes = Enum('RobotTypes', [
     'TestBoard',
     'Spires2023',
     'Spires2025',
+    'Spires2025Sim',
     'SpiresMain',
     'SpiresPractice',
     'SpiresTestBoard',
@@ -31,8 +32,8 @@ class RobotIdentification(metaclass=Singleton):
         self.roboControl = wpilib.RobotController
         self.robotType = None
         self.serialFault = Fault("RoboRIO serial number not recognized")
-        self._configureValue()
         self.serialNumber = None
+        self._configureValue()
 
     def _configureValue(self):
 
@@ -40,7 +41,13 @@ class RobotIdentification(metaclass=Singleton):
         self.serialNumber = self._getRobotSerialNumber()
         print(f"self.roboControl.getSerialNumber()={self.serialNumber}")
 
-        if self.serialNumber == "030e2cb0":
+        if FRC_TEAM_NUMBER == 9106 and wpilib.TimedRobot.isSimulation():
+            #self.robotType = RobotTypes.Spires2023
+            #self.robotType = RobotTypes.Spires2025
+            #self.robotType = RobotTypes.Spires2025Sim
+            self.robotType = RobotTypes.SpiresTestBoard
+            #self.robotType = RobotTypes.SpiresRoboRioV1
+        elif self.serialNumber == "030e2cb0":
             #Test to see if the RoboRio serial number is the main/"Production" bot.
             self.robotType = RobotTypes.Main 
         elif self.serialNumber == "03064e3f" \
@@ -52,8 +59,7 @@ class RobotIdentification(metaclass=Singleton):
             self.robotType = RobotTypes.TestBoard
         elif self.serialNumber == "032430C5":
             self.robotType = RobotTypes.Spires2023
-        elif self.serialNumber == "032B1F4B" \
-            or FRC_TEAM_NUMBER == 9106 and wpilib.TimedRobot.isSimulation():
+        elif self.serialNumber == "032B1F4B":
             self.robotType = RobotTypes.Spires2025
         elif self.serialNumber == "032B1FBB":
             self.robotType = RobotTypes.SpiresTestBoard

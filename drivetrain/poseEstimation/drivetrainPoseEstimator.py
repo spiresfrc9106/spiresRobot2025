@@ -6,10 +6,7 @@ from wpimath.geometry import Pose2d, Rotation2d, Twist2d
 from wpimath.kinematics import SwerveModulePosition, SwerveModuleState
 from drivetrain.drivetrainPhysical import (
     kinematics,
-    ROBOT_TO_LEFT_CAM,
-    ROBOT_TO_RIGHT_CAM,
-    ROBOT_TO_FRONT_CAM,
-    ROBOT_TO_LIME_1,
+    CAMS,
 )
 from drivetrain.poseEstimation.drivetrainPoseTelemetry import DrivetrainPoseTelemetry
 from utils.faults import Fault
@@ -56,21 +53,11 @@ class DrivetrainPoseEstimator:
         self._gyroDisconFault = Fault("Gyroscope not sending data")
         self._curRawGyroAngle = Rotation2d()
 
-
-        ####CRUCIAL: the index of these lists must match for a given cam
-        self.cams = [
-            WrapperedPoseEstPhotonCamera("LEFT_CAM", ROBOT_TO_LEFT_CAM),
-            WrapperedPoseEstPhotonCamera("RIGHT_CAM", ROBOT_TO_RIGHT_CAM),
-            WrapperedPoseEstPhotonCamera("FRONT_CAM", ROBOT_TO_FRONT_CAM),
-            wrapperedLimilightCameraFactory("limelight", ROBOT_TO_LIME_1) #limelight-three
-        ]
-        # don't include "_"
-        self.posEstLogs = [
-            YTestForPosition("photonL"),
-            YTestForPosition("photonR"),
-            YTestForPosition("photonF"),
-            YTestForPosition("limeli1")
-        ]
+        self.cams = []
+        self.posEstLogs = []
+        for camConfig in CAMS:
+            self.cams.append(camConfig['CAM'])
+            self.posEstLogs.append(YTestForPosition(camConfig['POSE_EST_LOG_NAME']))
 
         self._camTargetsVisible = False
         self._useAprilTags = True

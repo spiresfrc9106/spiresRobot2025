@@ -1,34 +1,17 @@
+from dataclasses import dataclass
 import math
-import random
-from typing import Tuple
+
+from ntcore import NetworkTableInstance
 import wpilib
-from wpimath.estimator import SwerveDrive4PoseEstimator
-from wpimath.geometry import Pose2d, Rotation2d, Twist2d
-from wpimath.geometry import Pose3d, Rotation3d, Translation3d, Translation2d, Transform3d
-from wpimath.kinematics import SwerveModulePosition, SwerveModuleState
-from drivetrain.drivetrainPhysical import (
-    kinematics,
-    ROBOT_TO_LEFT_CAM,
-    ROBOT_TO_RIGHT_CAM,
-    ROBOT_TO_FRONT_CAM,
-)
-from drivetrain.poseEstimation.drivetrainPoseTelemetry import DrivetrainPoseTelemetry
-from utils.faults import Fault
+from wpimath.geometry import Pose2d, Rotation2d, Transform3d
+
 from utils.signalLogging import addLog
 from wrappers.wrapperedPoseEstPhotonCamera import WrapperedPoseEstPhotonCamera
 
 from sensors.limelight import Limelight
 
-from dataclasses import dataclass
-import wpilib
-from wpimath.units import feetToMeters, degreesToRadians
-from wpimath.geometry import Pose2d, Rotation2d
-from photonlibpy.photonCamera import PhotonCamera
 from photonlibpy.photonCamera import setVersionCheckEnabled
-from utils.fieldTagLayout import FieldTagLayout
 from utils.faults import Fault
-from ntcore import NetworkTableInstance
-
 
 @dataclass
 class LimelightCameraPoseObservation:

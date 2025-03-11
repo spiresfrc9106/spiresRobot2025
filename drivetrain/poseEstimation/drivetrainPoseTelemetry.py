@@ -6,7 +6,7 @@ from wpimath.geometry import Pose2d, Pose3d, Transform2d, Rotation2d
 from ntcore import NetworkTableInstance
 
 from utils.allianceTransformUtils import transform
-from drivetrain.drivetrainPhysical import ROBOT_TO_FRONT_CAM, ROBOT_TO_LEFT_CAM, ROBOT_TO_RIGHT_CAM
+from drivetrain.drivetrainPhysical import CAMS
 from drivetrain.drivetrainPhysical import  robotToModuleTranslations
 from wrappers.wrapperedPoseEstPhotonCamera import CameraPoseObservation
 
@@ -29,21 +29,14 @@ class DrivetrainPoseTelemetry:
 
         self.desPose = Pose2d()
 
-        self.leftCamPosePublisher = (
-            NetworkTableInstance.getDefault()
-            .getStructTopic("/LeftCamPose", Pose3d)
-            .publish()
-        )
-        self.rightCamPosePublisher = (
-            NetworkTableInstance.getDefault()
-            .getStructTopic("/RightCamPose", Pose3d)
-            .publish()
-        )
-        self.frontCamPosePublisher = (
-            NetworkTableInstance.getDefault()
-            .getStructTopic("/FrontCamPose", Pose3d)
-            .publish()
-        )
+        self.camPublishers = []
+        self.robotToCams = []
+
+        for camConfig in CAMS:
+            self.camPublishers.append(camConfig['PUBLISHER'])
+            self.robotToCams.append(camConfig['ROBOT_TO_CAM'])
+
+        self.camPublishersAndRobotToCams = zip(self.camPublishers, self.robotToCams)
 
         self.visionPoses = []
         self.modulePoses = []
@@ -89,9 +82,8 @@ class DrivetrainPoseTelemetry:
         self.field.getObject("visionObservations").setPoses(self.visionPoses)
         self.visionPoses = []
 
-        self.leftCamPosePublisher.set(Pose3d(estPose).transformBy(ROBOT_TO_LEFT_CAM))
-        self.rightCamPosePublisher.set(Pose3d(estPose).transformBy(ROBOT_TO_RIGHT_CAM))
-        self.frontCamPosePublisher.set(Pose3d(estPose).transformBy(ROBOT_TO_FRONT_CAM))
+        for publisher, robotToCam in self.camPublishersAndRobotToCams:
+            publisher.set(Pose3d(estPose).transformBy(robotToCam))
 
     def setCurAutoTrajectory(self, trajIn):
         """Display a specific trajectory on the robot Field2d

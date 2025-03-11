@@ -3,12 +3,16 @@ from wpimath.units import inchesToMeters
 from wpimath.system.plant import DCMotor
 from wpimath.geometry import Translation2d, Transform3d, Translation3d, Rotation3d
 from wpimath.kinematics import SwerveDrive4Kinematics
+
+from drivetrain.DrivetrainDependentConstants import DrivetrainDependentConstants
 from utils.units import lbsToKg
 from utils.units import deg2Rad
 from utils.units import in2m
 from utils.robotIdentification import RobotIdentification, RobotTypes
 from wrappers.wrapperedRevThroughBoreEncoder import WrapperedRevThroughBoreEncoder
-from drivetrain.DrivetrainDependentConstants import DrivetrainDependentConstants
+from wrappers.wrapperedLimelightCamera import wrapperedLimilightCameraFactory
+from wrappers.wrapperedPoseEstPhotonCamera import WrapperedPoseEstPhotonCamera
+from sensors.limelight import Limelight
 
 """
 Defines the physical dimensions and characteristics of the drivetrain
@@ -172,37 +176,9 @@ def wrapperedSwerveDriveAzmthEncoder(azmthEncoderPortIdx, moduleName, azmthOffse
         mountOffsetRad=azmthOffsetRad,
         dirInverted=inverted
     )
-	
-# Camera Mount Offsets
-# These are relative to the robot origin
-# which is in the center of the chassis on the ground
-ROBOT_TO_LEFT_CAM = Transform3d(
-    Translation3d(
-        inchesToMeters(3.7), inchesToMeters(13.8), inchesToMeters(7.4)  # X  # Y  # Z
-    ),
-    Rotation3d.fromDegrees(0, -30, 90.0),  # Roll  # Pitch  # Yaw
-)
 
-ROBOT_TO_RIGHT_CAM = Transform3d(
-    Translation3d(
-        inchesToMeters(3.7), inchesToMeters(-13.8), inchesToMeters(7.4)  # X  # Y  # Z
-    ),
-    Rotation3d.fromDegrees(0, -30, -90.0),  # Roll  # Pitch  # Yaw
-)
 
-ROBOT_TO_FRONT_CAM = Transform3d(
-    Translation3d(
-        inchesToMeters(14), inchesToMeters(2.75), inchesToMeters(9)  # X  # Y  # Z
-    ),
-    Rotation3d.fromDegrees(0.0, 3.0, 0.0),  # Roll  # Pitch  # Yaw
-)
-
-ROBOT_TO_LIME_1 = Transform3d(
-    Translation3d(
-        inchesToMeters(14), inchesToMeters(-8), inchesToMeters(8)  # X:0.3556  # Y:(-0.25)-0.00635  # Z:0.2032
-    ),
-    Rotation3d.fromDegrees(0.0, 11.0, 0.0),  # Roll  # Pitch  # Yaw
-)
+CAMS = drivetrainDepConstants["CAMS"]
 
 # Array of translations from robot's origin (center bottom, on floor) to the module's contact patch with the ground
 robotToModuleTranslations = []

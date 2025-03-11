@@ -36,6 +36,16 @@ class ArmDependentConstants:
                 "ABS_SENSOR_MOUNT_OFFSET_DEG": 0.0,
             },
             RobotTypes.Spires2025: {
+                "HAS_ARM": False,
+                "ARM_GEARBOX_GEAR_RATIO": 50.0 / 1.0,
+                "ARM_M_CANID": 99,  # xyzzy fix me
+                "MAX_ARM_POS_DEG": 90,
+                "MIN_ARM_POS_DEG": -90,
+                "MAX_ARM_VEL_DEGPS": 20,
+                "MAX_ARM_ACCEL_DEGPS2": 4,
+                "ABS_SENSOR_MOUNT_OFFSET_DEG": 0.0,
+            },
+            RobotTypes.Spires2025Sim: {
                 "HAS_ARM": True,
                 "ARM_GEARBOX_GEAR_RATIO": 50.0 / 1.0,
                 "ARM_M_CANID": 99,  # xyzzy fix me
