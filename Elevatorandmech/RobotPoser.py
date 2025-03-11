@@ -33,6 +33,7 @@ from positionSchemes.pickup_v1 import PickupV1
 from positionSchemes.place_L4_v1 import PlaceL4V1
 from utils.signalLogging import addLog
 from utils.singleton import Singleton
+from AutoSequencerV2.mode import Mode, DesiredAutonAction
 
 class PoseDirector(metaclass=Singleton):
 
@@ -48,6 +49,8 @@ class PoseDirector(metaclass=Singleton):
         self.getElevatorCommand = lambda curCommand :  self.currentPositionScheme.getElevatorCommand(curCommand)
         self.getArmCommand = lambda curCommand : self.currentPositionScheme.getArmCommand(curCommand)
         addLog("RP/controllerState", lambda: self.controllerState, "int")
+
+        self.mode = Mode()
 
     def update(self):
         if self._isControllerStateChanging():
@@ -90,6 +93,14 @@ class PoseDirector(metaclass=Singleton):
                 return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator)  # todo fix me
             case ElevArmCmdState.L4:
                 return PlaceL4V1(self.arm, self.driveTrain, self.elevator)  # todo fix me
+            case ElevArmCmdState.AUTON_MODE:
+                desiredAction = mode.getDesiredAutonAction()
+                if desiredAction == DesiredAutonAction.PLACE_ON_L4:
+                    for i in range(100):
+                        print("YAVINNNNNN")
+                elif desiredAction == DesiredAutonAction.DO_NOTHING:
+                    pass
             case _:
                 return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator)  # todo fix me
+
 

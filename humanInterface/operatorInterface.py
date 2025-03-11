@@ -21,6 +21,7 @@ class ElevArmCmdState(IntEnum):
     L2 = 5
     L3 = 6
     L4 = 7
+    AUTON_MODE = 8
     UNINITIALIZED = -1
 
 class OperatorInterface(metaclass=Singleton):
@@ -59,8 +60,10 @@ class OperatorInterface(metaclass=Singleton):
 
 
     def update(self):
-
         # value of contoller buttons
+        print(self.elevArmCmdState)
+        if self.elevArmCmdState == ElevArmCmdState.AUTON_MODE:
+            pass
 
         if self.ctrl.isConnected():
             # Convert from  joystick sign/axis conventions to robot conventions
@@ -70,6 +73,7 @@ class OperatorInterface(metaclass=Singleton):
             # deadband
             vYJoyWithDeadband = applyDeadband(leftYJoyRaw, 0.15)
             vYJoy2WithDeadband = applyDeadband(rightYJoyRaw, 0.15) # TODO xyzzy talk to Benjamin about a better name for this
+
 
             self.elevatorPosYCmd = vYJoyWithDeadband
             self.armPosYCmd = vYJoy2WithDeadband
@@ -90,7 +94,7 @@ class OperatorInterface(metaclass=Singleton):
                 self.elevArmCmdState = ElevArmCmdState.L3
             elif self.ctrl.getYButton():
                 self.elevArmCmdState = ElevArmCmdState.L4
-            else:
+            elif not self.elevArmCmdState == ElevArmCmdState.AUTON_MODE:
                 self.elevArmCmdState = ElevArmCmdState.VEL_CONTROL
         else:
             # If the joystick is unplugged, pick safe-state commands and raise a fault
@@ -108,5 +112,14 @@ class OperatorInterface(metaclass=Singleton):
 
     def getElevArmCmdState(self)->ElevArmCmdState:
         return self.elevArmCmdState
+
+    def setToAutonomousCmdState(self):
+        self.elevArmCmdState = ElevArmCmdState.AUTON_MODE
+
+    def setToVelocityCmdState(self):
+        self.elevArmCmdState = ElevArmCmdState.VEL_CONTROL
+
+    def setToPlungeCmdState(self):
+        self.elevArmCmdState = ElevArmCmdState.PLUNGE
 
 

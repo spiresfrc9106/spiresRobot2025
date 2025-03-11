@@ -152,6 +152,8 @@ class MyRobot(wpilib.TimedRobot):
         if elevDepConstants['HAS_ELEVATOR']:
             self.elev.initialize()
 
+        self.oInt.setToAutonomousCmdState()
+
     def autonomousPeriodic(self):
 
         self.autoSequencer.update()
@@ -193,6 +195,8 @@ class MyRobot(wpilib.TimedRobot):
 
         if elevDepConstants['HAS_ELEVATOR']:
             self.elev.initialize()
+
+        self.oInt.setToVelocityCmdState()
 
     def teleopPeriodic(self):
         # TODO - this is technically one loop delayed, which could induce lag
@@ -259,6 +263,8 @@ class MyRobot(wpilib.TimedRobot):
 
         if elevDepConstants['HAS_ELEVATOR'] and self.elev is not None:
             self.elev.disable()
+
+        self.oInt.setToVelocityCmdState()
 
     #########################################################
     ## Test-Specific init and update

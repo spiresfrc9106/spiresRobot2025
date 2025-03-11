@@ -2,6 +2,7 @@ from wpimath.geometry import Pose2d
 from wpilib import DriverStation
 from AutoSequencerV2.modeList import ModeList
 from AutoSequencerV2.builtInModes.doNothingMode import DoNothingMode
+from AutoSequencerV2.builtInModes.placeOnL4 import PlaceOnL4
 from AutoSequencerV2.builtInModes.waitMode import WaitMode
 from AutoSequencerV2.sequentialCommandGroup import SequentialCommandGroup
 from Autonomous.modes.driveOut import DriveOut
@@ -24,6 +25,7 @@ class AutoSequencer(metaclass=Singleton):
         # Create a list of every autonomous mode we want
         self.mainModeList = ModeList("Main")
         self.mainModeList.addMode(DoNothingMode())
+        self.mainModeList.addMode(PlaceOnL4())
         #right now, DriveOut is all commented out, so we don't need to add it to the list. 
         #self.mainModeList.addMode(DriveOut())
 
