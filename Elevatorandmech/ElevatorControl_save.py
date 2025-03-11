@@ -17,8 +17,7 @@ from utils.units import sign
 from utils.robotIdentification import RobotTypes
 from wrappers.wrapperedSparkMax import WrapperedSparkMax
 
-TEST_ELEVATOR_RANGE_IN = 5.0
-ELEV_HEIGHT_ABOVE_GROUND_IN = 15.25
+TEST_ELEVATOR_RANGE_IN = 5.2
 
 class ElevatorDependentConstants:
     def __init__(self):
@@ -380,6 +379,18 @@ class ElevatorControl(metaclass=Singleton):
         self.previousVelInps = self.actualVelInps
         self.previousUpdateTimeS = self.currentUpdateTimeS
 
+        # FOR ELEVATOR AND ARM:
+        # set height to be min height for elev; arm should power up from where it was last
+        self.setHeightGoal(self.lowestHeightIn)
+        # use joystick for velocity control over position control
+
+
+    # when velocity is 0, go to current position (create a new method)
+    def velZero(self, velocityGoalInps: float) -> None:
+        if velocityGoalInps or self.curTrapPState.velocity == 0:
+            heightGoalIn = self.curTrapPState.position
+            self._perhapsWeHaveANewRangeCheckedDesiredState(newDesHeightIn=heightGoalIn, newDesVelocityInps=0)
+
     # API to set current height goal
     def setHeightGoal(self, heightGoalIn:float) -> None:
         self._perhapsWeHaveANewRangeCheckedDesiredState(newDesHeightIn=heightGoalIn, newDesVelocityInps = 0.0)
@@ -387,7 +398,6 @@ class ElevatorControl(metaclass=Singleton):
     # todo make an new API function:
     def setHeightVelocityGoal(self, heightGoalIn:float, velocityGoalInps:float) -> None:
         self._perhapsWeHaveANewRangeCheckedDesiredState(newDesHeightIn=heightGoalIn, newDesVelocityInps=velocityGoalInps)
-
 
     # API to confirm we are oK to be at a height other than L1
     def setSafeToLeaveL1(self, safe:bool) -> None:
