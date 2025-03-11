@@ -185,7 +185,7 @@ class ArmControl(metaclass=Singleton):
         self.stateNowLogger = getNowLogger(f"{self.name}/stateNow", int)
         self.stateNowLogger.logNow(self.state)
         addLog(f"{self.name}/stopped", lambda: self.stopped, "bool")
-        addLog(f"{self.name}/act_pos_"deg, lambda: self.actTrapPState.position, "deg")
+        addLog(f"{self.name}/act_pos_deg", lambda: self.actTrapPState.position, "deg")
         addLog(f"{self.name}/act_vel_degps", lambda: self.actTrapPState.velocity, "degps")
         self.actAccLogger = getNowLogger(f"{self.name}/act acceleration", "degps2")
         addLog(f"{self.name}/curProfile_pos_deg", lambda: self.curTrapPState.position, "deg")
