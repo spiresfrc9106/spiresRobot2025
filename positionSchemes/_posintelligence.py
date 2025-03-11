@@ -96,10 +96,11 @@ class PlacementIntelligence():
         edge_to_center_d = front_half_width + self.indivBumperWidth
         safe_fudge_factor = 1.01
         fb_offset = edge_to_center_d*safe_fudge_factor
-        pos = YPose(bestTagLocation)
-        bestTagLocation = Pose2d(pos.x, pos.y, (deg2Rad(180)-pos.t))
+        # THIS SENDS THE ROBOT TO THE LOCATION OF THE APRIL TAG, NOT WITH ANY OFFSETS!!!
         newTargetPose = self.adjustLocationRobotRelative(bestTagLocation, 0, 0)
-        return newTargetPose
+        pos = YPose(newTargetPose)
+        bestTagLocation = Pose2d(pos.x, pos.y, ((math.pi+pos.t) % (2*math.pi)))
+        return bestTagLocation
 
     def decidePlacementTag(self):
         tagLocations = {}
