@@ -39,14 +39,14 @@ class PickupIntelligence:
         x = YPose(og_pose).x
         y = YPose(og_pose).y
         t = YPose(og_pose).t
-        ang_rad = t
+        ang_rad = (t + (2*math.pi)*2) % (2*math.pi)
         # first we'll do f/b shift.
         h = abs(fb_shift)
         if h == 0:
             sign = 0
         else:
             sign = fb_shift/h
-        t = (t + (2*math.pi)) % (2*math.pi)
+        t = (t + (2*math.pi)*2) % (2*math.pi)
         if deg2Rad(90) < t < deg2Rad(180) or deg2Rad(270) < t < deg2Rad(359.9):
             sign = sign * (-1)
         x_shift = sign * h * math.cos(deg2Rad(90)-ang_rad)

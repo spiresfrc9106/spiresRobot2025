@@ -44,8 +44,8 @@ class RobotIdentification(metaclass=Singleton):
         if FRC_TEAM_NUMBER == 9106 and wpilib.TimedRobot.isSimulation():
             #self.robotType = RobotTypes.Spires2023
             #self.robotType = RobotTypes.Spires2025
-            self.robotType = RobotTypes.Spires2025Sim
-            #self.robotType = RobotTypes.SpiresTestBoard
+            #self.robotType = RobotTypes.Spires2025Sim
+            self.robotType = RobotTypes.SpiresTestBoard
             #self.robotType = RobotTypes.SpiresRoboRioV1
         elif self.serialNumber == "030e2cb0":
             #Test to see if the RoboRio serial number is the main/"Production" bot.

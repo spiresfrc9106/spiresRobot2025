@@ -47,6 +47,7 @@ class MyRobot(wpilib.TimedRobot):
         wpilib.LiveWindow.disableAllTelemetry()
         self.webserver = Webserver()
 
+        self.driveTrain = None
         if drivetrainDepConstants['HAS_DRIVETRAIN']:
             print(f"drivetrainDepConstants['HAS_DRIVETRAIN']={drivetrainDepConstants['HAS_DRIVETRAIN']}")
             self.driveTrain = DrivetrainControl()
