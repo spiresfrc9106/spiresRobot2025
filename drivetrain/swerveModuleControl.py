@@ -69,17 +69,17 @@ class SwerveModuleControl:
         """
         print(f"{moduleName} azmthOffset={rad2Deg(azmthOffset):7.1f} deg")
         self.wheelMotor = wheelMotorWrapper(
-            wheelMotorCanID, moduleName + "_wheel", False
+            wheelMotorCanID, moduleName + "/wheelMotor", False
         )
         self.azmthMotor = WrapperedSparkMax(
-            azmthMotorCanID, moduleName + "_azmth", True
+            azmthMotorCanID, moduleName + "/azmthMotor", True
         )
 
         # Note the azimuth encoder inversion should be fixed, based on the physical design of the encoder itself,
         # plus the swerve module physical construction. It might need to be tweaked here though if we change 
         # module brands or sensor brands.
         self.azmthEnc = wrapperedSwerveDriveAzmthEncoder(
-            azmthEncoderPortIdx, moduleName + "_azmthEnc", azmthOffset, invertAzmthEncoder
+            azmthEncoderPortIdx, moduleName + "/azmthEnc", azmthOffset, invertAzmthEncoder
         )
 
         self.wheelMotor.setInverted(invertWheelMotor)

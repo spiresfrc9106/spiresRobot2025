@@ -59,13 +59,13 @@ class DriverInterface(metaclass=Singleton):
         addLog("ytest_standard_dev_t", lambda: self.tempStdDevT, "")
 
         # Logging
-        addLog("DI FwdRev Cmd", lambda: self.velXCmd, "mps")
-        addLog("DI Strafe Cmd", lambda: self.velYCmd, "mps")
-        addLog("DI Rot Cmd", lambda: self.velTCmd, "radps")
-        addLog("DI gyroResetCmd", lambda: self.gyroResetCmd, "bool")
-        addLog("DI autoDriveToSpeaker", lambda: self.autoDriveToSpeaker, "bool")
-        addLog("DI autoDriveToPickup", lambda: self.autoDriveToPickup, "bool")
-        addLog("DI motorTestCmd", lambda: self.motorTestCmd, "frac")
+        addLog("DI/FwdRev Cmd", lambda: self.velXCmd, "mps")
+        addLog("DI/Strafe Cmd", lambda: self.velYCmd, "mps")
+        addLog("DI/Rot Cmd", lambda: self.velTCmd, "radps")
+        addLog("DI/gyroResetCmd", lambda: self.gyroResetCmd, "bool")
+        addLog("DI/autoDriveToSpeaker", lambda: self.autoDriveToSpeaker, "bool")
+        addLog("DI/autoDriveToPickup", lambda: self.autoDriveToPickup, "bool")
+        addLog("DI/motorTestCmd", lambda: self.motorTestCmd, "frac")
 
     def update(self):
         # value of contoller buttons

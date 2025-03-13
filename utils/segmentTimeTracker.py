@@ -26,15 +26,15 @@ class SegmentTimeTracker:
         self.numLoops = 0
         self.numLoopsMod = self.numLoops
         self.trackingEnabled = False
-        addLog("LoopPeriod", lambda: (self.curPeriod * 1000.0), "ms")
-        addLog("LoopDuration", lambda: (self.curLoopExecDur * 1000.0), "ms")
+        addLog("loop/Period", lambda: (self.curPeriod * 1000.0), "ms")
+        addLog("loop/DurationA", lambda: (self.curLoopExecDur * 1000.0), "ms")
         # Logging loopEndTime helps when aligning events in graphed plots with netconsole messages by time stamps.
-        addLog("LoopEndTime", lambda: (self.loopEndTime * 1000.0), "ms")
-        addLog("LoopCount", lambda: (self.numLoops), "count")
-        addLog("LoopCountMod", lambda: (self.numLoopsMod), "count")
-        self.loopDurationLogger = getNowLogger("LoopDuration", "ms")
-        self.loopOverRunCountLogger = getNowLogger("LoopOverRunCount", "count")
-        self.loopDurationSmoothLogger = getNowLogger("LoopDurationSmooth", "ms")
+        addLog("loop/EndTime", lambda: (self.loopEndTime * 1000.0), "ms")
+        addLog("loop/Count", lambda: (self.numLoops), "count")
+        addLog("loop/CountMod", lambda: (self.numLoopsMod), "count")
+        self.loopDurationLogger = getNowLogger("loop/DurationB", "ms")
+        self.loopOverRunCountLogger = getNowLogger("loop/OverRunCount", "count")
+        self.loopDurationSmoothLogger = getNowLogger("loop/DurationSmooth", "ms")
 
     def start(self):
         """

@@ -4,19 +4,19 @@ from utils.signalLogging import sigNameToNT4TopicName
 
 # Utility signal name calculation functions
 def getAzmthDesTopicName(modName):
-    return f"DtModule_{modName}_azmthDes"
+    return f"{modName}/module/azmthDes"
 
 
 def getAzmthActTopicName(modName):
-    return f"DtModule_{modName}_azmthAct"
+    return f"{modName}/module/azmthAct"
 
 
 def getSpeedDesTopicName(modName):
-    return f"DtModule_{modName}_speedDes"
+    return f"{modName}/module/speedDes"
 
 
 def getSpeedActTopicName(modName):
-    return f"DtModule_{modName}_speedAct"
+    return f"{modName}/module/speedAct"
 
 
 # Private helper class: Describes a set of topics associated with one module
@@ -31,6 +31,12 @@ class _ModuleTopicSet:
         self.speedDesTopic = sigNameToNT4TopicName(getSpeedDesTopicName(modName))
         self.speedActTopic = sigNameToNT4TopicName(getSpeedActTopicName(modName))
         self.modIdx = modIdx
+
+        #print(f'subscriptionString="{self.azmthDesTopic}"')
+        #print(f'subscriptionString="{self.azmthActTopic}"')
+        #print(f'subscriptionString="{self.speedDesTopic}"')
+        #print(f'subscriptionString="{self.speedActTopic}"')
+
 
     def getSubscriptionStrings(self):
         retStr = ""

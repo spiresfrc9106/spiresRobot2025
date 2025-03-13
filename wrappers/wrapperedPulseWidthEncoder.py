@@ -25,7 +25,7 @@ class WrapperedPulseWidthEncoder:
         minAcceptableFreqHz,
     ):
         self.dutyCycle = DutyCycle(DigitalInput(port))
-        self.name = f"Encoder_{name}"
+        self.name = f"{name}/absEncoder"
         self.disconFault = Fault(f"{self.name} DIO port {port} disconnected")
         self.mountOffsetCal = Calibration(
             self.name + "_mountOffset", mountOffsetRad, "rad"
@@ -41,9 +41,9 @@ class WrapperedPulseWidthEncoder:
         self.freq = 0
         self.pulseTime = 0
 
-        addLog(f"{self.name}_freq", lambda: self.freq, "Hz")
-        addLog(f"{self.name}_pulseTime", lambda: self.pulseTime, "sec")
-        addLog(f"{self.name}_angle", lambda: self.curAngleRad, "rad")
+        addLog(f"{self.name}/encoder_freq", lambda: self.freq, "Hz")
+        addLog(f"{self.name}/pulseTime", lambda: self.pulseTime, "sec")
+        addLog(f"{self.name}/angle", lambda: self.curAngleRad, "rad")
 
     def update(self):
         """Return the raw angle reading from the sensor in radians"""
