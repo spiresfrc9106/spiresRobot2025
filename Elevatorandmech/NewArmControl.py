@@ -48,9 +48,9 @@ class ArmDependentConstants:
                 "ARM_M_INVERTED": False,
                 "ARM_M_CURRENT_LIMIT_A": 40,
                 "MAX_ARM_POS_DEG": 80,
-                "MIN_ARM_POS_DEG": -90,
-                "MAX_ARM_VEL_DEGPS": 180,
-                "MAX_ARM_ACCEL_DEGPS2": 720,
+                "MIN_ARM_POS_DEG": -92,
+                "MAX_ARM_VEL_DEGPS": 90, # Was 180
+                "MAX_ARM_ACCEL_DEGPS2": 180, # Was 720
                 "ABS_SENSOR_MOUNT_OFFSET_DEG": 160.0,
                 "ABS_SENSOR_INVERTED": False,
             },
@@ -61,9 +61,9 @@ class ArmDependentConstants:
                 "ARM_M_INVERTED": True,
                 "ARM_M_CURRENT_LIMIT_A": 5,
                 "MAX_ARM_POS_DEG": 90,
-                "MIN_ARM_POS_DEG": -90,
-                "MAX_ARM_VEL_DEGPS": 20,
-                "MAX_ARM_ACCEL_DEGPS2": 4,
+                "MIN_ARM_POS_DEG": -92,
+                "MAX_ARM_VEL_DEGPS": 90,
+                "MAX_ARM_ACCEL_DEGPS2": 180,
                 "ABS_SENSOR_MOUNT_OFFSET_DEG": 0.0,
                 "ABS_SENSOR_INVERTED": False,
             },
@@ -136,16 +136,16 @@ class ArmControl(metaclass=Singleton):
 
         self.poseDirector = PoseDirector()
 
-        self.manAdjMaxVoltage = Calibration(name="Arm Manual Adj Max Voltage", default=1.0, units="V")
+        self.manAdjMaxVoltage = Calibration(name=f"{self.name} Manual Adj Max Voltage", default=1.0, units="V")
 
         # Arm Motors
-        self.motor = WrapperedSparkMax(ARM_M_CANID, "ArmMotor", brakeMode=True,
+        self.motor = WrapperedSparkMax(ARM_M_CANID, f"{self.name}/motor", brakeMode=True,
                                        currentLimitA=int(ARM_M_CURRENT_LIMIT_A))
         motorIsInverted = ARM_M_INVERTED
         self.motor.setInverted(motorIsInverted)
 
         # Rev Relative Encoder
-        self.encoder = WrapperedRevThroughBoreEncoder(port=9, name="ArmRevAbsEncoder",
+        self.encoder = WrapperedRevThroughBoreEncoder(port=9, name=f"{self.name}",
                                                       mountOffsetRad=math.radians(ABS_SENSOR_MOUNT_OFFSET_DEG),
                                                       dirInverted=ABS_SENSOR_INVERTED)
 
