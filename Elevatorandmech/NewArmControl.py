@@ -32,51 +32,66 @@ class ArmDependentConstants:
                 "HAS_ARM": False,
                 "ARM_GEARBOX_GEAR_RATIO": 50.0 / 1.0,
                 "ARM_M_CANID": None,
+                "ARM_M_INVERTED": False,
+                "ARM_M_CURRENT_LIMIT_A": 5,
                 "MAX_ARM_POS_DEG": 90,
                 "MIN_ARM_POS_DEG": -90,
                 "MAX_ARM_VEL_DEGPS": 20,
                 "MAX_ARM_ACCEL_DEGPS2": 4,
                 "ABS_SENSOR_MOUNT_OFFSET_DEG": 0.0,
+                "ABS_SENSOR_INVERTED": True,
             },
             RobotTypes.Spires2025: {
-                "HAS_ARM": False,
+                "HAS_ARM": True,
                 "ARM_GEARBOX_GEAR_RATIO": 50.0 / 1.0,
-                "ARM_M_CANID": 99,  # xyzzy fix me
-                "MAX_ARM_POS_DEG": 90,
+                "ARM_M_CANID": 23,
+                "ARM_M_INVERTED": False,
+                "ARM_M_CURRENT_LIMIT_A": 40,
+                "MAX_ARM_POS_DEG": 80,
                 "MIN_ARM_POS_DEG": -90,
-                "MAX_ARM_VEL_DEGPS": 20,
-                "MAX_ARM_ACCEL_DEGPS2": 4,
-                "ABS_SENSOR_MOUNT_OFFSET_DEG": 0.0,
+                "MAX_ARM_VEL_DEGPS": 180,
+                "MAX_ARM_ACCEL_DEGPS2": 720,
+                "ABS_SENSOR_MOUNT_OFFSET_DEG": 160.0,
+                "ABS_SENSOR_INVERTED": False,
             },
             RobotTypes.Spires2025Sim: {
                 "HAS_ARM": True,
                 "ARM_GEARBOX_GEAR_RATIO": 50.0 / 1.0,
-                "ARM_M_CANID": 27,  # xyzzy fix me
+                "ARM_M_CANID": 23,
+                "ARM_M_INVERTED": True,
+                "ARM_M_CURRENT_LIMIT_A": 5,
                 "MAX_ARM_POS_DEG": 90,
                 "MIN_ARM_POS_DEG": -90,
                 "MAX_ARM_VEL_DEGPS": 20,
                 "MAX_ARM_ACCEL_DEGPS2": 4,
                 "ABS_SENSOR_MOUNT_OFFSET_DEG": 0.0,
+                "ABS_SENSOR_INVERTED": False,
             },
             RobotTypes.SpiresTestBoard: {
                 "HAS_ARM": True,
                 "ARM_GEARBOX_GEAR_RATIO": 5.0 / 1.0,
                 "ARM_M_CANID": 18,
+                "ARM_M_INVERTED": True,
+                "ARM_M_CURRENT_LIMIT_A": 5,
                 "MAX_ARM_POS_DEG": 90,
                 "MIN_ARM_POS_DEG": -90,
                 "MAX_ARM_VEL_DEGPS": 90,
                 "MAX_ARM_ACCEL_DEGPS2": 90,
                 "ABS_SENSOR_MOUNT_OFFSET_DEG": -90.0,
+                "ABS_SENSOR_INVERTED": True,
             },
             RobotTypes.SpiresRoboRioV1: {
                 "HAS_ARM": True,
                 "ARM_GEARBOX_GEAR_RATIO": 5.0 / 1.0,
                 "ARM_M_CANID": 18,
+                "ARM_M_INVERTED": True,
+                "ARM_M_CURRENT_LIMIT_A": 5,
                 "MAX_ARM_POS_DEG": 90,
                 "MIN_ARM_POS_DEG": -90,
                 "MAX_ARM_VEL_DEGPS": 90,
                 "MAX_ARM_ACCEL_DEGPS2": 90,
                 "ABS_SENSOR_MOUNT_OFFSET_DEG": -90.0,
+                "ABS_SENSOR_INVERTED": True,
             },
         }
 
@@ -86,10 +101,15 @@ class ArmDependentConstants:
 
 armDepConstants = ArmDependentConstants().get()
 
+ARM_M_CANID = armDepConstants['ARM_M_CANID']
+ARM_M_INVERTED = armDepConstants['ARM_M_INVERTED']
+ARM_M_CURRENT_LIMIT_A = armDepConstants['ARM_M_CURRENT_LIMIT_A']
 ARM_GEARBOX_GEAR_RATIO = armDepConstants['ARM_GEARBOX_GEAR_RATIO']
 ABS_SENSOR_MOUNT_OFFSET_DEG = armDepConstants['ABS_SENSOR_MOUNT_OFFSET_DEG']
-#TODO it would be interesting to try using above offset but in rads
-# in defining the Abs encoder as the encoder does have the option for mount offset
+ABS_SENSOR_INVERTED = armDepConstants['ABS_SENSOR_INVERTED']
+
+
+#TODO Perhaps use the absolute encoder offset
 
 MAX_ARM_POS_DEG = armDepConstants['MAX_ARM_POS_DEG']
 MIN_ARM_POS_DEG = armDepConstants['MIN_ARM_POS_DEG']
@@ -119,13 +139,15 @@ class ArmControl(metaclass=Singleton):
         self.manAdjMaxVoltage = Calibration(name="Arm Manual Adj Max Voltage", default=1.0, units="V")
 
         # Arm Motors
-        self.motor = WrapperedSparkMax(armDepConstants['ARM_M_CANID'], "ArmMotor", brakeMode=False, currentLimitA=5)
-        MotorIsInverted = True
-        self.motor.setInverted(MotorIsInverted)
+        self.motor = WrapperedSparkMax(ARM_M_CANID, "ArmMotor", brakeMode=True,
+                                       currentLimitA=int(ARM_M_CURRENT_LIMIT_A))
+        motorIsInverted = ARM_M_INVERTED
+        self.motor.setInverted(motorIsInverted)
 
         # Rev Relative Encoder
-        self.encoder = WrapperedRevThroughBoreEncoder(port=9, name="ArmRevAbsEncoder", mountOffsetRad=0,
-                                                      dirInverted=True)
+        self.encoder = WrapperedRevThroughBoreEncoder(port=9, name="ArmRevAbsEncoder",
+                                                      mountOffsetRad=math.radians(ABS_SENSOR_MOUNT_OFFSET_DEG),
+                                                      dirInverted=ABS_SENSOR_INVERTED)
 
         # FF and proportional gain constants
         self.kV = Calibration(name="Arm kV", default=0.02, units="V/rps")
@@ -231,8 +253,8 @@ class ArmControl(metaclass=Singleton):
     #return the angle of the arm as measured by the absolute sensor in angles
     def getAbsAngleDeg(self) -> float:
         angleAbsSenDeg = math.degrees(self.encoder.getAngleRad())
-        return angleAbsSenDeg - ABS_SENSOR_MOUNT_OFFSET_DEG
-
+        #return angleAbsSenDeg - ABS_SENSOR_MOUNT_OFFSET_DEG
+        return angleAbsSenDeg
 
     def getRelToAbsoluteSensorOffsetDeg(self) -> float:
         relAngleWithNoOffsetDeg = self.getRelAngleWithNoOffsetDeg()
@@ -270,6 +292,7 @@ class ArmControl(metaclass=Singleton):
         # when we re-initialize tell motor to stay where it is at.
         self.motor.setVoltage(0)
         vFF  = 0
+
         self.motor.setPosCmd(self.motor.getMotorPositionRad(), vFF)
 
         self._changeState(ArmStates.OPERATING)

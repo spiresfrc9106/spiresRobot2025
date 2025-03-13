@@ -37,7 +37,7 @@ class ElevatorDependentConstants:
                 "HAS_ELEVATOR": True,
                 "ELEV_FM_CANID": 12,
                 "ELEV_BM_CANID": 16,
-                "ELEVATOR_RANGE_IN": 40, # xyzzy fix me up
+                "ELEVATOR_RANGE_IN": 47,
                 "ELEV_GEARBOX_GEAR_RATIO": 3.0 / 1.0,
                 "ELEV_SPOOL_RADIUS_IN": 1.660 / 2.0,
                 "MAX_ELEV_VEL_INPS": 20.0,  # TODO xyzzy - talk to Micahel Vu - must be a units issue
@@ -124,11 +124,11 @@ class ElevatorControl(metaclass=Singleton):
         self.desTrapPState = TrapezoidProfile.State(0,0) # Height 0 in, Velocity 0 in per s
 
         # Elevator Motors
-        self.fMotor = WrapperedSparkMax(ELEV_FM_CANID, "ElevatorMotorFront", brakeMode=False, currentLimitA=40)
+        self.fMotor = WrapperedSparkMax(ELEV_FM_CANID, "ElevatorMotorFront", brakeMode=True, currentLimitA=40)
         fMotorIsInverted = False
         self.fMotor.setInverted(fMotorIsInverted)
         if ELEV_BM_CANID is not None:
-            self.bMotor = WrapperedSparkMax(ELEV_BM_CANID, "ElevatorMotorBack", brakeMode=False, currentLimitA=40)
+            self.bMotor = WrapperedSparkMax(ELEV_BM_CANID, "ElevatorMotorBack", brakeMode=True, currentLimitA=40)
             self.bMotor.setFollow(ELEV_FM_CANID, invert=not fMotorIsInverted)
         else:
             self.bMotor = None
