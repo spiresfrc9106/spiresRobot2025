@@ -6,24 +6,30 @@ from dashboardWidgets.icon import Icon
 from dashboardWidgets.text import Text
 from dashboardWidgets.fieldPose import FieldPose
 from dashboardWidgets.lineGauge import LineGauge
+from dashboardWidgets.circularGauge import CircularGauge
 from dashboardWidgets.progressBar import ProgressBar
 from utils.faults import FaultWrangler
 from utils.signalLogging import addLog
 from webserver.webserver import Webserver
+from dashboardWidgets.camera import Camera
 
 
 class Dashboard:
     def __init__(self):
         webServer = Webserver()
-        webServer.addDashboardWidget(Icon(45, 45, "/SmartDashboard/isRedIconState", "#FF0000", "allianceRed"))
-        webServer.addDashboardWidget(Icon(55, 45, "/SmartDashboard/isBlueIconState", "#0000FF", "allianceBlue"))
-        webServer.addDashboardWidget(Icon(65, 45, "/SmartDashboard/PE Vision Targets Seen", "#00FF00", "vision"))
 
+        # state, errors, field, auton1, auton2, left, right, arm, elev, chain, scheme, progress, front l, front r, back
+
+        # 0 state
+        webServer.addDashboardWidget(Text(0, 0, "/SmartDashboard/ytest_position_final_x"))
+
+        # 1 errors
         webServer.addDashboardWidget(Text(50, 75, "/SmartDashboard/faultDescription"))
-        webServer.addDashboardWidget(SwerveState(85, 15))
-        webServer.addDashboardWidget(FieldPose(20, 40))
-        webServer.addDashboardWidget(ProgressBar(20,60,"/SmartDashboard/ytest_position_final_x", 0, 20, 0, 20))
 
+        # 2 field pose
+        webServer.addDashboardWidget(FieldPose(20, 40))
+
+        # 3 auton1
         webServer.addDashboardWidget(
             AutoChooser(
                 50,
@@ -32,6 +38,7 @@ class Dashboard:
                 AutoSequencer().getDelayModeList(),
             )
         )
+        # 4 auton2
         webServer.addDashboardWidget(
             AutoChooser(
                 50,
@@ -41,19 +48,45 @@ class Dashboard:
             )
         )
 
-        # Add logging for things that don't come from anywhere else
-        addLog("isRedIconState",  
-               lambda: (
-            Icon.kON if wpilib.DriverStation.getAlliance() == wpilib.DriverStation.Alliance.kRed 
-            else Icon.kOFF)
-        )
+        # 5 left
+        webServer.addDashboardWidget(Icon(45, 45, "/SmartDashboard/isRedIconState", "#b942f5", "reefLeft"))
+        # 6 right
+        webServer.addDashboardWidget(Icon(55, 45, "/SmartDashboard/isBlueIconState", "#b942f5", "reefRight"))
 
-        addLog("isBlueIconState", 
-            lambda: (
-            Icon.kON if wpilib.DriverStation.getAlliance() == wpilib.DriverStation.Alliance.kBlue 
-            else Icon.kOFF)
-        )
+        # 7 arm
+        webServer.addDashboardWidget(CircularGauge(70, 80, "/SmartDashboard/ytest_position_final_x", 0, 20, 0, 20))
+        # 8 elev
+        webServer.addDashboardWidget(CircularGauge(20, 80, "/SmartDashboard/ytest_position_final_x", 0, 20, 0, 20))
+        # 9 chain
+        webServer.addDashboardWidget(CircularGauge(20, 80, "/SmartDashboard/ytest_position_final_x", 0, 20, 0, 20))
+        # 10 scheme progress
+        webServer.addDashboardWidget(ProgressBar(20, 80, "/SmartDashboard/ytest_position_final_x", 0, 20, 0, 20))
+
+        # 11 cam1: front_l
+        webServer.addDashboardWidget(Camera(10, 20, ""))
+        # 12 cam2: front_r
+        webServer.addDashboardWidget(Camera(10, 20, ""))
+        # 13 cam3: back
+        webServer.addDashboardWidget(Camera(10, 20, ""))
+
+        # extra stuff.
+        # webServer.addDashboardWidget(Icon(45, 45, "/SmartDashboard/isRedIconState", "#FF0000", "allianceRed"))
+        # webServer.addDashboardWidget(Icon(55, 45, "/SmartDashboard/isBlueIconState", "#0000FF", "allianceBlue"))
+        # webServer.addDashboardWidget(Icon(65, 45, "/SmartDashboard/PE Vision Targets Seen", "#00FF00", "vision"))
+
+        # Add logging for things that don't come from anywhere else
+        addLog("isRedIconState",
+               lambda: (
+                   Icon.kON if wpilib.DriverStation.getAlliance() == wpilib.DriverStation.Alliance.kRed
+                   else Icon.kOFF)
+               )
+
+        addLog("isBlueIconState",
+               lambda: (
+                   Icon.kON if wpilib.DriverStation.getAlliance() == wpilib.DriverStation.Alliance.kBlue
+                   else Icon.kOFF)
+               )
 
         addLog("faultIconState",
-                lambda: (Icon.kBLINK_FAST if FaultWrangler().hasActiveFaults() else Icon.kOFF)
-        )
+               lambda: (Icon.kBLINK_FAST if FaultWrangler().hasActiveFaults() else Icon.kOFF)
+               )

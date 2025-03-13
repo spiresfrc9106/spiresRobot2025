@@ -49,7 +49,7 @@ class PoseDirector(metaclass=Singleton):
         self.getArmCommand = lambda curCommand : self.currentPositionScheme.getArmCommand(curCommand)
         addLog("RP/controllerState", lambda: self.controllerState, "int")
 
-    def update(self):
+    def update(self, isAuton=False):
         if self._isControllerStateChanging():
             self.currentPositionScheme = self.pickTheNewScheme()
             self.getDriveTrainCommand = lambda curCommand : self.currentPositionScheme.getDriveTrainCommand(curCommand)

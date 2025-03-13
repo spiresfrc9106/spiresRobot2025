@@ -32,7 +32,8 @@ class SetupScheme:
         else:
             return False
 
-
+    def completedTrajectory(self, base):
+        return abs(base.cmdVelX) < 0.001 and abs(base.cmdVelY) < 0.001 and abs(base.cmdVelT) < 0.10
 
     def getDriveTrainCommand(self, curCommand: DrivetrainCommand):
         drivetrain_cmd = curCommand

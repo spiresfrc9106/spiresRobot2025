@@ -156,6 +156,7 @@ class MyRobot(wpilib.TimedRobot):
     def autonomousPeriodic(self):
 
         self.autoSequencer.update()
+        self.poseDirector.update(isAuton=True)
 
         # Operators cannot control in autonomous
         if drivetrainDepConstants['HAS_DRIVETRAIN']:

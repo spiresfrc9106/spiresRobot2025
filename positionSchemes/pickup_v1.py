@@ -60,11 +60,16 @@ class PickupV1(SetupScheme):
                 # into two or more seperate trajectory commands.
                 # however, since this won't be as likely on the field,
                 # we're leaving it here
+                if self.completedAwait("awaitbasecmdsend", 0.2):
+                    self.nextState()
             case 1:
-                # complete.
+                if self.completedTrajectory(self.base):
+                    self.nextState()
+                pass
+            case 2:
                 pass
             case _:
                 pass
 
-        state_max = 1
+        state_max = 2
         self.schemeProg = min(self.currentState/state_max, 1)
