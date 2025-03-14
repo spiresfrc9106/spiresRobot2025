@@ -103,7 +103,7 @@ class ElevConsts:
         ## INCHES
         self.posLow = 1
         self.posLowMid = 1.5  # this is the location that the robot should be right before hitting coral
-        self.posMedium = 2  # middle of elevator, default location.
+        self.posMedium = 25.75  # middle of elevator, default location.
         self.posHigh = 3
         ## INCHES/S
         self.velLow = 1

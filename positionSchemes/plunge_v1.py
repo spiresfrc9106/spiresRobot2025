@@ -45,7 +45,9 @@ class PlungeV1(SetupScheme):
         addLog("yvn_current_plunge_state", lambda: self.currentState, "")
         addLog("yvn_plunge_runs", lambda: self.totalRuns, "")  # test purposes, not needed at all.
 
-        self.elevHeightOfPen = 9  # change this number to actual!!!!!!
+        self.elevHeightOfPen = 30.6875
+        self.elevHeightOfCoralTouch = 33.6875
+        # change this number to actual!!!!!!
         # !!!!!!!!!!!!!!!!!! and change the elev const.
 
     def update(self):
@@ -73,16 +75,20 @@ class PlungeV1(SetupScheme):
                 if self.completedAwait("bottomWait", 0.5):
                     self.nextState()
             case 4:
-                self.armCmd = (90, 0)
-                if self.completedAwait("waterfallArmUp", 0.1):
+                self.elevCmd = (self.elevConst.posMedium, 0)
+                if self.completedAwait("waterfallElevUp", 0.1):
                     self.nextState()
             case 5:
-                self.armCmd = (90, 0)
-                self.elevCmd = (self.elevConst.posMedium, 0)
+                if self.elev.getPosition() > self.elevConst.posMedium-1:
+                    self.armCmd = (90, 0)
+                if math.isclose(self.arm.getPosition(),90, abs_tol=2):
+                    self.nextState()
+            case 6:
+                pass
             case _:
                 pass
 
-        state_max = 5
+        state_max = 6
 
         # when calculating the scheme prog, we can also add in local progress to show something as we go thru state.
         self.schemeProg = min((self.currentState + 1) / (state_max + 1), 1)
