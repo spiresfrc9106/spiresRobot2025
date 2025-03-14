@@ -52,7 +52,7 @@ class PoseDirector(metaclass=Singleton):
         self.oInt = OperatorInterface()
         self.controllerState = ElevArmCmdState.UNINITIALIZED
         self.prevControllerState = self.controllerState
-        self.currentPositionScheme = YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator)
+        self.currentPositionScheme = YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator, self.oInt)
         self.getDriveTrainCommand = lambda curCommand : self.currentPositionScheme.getDriveTrainCommand(curCommand)
         self.getElevatorCommand = lambda curCommand :  self.currentPositionScheme.getElevatorCommand(curCommand)
         self.getArmCommand = lambda curCommand : self.currentPositionScheme.getArmCommand(curCommand)
@@ -66,20 +66,6 @@ class PoseDirector(metaclass=Singleton):
             self.getElevatorCommand = lambda curCommand: self.currentPositionScheme.getElevatorCommand(curCommand)
             self.getArmCommand = lambda curCommand : self.currentPositionScheme.getArmCommand(curCommand)
         self.currentPositionScheme.update()
-        self.dPadState.update()
-
-    """
-    def dPadState(self):
-        match self.dPadState:
-            case ReefLeftOrRight.LEFT:
-                return -1
-            case ReefLeftOrRight.RIGHT:
-                return 1
-            case ReefLeftOrRight.NO_CMD:
-                return -1
-            case _:
-                return -1
-    """    
 
     def _isControllerStateChanging(self)->bool:
         nextState = self.oInt.getElevArmCmdState()
@@ -97,28 +83,26 @@ class PoseDirector(metaclass=Singleton):
     def pickTheNewScheme(self)->None:
         match self.controllerState:
             case ElevArmCmdState.UNINITIALIZED:
-                return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator, self)
+                return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator, self.oInt)
             case ElevArmCmdState.VEL_CONTROL:
-                return YavinsPoseClassVelocityControl(self.arm, self.driveTrain, self.elevator, self) # todo fix me
+                return YavinsPoseClassVelocityControl(self.arm, self.driveTrain, self.elevator, self.oInt) # todo fix me
             case ElevArmCmdState.POS_CONTROL:
-                return YavinsPoseClassPositionControl(self.arm, self.driveTrain, self.elevator, self)
+                return YavinsPoseClassPositionControl(self.arm, self.driveTrain, self.elevator, self.oInt)
             case ElevArmCmdState.PLUNGE:
-                return PlungeV1(self.arm, self.driveTrain, self.elevator, self) # todo fix me
+                return PlungeV1(self.arm, self.driveTrain, self.elevator, self.oInt) # todo fix me
             case ElevArmCmdState.RECEIVE_CORAL:
-                return PickupV1(self.arm, self.driveTrain, self.elevator, self) # todo fix me
+                return PickupV1(self.arm, self.driveTrain, self.elevator, self.oInt) # todo fix me
             case ElevArmCmdState.L1:
-                return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator, self)  # todo fix me
+                return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator, self.oInt)  # todo fix me
             case ElevArmCmdState.L2:
-                return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator, self)  # todo fix me
+                return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator, self.oInt)  # todo fix me
             case ElevArmCmdState.L3:
-                return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator, self)  # todo fix me
+                return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator, self.oInt)  # todo fix me
             case ElevArmCmdState.L4:
-                return PlaceL4V1(self.arm, self.driveTrain, self.elevator, self)  # todo fix me
+                return PlaceL4V1(self.arm, self.driveTrain, self.elevator, self.oInt)  # todo fix me
             case _:
-                return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator, self)  # todo fix me
+                return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator, self.oInt)  # todo fix me
 
-    def getReefLeftOrRight(self)->ReefLeftOrRight:
-        self.oInt.getReefLeftOrRight()
 
 
 

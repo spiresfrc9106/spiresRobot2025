@@ -7,13 +7,12 @@ from drivetrain.drivetrainCommand import DrivetrainCommand
 from Elevatorandmech.ElevatorCommand import ElevatorCommand
 from Elevatorandmech.ArmCommand import ArmCommand
 from wpimath.geometry import Pose2d
-from Elevatorandmech.RobotPoser import PoseDirector
 
 
 # if you can't find something here, it's probably in the _setup file.
 
 class PlungeV1(SetupScheme):
-    def __init__(self, arm, base, elev, poseDirector):
+    def __init__(self, arm, base, elev, oInt):
         super().__init__(arm, base, elev)
         self.arm = arm
         self.base = base
@@ -21,7 +20,7 @@ class PlungeV1(SetupScheme):
         self.armConst = ArmConsts()
         self.elevConst = ElevConsts()
         self.currentState = 0
-        self.poseDirector = poseDirector
+        self.oInt = oInt
 
         # structure:
         #   base: (Pose2d, velx, vely, velt)

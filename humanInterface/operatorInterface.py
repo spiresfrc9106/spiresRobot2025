@@ -12,7 +12,9 @@ from utils.signalLogging import addLog
 from utils.singleton import Singleton
 # todo add intEnum class that indicates leftReef or rightReef
 
-
+class ReefLeftOrRight(IntEnum):
+    LEFT = 0
+    RIGHT = 1
 class ElevArmCmdState(IntEnum):
     VEL_CONTROL = 0
     POS_CONTROL = 1
@@ -102,12 +104,11 @@ class OperatorInterface(metaclass=Singleton):
 
     def updateDPadLeftOrRight(self):
         if self.ctrl.isConnected():
-            if self.ctrl.getDPadPressed() >= 225 and self.ctrl.getDPadPressed() <= 315:
-                self.dPadState = ReefLeftOrRight.LEFT
-            elif self.ctrl.getDPadPressed() <= 135 and self.ctrl.getDPadPressed() >= 45:
+            pov_deg = self.ctrl.getPOV()
+            if pov_deg >= 45 and pov_deg <=135:
                 self.dPadState = ReefLeftOrRight.RIGHT
-
-        print(f"dpadState: {self.dPadState}")
+            elif pov_deg >= 225 and pov_deg <= 315:
+                self.dPadState = ReefLeftOrRight.LEFT
 
     def getDesElevatorPosIn(self)->float:
         elevatorRangeIn = 5.0
