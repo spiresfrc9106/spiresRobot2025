@@ -24,10 +24,6 @@ place at L2, L3, L4, for some of the poses you're going to override the driver c
 some you're going to override the operator control, while operator is holding the place on that level button, 
 will keep on doing the procedure as long as the button is held down, person can abort the procedure once button lifted up,   
 """
-from unittest import case
-
-from pycparser.c_ast import Enumerator
-from enum import IntEnum
 from Elevatorandmech.replaceWithYavinsPosesClass import YavinsPoseClassNoChange, YavinsPoseClassPositionControl, YavinsPoseClassVelocityControl
 from humanInterface.operatorInterface import OperatorInterface, ElevArmCmdState, ReefLeftOrRight
 from positionSchemes.plunge_v1 import PlungeV1
