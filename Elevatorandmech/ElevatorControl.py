@@ -32,6 +32,7 @@ class ElevatorDependentConstants:
                 "ELEV_SPOOL_RADIUS_IN": None,
                 "MAX_ELEV_VEL_INPS": None,
                 "MAX_ELEV_ACCEL_INPS2": None,
+                "ELEVATOR_HEIGHT_OFFSET": None,
             },
             RobotTypes.Spires2025: {
                 "HAS_ELEVATOR": True,
@@ -42,6 +43,7 @@ class ElevatorDependentConstants:
                 "ELEV_SPOOL_RADIUS_IN": 1.660 / 2.0,
                 "MAX_ELEV_VEL_INPS": 20.0,
                 "MAX_ELEV_ACCEL_INPS2": 20.0,
+                "ELEVATOR_HEIGHT_OFFSET": 12.5,
             },
             RobotTypes.Spires2025Sim: {
                 "HAS_ELEVATOR": True,
@@ -52,6 +54,7 @@ class ElevatorDependentConstants:
                 "ELEV_SPOOL_RADIUS_IN": 1.660 / 2.0,
                 "MAX_ELEV_VEL_INPS": 20.0,
                 "MAX_ELEV_ACCEL_INPS2": 20.0,
+                "ELEVATOR_HEIGHT_OFFSET": 12.5,
             },
             RobotTypes.SpiresTestBoard: {
                 "HAS_ELEVATOR": True,
@@ -62,7 +65,8 @@ class ElevatorDependentConstants:
                 "ELEV_SPOOL_RADIUS_IN": 1.92 / 2.0,
                 "MAX_ELEV_VEL_INPS": 25,
                 "MAX_ELEV_ACCEL_INPS2": 250,
-        },
+                "ELEVATOR_HEIGHT_OFFSET": 0,
+            },
             RobotTypes.SpiresRoboRioV1: {
                 "HAS_ELEVATOR": False,
                 "ELEV_FM_CANID": None,
@@ -72,6 +76,7 @@ class ElevatorDependentConstants:
                 "ELEV_SPOOL_RADIUS_IN": None,
                 "MAX_ELEV_VEL_INPS": None,
                 "MAX_ELEV_ACCEL_INPS2": None,
+                "ELEVATOR_HEIGHT_OFFSET": None,
             },
         }
 
@@ -91,6 +96,7 @@ MAX_ELEV_ACCEL_INPS2 = elevDepConstants['MAX_ELEV_ACCEL_INPS2']
 
 ELEVATOR_RANGE_IN = elevDepConstants['ELEVATOR_RANGE_IN']
 
+ELEVATOR_HEIGHT_OFFSET = elevDepConstants['ELEVATOR_HEIGHT_OFFSET']
 
 class ElevatorStates(IntEnum):
     UNINITIALIZED = 0
@@ -110,8 +116,6 @@ class ElevatorControl(metaclass=Singleton):
         self.reachedBottom = False #these only need to be estimates, since the system will continue nmw
 
         self.poseDirector = PoseDirector()
-
-        self.elevatorRangeIn = elevDepConstants['ELEVATOR_RANGE_IN']
 
         self.manAdjMaxVoltage = Calibration(name="Elevator Manual Adj Max Voltage", default=1.0, units="V")
 
@@ -153,6 +157,9 @@ class ElevatorControl(metaclass=Singleton):
 
             self.searchMaxVelocityIps = Calibration(name="Elevator Max Vel", default=4, units="inps")
             self.searchMaxAccelerationIps2 = Calibration(name="Elevator Max Accel", default=4, units="inps2")
+
+            self.minHeightIn = ELEV_HEIGHT_ABOVE_GROUND_IN
+            self.maxHeightIn = ELEV_HEIGHT_ABOVE_GROUND_IN + ELEVATOR_RANGE_IN
 
             self.trapProfiler = TrapezoidProfile(TrapezoidProfile.Constraints(self.maxVelocityIps.get(), self.maxAccelerationIps2.get()))
             self.actTrapPState = self.trapProfiler.State()
@@ -202,13 +209,13 @@ class ElevatorControl(metaclass=Singleton):
         self.fMotor.setVoltage(0)
 
     def _offsetFreeRMotorRadToHeightIn(self, motorRad: float) -> float:
-        return  motorRad * (1/ELEV_GEARBOX_GEAR_RATIO) * ELEV_SPOOL_RADIUS_IN
+        return  motorRad * (1/ELEV_GEARBOX_GEAR_RATIO) * ELEV_SPOOL_RADIUS_IN + self.minHeightIn
 
     def _motorRadToHeightIn(self, motorRad: float) -> float:
         return  self._offsetFreeRMotorRadToHeightIn(motorRad-self.relEncOffsetRad)
 
     def _heightInToMotorRad(self, elevHeightIn: float) -> float:
-        return (elevHeightIn / ELEV_SPOOL_RADIUS_IN) * ELEV_GEARBOX_GEAR_RATIO + self.relEncOffsetRad
+        return ( (elevHeightIn - self.minHeightIn) / ELEV_SPOOL_RADIUS_IN) * ELEV_GEARBOX_GEAR_RATIO + self.relEncOffsetRad
     
     def _heightVelInpsToMotorVelRadps(self, elevVelInps: float) -> float:
         return (elevVelInps / ELEV_SPOOL_RADIUS_IN) * ELEV_GEARBOX_GEAR_RATIO
@@ -216,11 +223,9 @@ class ElevatorControl(metaclass=Singleton):
     def getHeightIn(self) -> float:
         return self._motorRadToHeightIn(self.fMotor.getMotorPositionRad())
 
-    def getVelocityInps(self) -> float:
+    def _getVelocityInps(self) -> float:
         return self._offsetFreeRMotorRadToHeightIn(self.fMotor.getMotorVelocityRadPerSec())
 
-    def getCurPosIn(self) -> float:
-        return self.curTrapPState.position
 
     def update(self) -> None:
         match self.elevatorState:
@@ -238,7 +243,7 @@ class ElevatorControl(metaclass=Singleton):
     def _updateUninitialized(self) -> None:
         self.startTime = Timer.getFPGATimestamp()
         self._changeState(ElevatorStates.INIT_GOING_DOWN)
-        self.forceStartAtHeightZeroIn()
+        self._forceStartAtHeightZeroIn()
         if wpilib.RobotBase.isSimulation():
             self.desTrapPState = TrapezoidProfile.State(self.getHeightIn(),0)
         else:
@@ -259,7 +264,7 @@ class ElevatorControl(metaclass=Singleton):
             # because we didn't go any lower, maybe we have been at the lowest height for a second
             nowS = Timer.getFPGATimestamp()
             if nowS - 1 >= self.timeWhenChangeS:
-                self.forceStartAtHeightZeroIn()
+                self._forceStartAtHeightZeroIn()
                 self.desTrapPState = TrapezoidProfile.State(self.getHeightIn(), 0)
                 self.curTrapPState = TrapezoidProfile.State(self.getHeightIn(), 0)
                 self._changeState(ElevatorStates.OPERATING)
@@ -313,8 +318,8 @@ class ElevatorControl(metaclass=Singleton):
             a = newDesHeightIn
             b = newDesVelocityInps
 
-            newDesHeightIn = min(newDesHeightIn, ELEVATOR_RANGE_IN)
-            newDesHeightIn = max(newDesHeightIn, 0)
+            newDesHeightIn = min(newDesHeightIn, self.maxHeightIn)
+            newDesHeightIn = max(newDesHeightIn, self.minHeightIn)
 
             newDesVelocityInps = min(newDesVelocityInps, self.maxVelocityIps.get())
             newDesVelocityInps = max(newDesVelocityInps, -self.maxVelocityIps.get())
@@ -337,7 +342,7 @@ class ElevatorControl(metaclass=Singleton):
 
     def _updateOperating(self) -> None:
         self.currentUpdateTimeS = Timer.getFPGATimestamp()
-        self.actualVelInps = self.getVelocityInps()
+        self.actualVelInps = self._getVelocityInps()
         if self.previousUpdateTimeS is not None:
             currentPeriodS = self.currentUpdateTimeS - self.previousUpdateTimeS
             self.actAccLogger.logNow((self.actualVelInps - self.previousVelInps) / currentPeriodS)
@@ -356,9 +361,9 @@ class ElevatorControl(metaclass=Singleton):
         if elevatorCommand.heightIn is None and elevatorCommand.velocityInps == 0.0:
             elevatorCommand.heightIn = heightGoalIn
         elif elevatorCommand.heightIn is None and elevatorCommand.velocityInps > 0.0:
-            elevatorCommand.heightIn = ELEVATOR_RANGE_IN
+            elevatorCommand.heightIn = self.maxHeightIn
         else:
-            elevatorCommand.heightIn = 0
+            elevatorCommand.heightIn = self.minHeightIn
 
         self.desTrapPState = TrapezoidProfile.State(elevatorCommand.heightIn, elevatorCommand.velocityInps)
 
@@ -379,20 +384,20 @@ class ElevatorControl(metaclass=Singleton):
         self.previousVelInps = self.actualVelInps
         self.previousUpdateTimeS = self.currentUpdateTimeS
 
-    # API to set current height goal
-    def setHeightGoal(self, heightGoalIn:float) -> None:
-        self._perhapsWeHaveANewRangeCheckedDesiredState(newDesHeightIn=heightGoalIn, newDesVelocityInps = 0.0)
-
-    def setHeightVelocityGoal(self, heightGoalIn:float, velocityGoalInps:float) -> None:
-        self._perhapsWeHaveANewRangeCheckedDesiredState(newDesHeightIn=heightGoalIn, newDesVelocityInps=velocityGoalInps)
-
 
     def setManualAdjCmd(self, cmd:float) -> None:
         self.manualAdjCmd = cmd
 
-    def forceStartAtHeightZeroIn(self) -> None:
+    def _forceStartAtHeightZeroIn(self) -> None:
         self.relEncOffsetRad = self.fMotor.getMotorPositionRad()
 
     def _changeState(self, newState: ElevatorStates) -> None:
         print(f"time = {Timer.getFPGATimestamp():.3f}s changing from elevator state {self.elevatorState.name}({self.elevatorState}) to {newState.name}({newState})")
         self.elevatorState = newState
+    
+    # Yavin todo use these:  
+    def getCurProfilePosIn(self):
+        return self.curTrapPState.position
+    
+    def getCurProfileVelocityInps(self):
+        return self.curTrapPState.velocity

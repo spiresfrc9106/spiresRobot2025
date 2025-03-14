@@ -159,6 +159,8 @@ class ArmControl(metaclass=Singleton):
         self.maxVelocityDegps = Calibration(name="Arm Max Vel", default=MAX_ARM_VEL_DEGPS, units="degps")
         self.maxAccelerationDegps2 = Calibration(name="Arm Max Accel", default=MAX_ARM_ACCEL_DEGPS2, units="degps2")
 
+        self._initialized = False
+
 
     def _setActCurDesTrapPStates(self, posDeg, velDegps):
         self.actTrapPState = TrapezoidProfile.State(posDeg, velDegps)
@@ -166,64 +168,67 @@ class ArmControl(metaclass=Singleton):
         self.curTrapPState = TrapezoidProfile.State(posDeg, velDegps)
 
     def _setActCurDesTrapPStatesToWhereTheArmIsNow(self):
-        curArmPosDeg = self.getRelAngleWithOffsetDeg()
+        curArmPosDeg = self._getRelAngleWithOffsetDeg()
         self._setActCurDesTrapPStates(curArmPosDeg, 0.0)
 
 
     def initialize(self):
 
-        # Set P gain on motor
-        self.motor.setPID(self.kP.get(), 0.0, 0.0)
-        # when we re-initialize tell motor to stay where it is at.
-        self.motor.setVoltage(0)
+        if not self._initialized:
+            # Set P gain on motor
+            self.motor.setPID(self.kP.get(), 0.0, 0.0)
+            # when we re-initialize tell motor to stay where it is at.
+            self.motor.setVoltage(0)
 
-        # units for trapezoidal will be degrees per second (velocity) and degrees per second squared (acceleration)
-        self.trapProfiler = TrapezoidProfile(TrapezoidProfile.Constraints(self.maxVelocityDegps.get(), self.maxAccelerationDegps2.get()))
-        self._setActCurDesTrapPStates(0,0)
+            # units for trapezoidal will be degrees per second (velocity) and degrees per second squared (acceleration)
+            self.trapProfiler = TrapezoidProfile(TrapezoidProfile.Constraints(self.maxVelocityDegps.get(), self.maxAccelerationDegps2.get()))
+            self._setActCurDesTrapPStates(0,0)
 
-        self.stopped = False
+            self.stopped = False
 
-        # Try to set a small current limit and decide when we're on the bottom using this, and turn
-        # off the motor when it doesn't need to spin anymore.  then up the current limit as needed
+            # Try to set a small current limit and decide when we're on the bottom using this, and turn
+            # off the motor when it doesn't need to spin anymore.  then up the current limit as needed
 
 
-        # Relative Encoder Offsets
-        # Relative encoders always start at 0 at power-on
-        # However, we may or may not have the mechanism at the "zero" position when we powered on
-        # These variables store an offset which is calculated from the absolute sensors
-        # to make sure the relative sensors inside the encoders accurately reflect
-        # the actual position of the mechanism
-        self.relEncOffsetRad = 0.0
-        # Create a motion profile with the given maximum velocity and maximum
-        # acceleration constraints for the next setpoint.
+            # Relative Encoder Offsets
+            # Relative encoders always start at 0 at power-on
+            # However, we may or may not have the mechanism at the "zero" position when we powered on
+            # These variables store an offset which is calculated from the absolute sensors
+            # to make sure the relative sensors inside the encoders accurately reflect
+            # the actual position of the mechanism
+            self.relEncOffsetRad = 0.0
+            # Create a motion profile with the given maximum velocity and maximum
+            # acceleration constraints for the next setpoint.
 
-        self.relEncOffsetAngleDeg = 0.0
-        self.motorPosCmdRad = 0.0
+            self.relEncOffsetAngleDeg = 0.0
+            self.motorPosCmdRad = 0.0
 
-        addLog(f"{self.name}/motor_pos_cmd_deg", lambda: math.degrees(self.motorPosCmdRad), "deg")
-        addLog(f"{self.name}/abs_encoder_act_pos_deg", lambda: self.getAbsAngleDeg(), "deg")
-        addLog(f"{self.name}/rel_encoder_offset_deg", lambda: self.relEncOffsetAngleDeg, "deg")
-        addLog(f"{self.name}/state", lambda: self.state, "int")
-        self.stateNowLogger = getNowLogger(f"{self.name}/stateNow", int)
-        self.stateNowLogger.logNow(self.state)
-        addLog(f"{self.name}/stopped", lambda: self.stopped, "bool")
-        addLog(f"{self.name}/act_pos_deg", lambda: self.actTrapPState.position, "deg")
-        addLog(f"{self.name}/act_vel_degps", lambda: self.actTrapPState.velocity, "degps")
-        self.actAccLogger = getNowLogger(f"{self.name}/act acceleration", "degps2")
-        addLog(f"{self.name}/curProfile_pos_deg", lambda: self.curTrapPState.position, "deg")
-        addLog(f"{self.name}/curProfile_vel_degps", lambda: self.curTrapPState.velocity, "degps")
-        self.curTrapPAccLogger = getNowLogger(f"{self.name}/curProfile_acc_degps2", "degps2")
-        addLog(f"{self.name}/des_pos_deg", lambda: self.desTrapPState.position, "deg")
-        addLog(f"{self.name}/des_vel_degps", lambda: self.desTrapPState.velocity, "degps")
+            addLog(f"{self.name}/motor_pos_cmd_deg", lambda: math.degrees(self.motorPosCmdRad), "deg")
+            addLog(f"{self.name}/abs_encoder_act_pos_deg", lambda: self.getAbsAngleDeg(), "deg")
+            addLog(f"{self.name}/rel_encoder_offset_deg", lambda: self.relEncOffsetAngleDeg, "deg")
+            addLog(f"{self.name}/state", lambda: self.state, "int")
+            self.stateNowLogger = getNowLogger(f"{self.name}/stateNow", int)
+            self.stateNowLogger.logNow(self.state)
+            addLog(f"{self.name}/stopped", lambda: self.stopped, "bool")
+            addLog(f"{self.name}/act_pos_deg", lambda: self.actTrapPState.position, "deg")
+            addLog(f"{self.name}/act_vel_degps", lambda: self.actTrapPState.velocity, "degps")
+            self.actAccLogger = getNowLogger(f"{self.name}/act acceleration", "degps2")
+            addLog(f"{self.name}/curProfile_pos_deg", lambda: self.curTrapPState.position, "deg")
+            addLog(f"{self.name}/curProfile_vel_degps", lambda: self.curTrapPState.velocity, "degps")
+            self.curTrapPAccLogger = getNowLogger(f"{self.name}/curProfile_acc_degps2", "degps2")
+            addLog(f"{self.name}/des_pos_deg", lambda: self.desTrapPState.position, "deg")
+            addLog(f"{self.name}/des_vel_degps", lambda: self.desTrapPState.velocity, "degps")
 
-        self._changeState(ArmStates.UNINITIALIZED)
+            self._changeState(ArmStates.UNINITIALIZED)
 
-        self.previousUpdateTimeS = None
-        self.previousVelDegps = None
+            self.previousUpdateTimeS = None
+            self.previousVelDegps = None
 
-        self.count = 0
+            self.count = 0
 
-        print(f"Init {self.name} complete")
+            self._initialized = True
+
+            print(f"Init {self.name} complete")
 
     def disable(self):
         self.motor.setPosCmd(self.motor.getMotorPositionRad())
@@ -241,18 +246,15 @@ class ArmControl(metaclass=Singleton):
     def _angleVelDegpsToMotorVelRadps(self, armAngleDeg: float) -> float:
         return armAngleDeg * ARM_GEARBOX_GEAR_RATIO
 
-    def getRelAngleWithNoOffsetDeg(self) -> float:
+    def _getRelAngleWithNoOffsetDeg(self) -> float:
         return self._noOffsetMotorRadToAngleDeg(self.motor.getMotorPositionRad())
 
-    def getRelAngleWithOffsetDeg(self) -> float:
+    def _getRelAngleWithOffsetDeg(self) -> float:
         return self._motorRadToAngleWithOffsetDeg(self.motor.getMotorPositionRad())
 
-    def getVelocityDegps(self) -> float:
+    def _getVelocityDegps(self) -> float:
         return self._noOffsetMotorRadToAngleDeg(self.motor.getMotorVelocityRadPerSec())
 
-    def getCurPosDeg(self) -> float:
-        return self.curTrapPState.position
-    
     #return the angle of the arm as measured by the absolute sensor in angles
     def getAbsAngleDeg(self) -> float:
         angleAbsSenDeg = math.degrees(self.encoder.getAngleRad())
@@ -260,7 +262,7 @@ class ArmControl(metaclass=Singleton):
         return angleAbsSenDeg
 
     def getRelToAbsoluteSensorOffsetDeg(self) -> float:
-        relAngleWithNoOffsetDeg = self.getRelAngleWithNoOffsetDeg()
+        relAngleWithNoOffsetDeg = self._getRelAngleWithNoOffsetDeg()
         absAngleDeg = self.getAbsAngleDeg()
 
         relEncOffsetAngleDeg = absAngleDeg - relAngleWithNoOffsetDeg
@@ -367,12 +369,12 @@ class ArmControl(metaclass=Singleton):
     def _updateOperating(self) -> None:
         self.encoder.update()
         self.currentUpdateTimeS = Timer.getFPGATimestamp()
-        self.actualVelDegps = self.getVelocityDegps()
+        self.actualVelDegps = self._getVelocityDegps()
         if self.previousUpdateTimeS is not None:
             currentPeriodS = self.currentUpdateTimeS - self.previousUpdateTimeS
             self.actAccLogger.logNow((self.actualVelDegps - self.previousVelDegps) / currentPeriodS)
 
-        self.actTrapPState = TrapezoidProfile.State(self.getRelAngleWithOffsetDeg(), self.actualVelDegps)
+        self.actTrapPState = TrapezoidProfile.State(self._getRelAngleWithOffsetDeg(), self.actualVelDegps)
 
 
         # default to not moving
@@ -418,10 +420,18 @@ class ArmControl(metaclass=Singleton):
     def setManualAdjCmd(self, cmd:float) -> None:
         self.manualAdjCmd = cmd
 
-    def forceStartAtAngleZeroDeg(self) -> None:
+    def _forceStartAtAngleZeroDeg(self) -> None:
         self.relEncOffsetRad = self.motor.getMotorPositionRad()
 
     def _changeState(self, newState: ArmStates) -> None:
         print(f"time = {Timer.getFPGATimestamp():.3f}s changing from arm state {self.state} to {newState}")
         self.state = newState
         self.stateNowLogger.logNow(self.state)
+
+    # Yavin todo use these:
+    def getCurProfilePosDeg(self) -> float:
+        return self.curTrapPState.position
+
+    def getCurProfileVelocityDegps(self) -> float:
+        return self.curTrapPState.velocity
+
