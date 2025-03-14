@@ -17,8 +17,6 @@ from utils.units import sign
 from utils.robotIdentification import RobotTypes
 from wrappers.wrapperedSparkMax import WrapperedSparkMax
 
-ELEV_HEIGHT_ABOVE_GROUND_IN = 15.25
-
 class ElevatorDependentConstants:
     def __init__(self):
 
@@ -43,7 +41,7 @@ class ElevatorDependentConstants:
                 "ELEV_SPOOL_RADIUS_IN": 1.660 / 2.0,
                 "MAX_ELEV_VEL_INPS": 20.0,
                 "MAX_ELEV_ACCEL_INPS2": 20.0,
-                "ELEVATOR_HEIGHT_OFFSET": 12.5,
+                "ELEVATOR_HEIGHT_OFFSET": 15.25,
             },
             RobotTypes.Spires2025Sim: {
                 "HAS_ELEVATOR": True,
@@ -54,7 +52,7 @@ class ElevatorDependentConstants:
                 "ELEV_SPOOL_RADIUS_IN": 1.660 / 2.0,
                 "MAX_ELEV_VEL_INPS": 20.0,
                 "MAX_ELEV_ACCEL_INPS2": 20.0,
-                "ELEVATOR_HEIGHT_OFFSET": 12.5,
+                "ELEVATOR_HEIGHT_OFFSET": 15.25,
             },
             RobotTypes.SpiresTestBoard: {
                 "HAS_ELEVATOR": True,
@@ -96,7 +94,7 @@ MAX_ELEV_ACCEL_INPS2 = elevDepConstants['MAX_ELEV_ACCEL_INPS2']
 
 ELEVATOR_RANGE_IN = elevDepConstants['ELEVATOR_RANGE_IN']
 
-ELEVATOR_HEIGHT_OFFSET = elevDepConstants['ELEVATOR_HEIGHT_OFFSET']
+ELEV_HEIGHT_ABOVE_GROUND_IN = elevDepConstants['ELEVATOR_HEIGHT_OFFSET']
 
 class ElevatorStates(IntEnum):
     UNINITIALIZED = 0
