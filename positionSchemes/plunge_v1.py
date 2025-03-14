@@ -1,3 +1,5 @@
+import math
+
 from Elevatorandmech.armtest import ArmControl
 from Elevatorandmech.elevatortest import ElevatorControl
 from wpilib import Timer
@@ -7,6 +9,8 @@ from drivetrain.drivetrainCommand import DrivetrainCommand
 from Elevatorandmech.ElevatorCommand import ElevatorCommand
 from Elevatorandmech.ArmCommand import ArmCommand
 from wpimath.geometry import Pose2d
+
+from utils.units import deg2Rad
 
 
 # if you can't find something here, it's probably in the _setup file.
@@ -41,45 +45,44 @@ class PlungeV1(SetupScheme):
         addLog("yvn_current_plunge_state", lambda: self.currentState, "")
         addLog("yvn_plunge_runs", lambda: self.totalRuns, "")  # test purposes, not needed at all.
 
+        self.elevHeightOfPen = 9  # change this number to actual!!!!!!
+        # !!!!!!!!!!!!!!!!!! and change the elev const.
+
     def update(self):
         currentTime = Timer.getFPGATimestamp()
         time = currentTime - self.startTime
         self.baseCmd = None  # because this never changes, we're not going to bother with it.
-        #
-        #
-        #
-        #  THE WHOLE THING HERE IS INCORRECT SEQUENCING. PLEASE REVISE FOR FUNCTIONALITY AND SAFETY.
-        #
-        #
-        #
         match self.currentState:
             case 0:  # initializing
-                self.armCmd = None
-                self.elevCmd = (self.elevConst.posMedium, -1 * self.elevConst.velHigh)
-                if self.elev.atAboutMiddle:  # this is in case the elev was at the bottom
+                # this is in case the elev was at the bottom and someone pressed plunge
+                if self.elev.getPosition() < self.elevHeightOfPen:
+                    self.elevCmd = (self.elevHeightOfPen + 4, 0)
+                else:
                     self.nextState()
             case 1:  # moving elevator in negative direction, not intending to hit bottom
-                self.armCmd = (self.armConst.posLow, 0)
-                self.elevCmd = (self.elevConst.posLowMid, -1 * self.elevConst.velMedium)
-                if self.arm.atAboutDown:
+                self.armCmd = (-90, 0)  # lowest and 0 speed when reached
+                self.elevCmd = None  # originally we were going to slowly bring this down but no.
+                if math.isclose(self.arm.getPosition(), -90, abs_tol=2.5):
                     self.nextState()
             case 2:  #
-                self.armCmd = (self.armConst.posLow, 0)
-                self.elevCmd = (self.elevConst.posLow, 0)
-                if self.elev.reachedBottom:
+                self.armCmd = (-90, 0)
+                self.elevCmd = (self.elevHeightOfPen, 0)
+                if math.isclose(self.elev.getPosition(), -90, abs_tol=0.5):
                     self.nextState()
             case 3:
                 if self.completedAwait("bottomWait", 0.5):
                     self.nextState()
             case 4:
-                self.armCmd = (self.armConst.posHigh, 0)
+                self.armCmd = (90, 0)
                 if self.completedAwait("waterfallArmUp", 0.1):
                     self.nextState()
             case 5:
-                self.armCmd = (self.armConst.posHigh, 0)
+                self.armCmd = (90, 0)
                 self.elevCmd = (self.elevConst.posMedium, 0)
             case _:
                 pass
 
         state_max = 5
-        self.schemeProg = min(self.currentState / state_max, 1)
+
+        # when calculating the scheme prog, we can also add in local progress to show something as we go thru state.
+        self.schemeProg = min((self.currentState + 1) / (state_max + 1), 1)

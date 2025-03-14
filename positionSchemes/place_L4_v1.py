@@ -1,3 +1,5 @@
+import math
+
 from Elevatorandmech.armtest import ArmControl
 from Elevatorandmech.elevatortest import ElevatorControl
 from wpilib import Timer
@@ -69,15 +71,15 @@ class PlaceL4V1(SetupScheme):
                     self.nextState()
                 pass
             case 2:
-                # bring elevator to the height needed to place.
-                # bring arm to the angle needed to place
-                # check for completed await of 0.2 seconds
-                #    nextstate
-                pass
+                self.elevCmd = (self.elevPlacePos, 0)
+                self.armCmd = (self.armPlacePos, 0)
+                if self.completedAwait("waitforcmdsend1",0.2):
+                    self.nextState()
             case 3:
-                # if elev.pos==desired and if arm.pos==desired:
-                #  nextState
-                pass
+                elevGoalReached = math.isclose(self.elev.getPosition(), self.elevPlacePos, abs_tol=0.5)
+                armGoalReached = math.isclose(self.arm.getPosition(), self.armPlacePos, abs_tol=0.75)
+                if elevGoalReached and armGoalReached:
+                    self.nextState()
             case 4:
                 # should we actually launch?
 
@@ -88,4 +90,5 @@ class PlaceL4V1(SetupScheme):
                 pass
 
         state_max = 4
-        self.schemeProg = min(self.currentState / state_max, 1)
+        # when calculating the scheme prog, we can also add in local progress to show something as we go thru state.
+        self.schemeProg = min((self.currentState+1) / (state_max+1), 1)

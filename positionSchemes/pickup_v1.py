@@ -1,3 +1,5 @@
+import math
+
 from Elevatorandmech.armtest import ArmControl
 from Elevatorandmech.elevatortest import ElevatorControl
 from wpilib import Timer
@@ -46,6 +48,8 @@ class PickupV1(SetupScheme):
         addLog("yvn_current_pickup_state", lambda: self.currentState, "")
         addLog("yvn_pickup_runs", lambda: self.totalRuns, "")
 
+        self.elevPickupPose = 47.6875  #inches
+
     def update(self):
         currentTime = Timer.getFPGATimestamp()
         time = currentTime - self.startTime
@@ -54,6 +58,8 @@ class PickupV1(SetupScheme):
                 #self.armCmd/elevCmd could be called here to prep for the fun thing.
                 self.bestTag = PickupIntelligence(self.base).decidePickupPose()
                 self.baseCmd = (self.bestTag, 0, 0, 0)
+                self.armCmd = None
+                self.elevCmd = None
                 # CAN WE DO BETTER?  YES OF COURSE WE CAN.
                 # one thing that comes to mind is perhaps breaking down
                 # 1) long commutes or 2) big rotation distances
@@ -63,13 +69,18 @@ class PickupV1(SetupScheme):
                 if self.completedAwait("awaitbasecmdsend", 0.2):
                     self.nextState()
             case 1:
+                self.elevCmd = (self.elevPickupPose, 0)
                 if self.completedTrajectory(self.base):
                     self.nextState()
-                pass
             case 2:
+                elevGoalReached = math.isclose(self.elev.getPosition(), self.elevPickupPose, abs_tol=0.5)
+                if elevGoalReached:
+                    self.nextState()
+            case 3:
                 pass
             case _:
                 pass
 
-        state_max = 2
-        self.schemeProg = min(self.currentState/state_max, 1)
+        state_max = 3
+        # when calculating the scheme prog, we can also add in local progress to show something as we go thru state.
+        self.schemeProg = min((self.currentState+1) / (state_max+1), 1)
