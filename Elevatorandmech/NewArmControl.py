@@ -1,26 +1,16 @@
-# Notes from Coach Mike, This code is from: https://github.com/RobotCasserole1736/RobotCasserole2025/tree/Traian_Arm
-
-# Notes to self (Benjamin) as of 3/5/2025:
-#1) get motor to calibrate (set zero) at desired position
-#2) get motor to not return to zero when joystick is relaxed
-#3) get motor to only move + or - 90 degrees from its zero
-
 from enum import IntEnum
 import math
-from time import sleep
 
 from wpimath.trajectory import TrapezoidProfile
 from wpilib import Timer
-from wpilib import TimedRobot
 
 from Elevatorandmech.ArmCommand import ArmCommand
 from Elevatorandmech.RobotPoser import PoseDirector
 from utils.calibration import Calibration
 from utils.robotIdentification import RobotIdentification, RobotTypes
-from utils.signalLogging import  addLog, getNowLogger
+from utils.signalLogging import addLog, getNowLogger
 from utils.singleton import Singleton
 from utils.units import sign
-from utils.units import wrapAngleDeg, wrapAngleRad
 from wrappers.wrapperedRevThroughBoreEncoder import WrapperedRevThroughBoreEncoder
 from wrappers.wrapperedSparkMax import WrapperedSparkMax
 
@@ -250,10 +240,9 @@ class ArmControl(metaclass=Singleton):
     def getVelocityDegps(self) -> float:
         return self._noOffsetMotorRadToAngleDeg(self.motor.getMotorVelocityRadPerSec())
     
-    #return the angle of the arm as measured by the absolute sensor in angles
+    #return the angle of the arm as measured by the absolute encoder in angles
     def getAbsAngleDeg(self) -> float:
         angleAbsSenDeg = math.degrees(self.encoder.getAngleRad())
-        #return angleAbsSenDeg - ABS_SENSOR_MOUNT_OFFSET_DEG
         return angleAbsSenDeg
 
     def getRelToAbsoluteSensorOffsetDeg(self) -> float:
@@ -422,3 +411,9 @@ class ArmControl(metaclass=Singleton):
         print(f"time = {Timer.getFPGATimestamp():.3f}s changing from arm state {self.state} to {newState}")
         self.state = newState
         self.stateNowLogger.logNow(self.state)
+
+    def isOperating(self):
+        return self.state == ArmStates.OPERATING
+
+    def getArmPosDeg(self):
+        return self.actTrapPState.position

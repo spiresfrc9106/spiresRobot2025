@@ -7,6 +7,7 @@ from dashboard import Dashboard
 from Elevatorandmech.ElevatorControl import ElevatorControl, elevDepConstants
 from Elevatorandmech.NewArmControl import ArmControl, armDepConstants
 from Elevatorandmech.RobotPoser import PoseDirector
+from Elevatorandmech.armElevatorInterlock import ArmElevatorInterlock
 from testingMotors.motorCtrl import MotorControl, motorDepConstants
 from drivetrain.controlStrategies.autoDrive import AutoDrive
 from drivetrain.controlStrategies.trajectory import Trajectory
@@ -59,6 +60,10 @@ class MyRobot(wpilib.TimedRobot):
         self.elev = None
         if elevDepConstants['HAS_ELEVATOR']:
             self.elev= ElevatorControl()
+
+        self.armElevInterlock = None
+        if armDepConstants['HAS_ARM'] and elevDepConstants['HAS_ELEVATOR']:
+            self.armElevInterlock = ArmElevatorInterlock()
 
         self.poseDirector = PoseDirector()
         self.poseDirector.initialize(self.arm, self.driveTrain, self.elev)
@@ -153,6 +158,9 @@ class MyRobot(wpilib.TimedRobot):
         if elevDepConstants['HAS_ELEVATOR']:
             self.elev.initialize()
 
+        if self.armElevInterlock is not None:
+            self.armElevInterlock.initialize(self.arm, self.elev, self.oInt)
+
     def autonomousPeriodic(self):
 
         self.autoSequencer.update()
@@ -168,6 +176,10 @@ class MyRobot(wpilib.TimedRobot):
         if elevDepConstants['HAS_ELEVATOR']:
             self.elev.update()
             self.stt.mark("Elevator-auto")
+
+        if self.armElevInterlock is not None:
+            self.armElevInterlock.update()
+            self.stt.mark("Interlock-auto")
 
     def autonomousExit(self):
         self.autoSequencer.end()
@@ -194,6 +206,9 @@ class MyRobot(wpilib.TimedRobot):
 
         if elevDepConstants['HAS_ELEVATOR']:
             self.elev.initialize()
+
+        if self.armElevInterlock is not None:
+            self.armElevInterlock.initialize(self.arm, self.elev, self.oInt)
 
     def teleopPeriodic(self):
         # TODO - this is technically one loop delayed, which could induce lag
@@ -241,6 +256,10 @@ class MyRobot(wpilib.TimedRobot):
         if elevDepConstants['HAS_ELEVATOR']:
             self.elev.update()
             self.stt.mark("Elevator-teleop")
+
+        if self.armElevInterlock is not None:
+            self.armElevInterlock.update()
+            self.stt.mark("Interlock-teleop")
 
 
         # No trajectory in Teleop

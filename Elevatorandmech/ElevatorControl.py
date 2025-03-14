@@ -1,7 +1,3 @@
-# Notes from Coach Mike, This code is from: https://github.com/RobotCasserole1736/RobotCasserole2025/tree/Traian_Elevator
-
-# It is definitely buggy and untested, but it gives us a great framework on how to control an elevator.
-
 from enum import IntEnum
 import wpilib
 from wpilib import Timer
@@ -111,8 +107,6 @@ class ElevatorControl(metaclass=Singleton):
 
         self.poseDirector = PoseDirector()
 
-        self.elevatorRangeIn = elevDepConstants['ELEVATOR_RANGE_IN']
-
         self.manAdjMaxVoltage = Calibration(name="Elevator Manual Adj Max Voltage", default=1.0, units="V")
 
         self.coralSafe = True
@@ -151,8 +145,8 @@ class ElevatorControl(metaclass=Singleton):
             self.maxVelocityIps = Calibration(name="Elevator Max Vel", default=MAX_ELEV_VEL_INPS, units="inps")
             self.maxAccelerationIps2 = Calibration(name="Elevator Max Accel", default=MAX_ELEV_ACCEL_INPS2, units="inps2")
 
-            self.searchMaxVelocityIps = Calibration(name="Elevator Max Vel", default=4, units="inps")
-            self.searchMaxAccelerationIps2 = Calibration(name="Elevator Max Accel", default=4, units="inps2")
+            self.searchMaxVelocityIps = Calibration(name="Elevator Search Max Vel", default=4, units="inps")
+            self.searchMaxAccelerationIps2 = Calibration(name="Elevator Search Max Accel", default=4, units="inps2")
 
             self.trapProfiler = TrapezoidProfile(TrapezoidProfile.Constraints(self.maxVelocityIps.get(), self.maxAccelerationIps2.get()))
             self.actTrapPState = self.trapProfiler.State()
@@ -180,6 +174,9 @@ class ElevatorControl(metaclass=Singleton):
             self.timeWhenChangeS = 0
 
             self.lowestHeightIn = 0
+
+            self.minPosIn = 0.0
+            self.maxPosIn = ELEVATOR_RANGE_IN
 
             addLog(f"{self.name}/lowestHeightIn", lambda: self.lowestHeightIn, "in")
             addLog(f"{self.name}/state", lambda: float(int(self.elevatorState)), "int")
@@ -310,8 +307,8 @@ class ElevatorControl(metaclass=Singleton):
             a = newDesHeightIn
             b = newDesVelocityInps
 
-            newDesHeightIn = min(newDesHeightIn, ELEVATOR_RANGE_IN)
-            newDesHeightIn = max(newDesHeightIn, 0)
+            newDesHeightIn = min(newDesHeightIn, self.maxPosIn)
+            newDesHeightIn = max(newDesHeightIn, self.minPosIn)
 
             newDesVelocityInps = min(newDesVelocityInps, self.maxVelocityIps.get())
             newDesVelocityInps = max(newDesVelocityInps, -self.maxVelocityIps.get())
@@ -353,9 +350,9 @@ class ElevatorControl(metaclass=Singleton):
         if elevatorCommand.heightIn is None and elevatorCommand.velocityInps == 0.0:
             elevatorCommand.heightIn = heightGoalIn
         elif elevatorCommand.heightIn is None and elevatorCommand.velocityInps > 0.0:
-            elevatorCommand.heightIn = ELEVATOR_RANGE_IN
+            elevatorCommand.heightIn = self.maxPosIn
         else:
-            elevatorCommand.heightIn = 0
+            elevatorCommand.heightIn = self.minPosIn
 
         self.desTrapPState = TrapezoidProfile.State(elevatorCommand.heightIn, elevatorCommand.velocityInps)
 
@@ -393,3 +390,9 @@ class ElevatorControl(metaclass=Singleton):
     def _changeState(self, newState: ElevatorStates) -> None:
         print(f"time = {Timer.getFPGATimestamp():.3f}s changing from elevator state {self.elevatorState.name}({self.elevatorState}) to {newState.name}({newState})")
         self.elevatorState = newState
+
+    def isOperating(self):
+        return self.elevatorState == ElevatorStates.OPERATING
+
+    def getElevatorPosIn(self):
+        return self.actTrapPState.position
