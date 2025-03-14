@@ -38,6 +38,7 @@ from utils.constants import (DT_FL_WHEEL_CANID,
                              DT_BR_AZMTH_ENC_PORT)
 from wrappers.wrapperedGyro import wrapperedGyro
 from Elevatorandmech.RobotPoser import PoseDirector
+from utils.signalLogging import addLog
 
 class DrivetrainControl(metaclass=Singleton):
     """
@@ -82,6 +83,12 @@ class DrivetrainControl(metaclass=Singleton):
 
         self._updateAllCals()
         self.poser = PoseDirector()
+        self.cmdVelX = 0
+        self.cmdVelY = 0
+        self.cmdVelT = 0
+        addLog("yvn_drive_cmd_velx", lambda: self.cmdVelX, "")
+        addLog("yvn_drive_cmd_vely", lambda: self.cmdVelY, "")
+        addLog("yvn_drive_cmd_velt", lambda: self.cmdVelT, "")
 
     def setManualCmd(self, cmd: DrivetrainCommand):
         """Send commands to the robot for motion relative to the field
@@ -113,6 +120,10 @@ class DrivetrainControl(metaclass=Singleton):
         if hasattr(self.curCmd, "heading"):
             Trajectory().setCmd(self.curCmd)
             self.curCmd = Trajectory().update(self.curCmd, curEstPose)
+
+        self.cmdVelX = self.curCmd.velX
+        self.cmdVelY = self.curCmd.velY
+        self.cmdVelT = self.curCmd.velT
 
         # Transform the current command to be robot relative
         tmp = ChassisSpeeds.fromFieldRelativeSpeeds(

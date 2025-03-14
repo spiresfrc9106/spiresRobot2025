@@ -58,3 +58,102 @@ function mainRenderLoop(){
 }
 
 ${WIDGETS_CALLBACK}
+
+
+
+
+window.connectedForState = false
+
+
+window.widID = {
+state:0, errors:1, field:2, auton1:3, auton2:4, left:5, right:6, arm:7,
+elev:8, chain:9, progress:10, camFL:11, camFR:12, camBR:13
+}
+window.widScale = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+
+function checkForStateChange() {
+var state = document.getElementById("widget0").innerText;
+
+if (state=="1") {
+window.connectedForState = true
+}
+
+if (window.connectedForState) {
+var state = Number(state)
+
+if (state==2) {
+document.getElementById("widget6").style.top="40%";document.getElementById("widget6").style.left="5%";document.getElementById("widget6").style.height=(15*2)+"vw"; document.getElementById("widget6").style.width=(32.7*2)+"vw";document.getElementById("widget6").style.opacity="1";
+}
+if (state==1) {
+yavinSetWidgetAppearance(window.widID.field, 5, 35, 2, 1)
+
+yavinSetWidgetAppearance(window.widID.state, 0, 10, 1, 0)
+yavinSetWidgetAppearance(window.widID.errors, 0, 10, 1, 0)
+
+yavinSetWidgetAppearance(window.widID.auton1, 30, 5, 1, 1)
+yavinSetWidgetAppearance(window.widID.auton2, 30, 20, 1, 1)
+
+yavinSetWidgetAppearance(window.widID.left, 7, 10, 1, 1)
+yavinSetWidgetAppearance(window.widID.right, 17, 10, 1, 1)
+
+yavinSetWidgetAppearance(window.widID.arm, 80, 5, 0.5, 1)
+yavinSetWidgetAppearance(window.widID.elev, 80, 27, 0.5, 1)
+yavinSetWidgetAppearance(window.widID.chain, 0, 10, 1, 0)
+yavinSetWidgetAppearance(window.widID.progress, 0, 10, 1, 0)
+
+yavinSetWidgetAppearance(window.widID.camFL, 0, 10, 1, 0)
+yavinSetWidgetAppearance(window.widID.camFR, 0, 10, 1, 0)
+yavinSetWidgetAppearance(window.widID.camBR, 0, 10, 1, 0)
+}
+if (state==2) {
+yavinSetWidgetAppearance(window.widID.field, 5, 35, 2.3, 1)
+
+yavinSetWidgetAppearance(window.widID.state, 0, 10, 1, 0)
+yavinSetWidgetAppearance(window.widID.errors, 0, 10, 1, 0)
+
+yavinSetWidgetAppearance(window.widID.auton1, 30, 5, 1, 0)
+yavinSetWidgetAppearance(window.widID.auton2, 30, 20, 1, 0)
+
+yavinSetWidgetAppearance(window.widID.left, 7, 10, 1, 1)
+yavinSetWidgetAppearance(window.widID.right, 17, 10, 1, 1)
+
+yavinSetWidgetAppearance(window.widID.arm, 80, 5, 0.5, 1)
+yavinSetWidgetAppearance(window.widID.elev, 80, 27, 0.5, 1)
+yavinSetWidgetAppearance(window.widID.chain, 0, 10, 1, 0)
+yavinSetWidgetAppearance(window.widID.progress, 0, 10, 1, 0)
+
+yavinSetWidgetAppearance(window.widID.camFL, 0, 10, 1, 0)
+yavinSetWidgetAppearance(window.widID.camFR, 0, 10, 1, 0)
+yavinSetWidgetAppearance(window.widID.camBR, 0, 10, 1, 0)
+}
+
+}
+}
+
+
+function yavinSetWidgetAppearance(id, posX, posY, scale, opacity) {
+var widgetScale = window.widScale[id]
+var widgetID = "widget"+id
+var widget = document.getElementById(widgetID)
+widget.style.top=posY+"%";
+widget.style.left=posX+"%";
+var height = Number(widget.style.height.replace("vw",""))
+var width = Number(widget.style.width.replace("vw",""))
+widget.style.height=(height/widgetScale*scale)+"vw";
+widget.style.width=(width/widgetScale*scale)+"vw";
+widget.style.opacity=opacity;
+if (opacity<0.01) {
+eval("setTimeout(function() {document.getElementById('"+widgetID+"').style.display='none'},1000)");
+}
+else {
+widget.style.display="block";
+}
+
+window.widScale[id] = scale;
+}
+
+
+var quickOutputOfThis = setInterval(checkForStateChange,10)
+console.log("interval id: "+quickOutputOfThis)
+
+
