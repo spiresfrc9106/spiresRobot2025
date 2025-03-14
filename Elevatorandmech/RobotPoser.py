@@ -24,15 +24,24 @@ place at L2, L3, L4, for some of the poses you're going to override the driver c
 some you're going to override the operator control, while operator is holding the place on that level button, 
 will keep on doing the procedure as long as the button is held down, person can abort the procedure once button lifted up,   
 """
+from unittest import case
 
-
+from pycparser.c_ast import Enumerator
+from enum import IntEnum
 from Elevatorandmech.replaceWithYavinsPosesClass import YavinsPoseClassNoChange, YavinsPoseClassPositionControl, YavinsPoseClassVelocityControl
-from humanInterface.operatorInterface import OperatorInterface, ElevArmCmdState
+from humanInterface.operatorInterface import OperatorInterface, ElevArmCmdState, ReefLeftOrRight
 from positionSchemes.plunge_v1 import PlungeV1
 from positionSchemes.pickup_v1 import PickupV1
 from positionSchemes.place_L4_v1 import PlaceL4V1
 from utils.signalLogging import addLog
 from utils.singleton import Singleton
+
+# add a state variable that keeps track of if one of the left3 dpads where pressed or one of the right3 dpads where press
+# default to the left3
+# add a method that returns the state variable
+# pass the poseDirector singleton to all calls that create posers
+# add a method to operator interface that keeps track of if the left3 buttons on the dpad are pressed or the right3
+# in posedirector update make the state variable updated.
 
 class PoseDirector(metaclass=Singleton):
 
@@ -49,13 +58,28 @@ class PoseDirector(metaclass=Singleton):
         self.getArmCommand = lambda curCommand : self.currentPositionScheme.getArmCommand(curCommand)
         addLog("RP/controllerState", lambda: self.controllerState, "int")
 
-    def update(self):
+
+    def update(self, isAuton = False):
         if self._isControllerStateChanging():
             self.currentPositionScheme = self.pickTheNewScheme()
             self.getDriveTrainCommand = lambda curCommand : self.currentPositionScheme.getDriveTrainCommand(curCommand)
             self.getElevatorCommand = lambda curCommand: self.currentPositionScheme.getElevatorCommand(curCommand)
             self.getArmCommand = lambda curCommand : self.currentPositionScheme.getArmCommand(curCommand)
         self.currentPositionScheme.update()
+        self.dPadState.update()
+
+    """
+    def dPadState(self):
+        match self.dPadState:
+            case ReefLeftOrRight.LEFT:
+                return -1
+            case ReefLeftOrRight.RIGHT:
+                return 1
+            case ReefLeftOrRight.NO_CMD:
+                return -1
+            case _:
+                return -1
+    """    
 
     def _isControllerStateChanging(self)->bool:
         nextState = self.oInt.getElevArmCmdState()
@@ -73,23 +97,28 @@ class PoseDirector(metaclass=Singleton):
     def pickTheNewScheme(self)->None:
         match self.controllerState:
             case ElevArmCmdState.UNINITIALIZED:
-                return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator)
+                return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator, self)
             case ElevArmCmdState.VEL_CONTROL:
-                return YavinsPoseClassVelocityControl(self.arm, self.driveTrain, self.elevator) # todo fix me
+                return YavinsPoseClassVelocityControl(self.arm, self.driveTrain, self.elevator, self) # todo fix me
             case ElevArmCmdState.POS_CONTROL:
-                return YavinsPoseClassPositionControl(self.arm, self.driveTrain, self.elevator)
+                return YavinsPoseClassPositionControl(self.arm, self.driveTrain, self.elevator, self)
             case ElevArmCmdState.PLUNGE:
-                return PlungeV1(self.arm, self.driveTrain, self.elevator) # todo fix me
+                return PlungeV1(self.arm, self.driveTrain, self.elevator, self) # todo fix me
             case ElevArmCmdState.RECEIVE_CORAL:
-                return PickupV1(self.arm, self.driveTrain, self.elevator) # todo fix me
+                return PickupV1(self.arm, self.driveTrain, self.elevator, self) # todo fix me
             case ElevArmCmdState.L1:
-                return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator)  # todo fix me
+                return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator, self)  # todo fix me
             case ElevArmCmdState.L2:
-                return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator)  # todo fix me
+                return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator, self)  # todo fix me
             case ElevArmCmdState.L3:
-                return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator)  # todo fix me
+                return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator, self)  # todo fix me
             case ElevArmCmdState.L4:
-                return PlaceL4V1(self.arm, self.driveTrain, self.elevator)  # todo fix me
+                return PlaceL4V1(self.arm, self.driveTrain, self.elevator, self)  # todo fix me
             case _:
-                return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator)  # todo fix me
+                return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator, self)  # todo fix me
+
+    def getReefLeftOrRight(self)->ReefLeftOrRight:
+        self.oInt.getReefLeftOrRight()
+
+
 

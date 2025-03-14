@@ -8,11 +8,12 @@ from Elevatorandmech.ElevatorCommand import ElevatorCommand
 from Elevatorandmech.ArmCommand import ArmCommand
 from wpimath.geometry import Pose2d
 from positionSchemes._posintelligence import PickupIntelligence
+from Elevatorandmech.RobotPoser import PoseDirector
 
 #if you can't find something here, it's probably in the _setup file.
 
 class PickupV1(SetupScheme):
-    def __init__(self, arm, base, elev):
+    def __init__(self, arm, base, elev, poseDirector):
         super().__init__(arm, base, elev)
         self.arm = arm
         self.base = base
@@ -20,6 +21,7 @@ class PickupV1(SetupScheme):
         self.armConst = ArmConsts()
         self.elevConst = ElevConsts()
         self.currentState = 0
+        self.poseDirector = poseDirector
 
         self.startTime = Timer.getFPGATimestamp()
         self.changeInTime = 0

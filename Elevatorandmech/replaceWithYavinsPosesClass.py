@@ -1,15 +1,17 @@
 from wpimath.geometry import Pose2d
 from drivetrain.drivetrainCommand import DrivetrainCommand
 from Elevatorandmech.ElevatorCommand import ElevatorCommand
+from Elevatorandmech.RobotPoser import PoseDirector
 from Elevatorandmech.ArmCommand import ArmCommand
 from wpimath.geometry import Pose2d, Rotation2d, Twist2d
 
 from humanInterface.operatorInterface import OperatorInterface
 class YavinsPoseClassNoChange():
-    def __init__(self, arm, driveTrain, elevator):
+    def __init__(self, arm, driveTrain, elevator, poseDirector):
         self.arm = arm
         self.driveTrain = driveTrain
         self.elevator = elevator
+        self.poseDirector = poseDirector
 
     # Every frame the update will be called, and then later, the updates for the Drivetrain, Elevator, and Arm will be called and they will all "get" their commands.
     def update(self):
@@ -28,11 +30,12 @@ class YavinsPoseClassNoChange():
 
 class YavinsPoseClassPositionControl():
 
-    def __init__(self, arm, driveTrain, elevator):
+    def __init__(self, arm, driveTrain, elevator, poseDirector):
         self.arm = arm
         self.driveTrain = driveTrain
         self.elevator = elevator
         self.oInt = OperatorInterface()
+        self.poseDirector = poseDirector
 
     # Every frame the update will be called, and then later, the updates for the Drivetrain, Elevator, and Arm will be called and they will all "get" their commands.
     def update(self):
@@ -68,13 +71,14 @@ class YavinsPoseClassPositionControl():
 
 class YavinsPoseClassVelocityControl():
 
-    def __init__(self, arm, driveTrain, elevator):
+    def __init__(self, arm, driveTrain, elevator, poseDirector):
         self.arm = arm
         self.driveTrain = driveTrain
         self.elevator = elevator
         self.oInt = OperatorInterface()
         self.elevatorVelocityInps = 0
         self.armVelocityDegps = 0
+        self.poseDirector = poseDirector
 
     # Every frame the update will be called, and then later, the updates for the Drivetrain, Elevator, and Arm will be called and they will all "get" their commands.
     def update(self):

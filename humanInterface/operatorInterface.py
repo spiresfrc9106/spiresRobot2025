@@ -1,5 +1,4 @@
 from enum import IntEnum
-from debugpy.common.timestamp import current
 from wpimath import applyDeadband
 from wpimath.filter import SlewRateLimiter
 from wpilib import XboxController
@@ -11,6 +10,8 @@ from utils.allianceTransformUtils import onRed
 from utils.faults import Fault
 from utils.signalLogging import addLog
 from utils.singleton import Singleton
+# todo add intEnum class that indicates leftReef or rightReef
+
 
 class ElevArmCmdState(IntEnum):
     VEL_CONTROL = 0
@@ -46,8 +47,7 @@ class OperatorInterface(metaclass=Singleton):
         # Driver motion rate limiters - enforce smoother driving
         #self.velXSlewRateLimiter = SlewRateLimiter(rateLimit=MAX_TRANSLATE_ACCEL_MPS2)
 
-
-
+        self.dPadState = ReefLeftOrRight.LEFT
 
 
         # Logging
@@ -56,6 +56,7 @@ class OperatorInterface(metaclass=Singleton):
         addLog("OI/Arm Pos Cmd", lambda: self.armPosYCmd, "frac")
         addLog("OI/armPosYCmd", lambda: self.armPosYCmd, "frac")
         addLog("OI/elevArmCmdState", lambda: self.elevArmCmdState, "int")
+        addLog("OI/ReefLeftOrRight", lambda: self.dPadState, "int")
 
 
     def update(self):
@@ -73,6 +74,8 @@ class OperatorInterface(metaclass=Singleton):
 
             self.elevatorPosYCmd = vYJoyWithDeadband
             self.armPosYCmd = vYJoy2WithDeadband
+
+            self.updateDPadLeftOrRight()
 
             if self.ctrl.getRightBumperPressed():
                 self.elevArmCmdState = ElevArmCmdState.VEL_CONTROL  # xyzzy redundant because this is also the default
@@ -97,7 +100,14 @@ class OperatorInterface(metaclass=Singleton):
             self.elevatorPosYCmd = 0.0
             self.armPosYCmd = 0.0
 
+    def updateDPadLeftOrRight(self):
+        if self.ctrl.isConnected():
+            if self.ctrl.getDPadPressed() >= 225 and self.ctrl.getDPadPressed() <= 315:
+                self.dPadState = ReefLeftOrRight.LEFT
+            elif self.ctrl.getDPadPressed() <= 135 and self.ctrl.getDPadPressed() >= 45:
+                self.dPadState = ReefLeftOrRight.RIGHT
 
+        print(f"dpadState: {self.dPadState}")
 
     def getDesElevatorPosIn(self)->float:
         elevatorRangeIn = 5.0
@@ -108,5 +118,8 @@ class OperatorInterface(metaclass=Singleton):
 
     def getElevArmCmdState(self)->ElevArmCmdState:
         return self.elevArmCmdState
+
+    def getReefLeftOrRight(self)->ReefLeftOrRight:
+        return self.dPadState
 
 

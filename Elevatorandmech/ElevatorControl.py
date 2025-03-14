@@ -1,5 +1,5 @@
 # Notes from Coach Mike, This code is from: https://github.com/RobotCasserole1736/RobotCasserole2025/tree/Traian_Elevator
-
+import math
 # It is definitely buggy and untested, but it gives us a great framework on how to control an elevator.
 
 from enum import IntEnum
@@ -218,6 +218,9 @@ class ElevatorControl(metaclass=Singleton):
 
     def getVelocityInps(self) -> float:
         return self._offsetFreeRMotorRadToHeightIn(self.fMotor.getMotorVelocityRadPerSec())
+
+    def getCurPosIn(self) -> float:
+        return self.curTrapPState.position
 
     def update(self) -> None:
         match self.elevatorState:

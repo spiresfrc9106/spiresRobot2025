@@ -249,6 +249,9 @@ class ArmControl(metaclass=Singleton):
 
     def getVelocityDegps(self) -> float:
         return self._noOffsetMotorRadToAngleDeg(self.motor.getMotorVelocityRadPerSec())
+
+    def getCurPosDeg(self) -> float:
+        return self.curTrapPState.position
     
     #return the angle of the arm as measured by the absolute sensor in angles
     def getAbsAngleDeg(self) -> float:
