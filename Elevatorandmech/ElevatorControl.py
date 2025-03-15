@@ -399,3 +399,9 @@ class ElevatorControl(metaclass=Singleton):
     
     def getCurProfileVelocityInps(self):
         return self.curTrapPState.velocity
+
+    def getPosition(self):
+        return self.getCurProfilePosIn()
+
+    def getVelocity(self):
+        return self.getCurProfileVelocityInps()

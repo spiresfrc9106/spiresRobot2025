@@ -78,11 +78,12 @@ class OperatorInterface(metaclass=Singleton):
             self.armPosYCmd = vYJoy2WithDeadband
 
             self.updateDPadLeftOrRight()
+            self.launchPlacement = self.ctrl.getStartButton() # wanted to do the pressed but do not trust our code speed
 
             if self.ctrl.getRightBumperPressed():
                 self.elevArmCmdState = ElevArmCmdState.VEL_CONTROL  # xyzzy redundant because this is also the default
             elif self.ctrl.getLeftBumperPressed():
-                self.elevArmCmdState = ElevArmCmdState.POS_CONTROL
+                pass #self.elevArmCmdState = ElevArmCmdState.POS_CONTROL
             elif self.ctrl.getRightTriggerAxis() > .5:
                 self.elevArmCmdState = ElevArmCmdState.PLUNGE
             elif self.ctrl.getLeftTriggerAxis() > .5:
@@ -109,6 +110,8 @@ class OperatorInterface(metaclass=Singleton):
                 self.dPadState = ReefLeftOrRight.RIGHT
             elif pov_deg >= 225 and pov_deg <= 315:
                 self.dPadState = ReefLeftOrRight.LEFT
+
+# don't delete these they are unfortunately important (crying face emoji)
 
     def getDesElevatorPosIn(self)->float:
         elevatorRangeIn = 5.0

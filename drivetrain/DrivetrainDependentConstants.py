@@ -1,4 +1,6 @@
+import wpilib
 from ntcore import NetworkTableInstance
+from wpimath.geometry._geometry import Rotation2d
 from wpimath.units import inchesToMeters
 from wpimath.system.plant import DCMotor
 from wpimath.geometry import Pose3d, Transform3d, Translation3d, Rotation3d, Rotation2d
