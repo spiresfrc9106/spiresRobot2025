@@ -31,8 +31,8 @@ class AutoSequencer(metaclass=Singleton):
         self.mainModeList.addMode(DoNothingMode())
         #right now, DriveOut is all commented out, so we don't need to add it to the list. 
         #self.mainModeList.addMode(DriveOut())
-        self.mainModeList.addMode(NewDriveOut())
-        self.mainModeList.addMode(ReverseDriveOut())
+        # self.mainModeList.addMode(NewDriveOut())
+        # self.mainModeList.addMode(ReverseDriveOut())
         self.mainModeList.addMode(RightDriveOut())
         self.mainModeList.addMode(LeftDriveOut())
         self.mainModeList.addMode(CenterDriveOut())
