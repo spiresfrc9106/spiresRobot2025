@@ -142,7 +142,7 @@ class MyRobot(wpilib.TimedRobot):
 
         if drivetrainDepConstants['HAS_DRIVETRAIN']:
             # Use the autonomous routines starting pose to init the pose estimator
-            self.driveTrain.poseEst.setKnownPose(self.autoSequencer.getStartingPose())
+            self.driveTrain.poseEst.setKnownPose(self.autoSequencer.getStartingPose())  #position set.
 
         # Mark we at least started autonomous
         self.autoHasRun = True # pylint: disable=attribute-defined-outside-init

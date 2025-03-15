@@ -85,19 +85,19 @@ var state = Number(state)
 
 
 if (state==1) {
-yavinSetWidgetAppearance(window.widID.field, 5, 35, 2, 1)
+yavinSetWidgetAppearance(window.widID.field, 2, 5, 0.9, 1)
 
 yavinSetWidgetAppearance(window.widID.state, 0, 10, 1, 0)
 yavinSetWidgetAppearance(window.widID.errors, 0, 10, 1, 0)
 
-yavinSetWidgetAppearance(window.widID.auton1, 30, 5, 1, 1)
-yavinSetWidgetAppearance(window.widID.auton2, 30, 20, 1, 1)
+yavinSetWidgetAppearance(window.widID.auton1, 35, 5, 1, 1)
+yavinSetWidgetAppearance(window.widID.auton2, 35, 20, 1, 1)
 
-yavinSetWidgetAppearance(window.widID.left, 7, 10, 1, 1)
-yavinSetWidgetAppearance(window.widID.right, 17, 10, 1, 1)
+yavinSetWidgetAppearance(window.widID.left, 92, 5, 1, 1)
+yavinSetWidgetAppearance(window.widID.right, 92, 19, 1, 1)
 
-yavinSetWidgetAppearance(window.widID.arm, 80, 5, 0.5, 1)
-yavinSetWidgetAppearance(window.widID.elev, 80, 27, 0.5, 1)
+yavinSetWidgetAppearance(window.widID.arm, 79, 5, 0.5, 1)
+yavinSetWidgetAppearance(window.widID.elev, 79, 27, 0.5, 1)
 yavinSetWidgetAppearance(window.widID.chain, 0, 10, 1, 0)
 yavinSetWidgetAppearance(window.widID.progress, 0, 10, 1, 0)
 
