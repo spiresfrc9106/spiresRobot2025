@@ -435,3 +435,9 @@ class ArmControl(metaclass=Singleton):
     def getCurProfileVelocityDegps(self) -> float:
         return self.curTrapPState.velocity
 
+    def getPosition(self):
+        return self.getCurProfilePosDeg()
+
+    def getVelocity(self):
+        return self.getCurProfileVelocityDegps()
+

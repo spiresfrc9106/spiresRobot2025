@@ -61,6 +61,7 @@ class PoseDirector(metaclass=Singleton):
             self.getDriveTrainCommand = lambda curCommand : self.currentPositionScheme.getDriveTrainCommand(curCommand)
             self.getElevatorCommand = lambda curCommand: self.currentPositionScheme.getElevatorCommand(curCommand)
             self.getArmCommand = lambda curCommand : self.currentPositionScheme.getArmCommand(curCommand)
+            # self.progress = self.currentPositionScheme.schemeProg *100
         self.currentPositionScheme.update()
 
     def _isControllerStateChanging(self)->bool:

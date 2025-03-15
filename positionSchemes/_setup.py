@@ -19,6 +19,7 @@ class SetupScheme:
         self.baseCmd = None
         self.armCmd = None
         self.elevCmd = None
+        self.basePrimitiveCmd = None
 
     def nextState(self):
         self.currentState = self.currentState + 1
@@ -47,7 +48,16 @@ class SetupScheme:
                 velocityY=self.baseCmd[2],
                 angularVelocity=self.baseCmd[3]
             )
+        if self.basePrimitiveCmd is not None:
+            drivetrain_cmd = DrivetrainCommand(
+                velX=self.basePrimitiveCmd[0],
+                velY=self.basePrimitiveCmd[1],
+                velT=self.basePrimitiveCmd[2],
+            )
         return drivetrain_cmd  # if we have nothing to change, we return the current command
+
+    def inchesToMeters(self, inches):
+        return inches/39.37
 
         # self.timestamp = timestamp
         # self.x = x

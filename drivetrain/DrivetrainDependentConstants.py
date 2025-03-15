@@ -1,4 +1,6 @@
+import wpilib
 from ntcore import NetworkTableInstance
+from wpimath.geometry._geometry import Rotation2d
 from wpimath.units import inchesToMeters
 from wpimath.system.plant import DCMotor
 from wpimath.geometry import Pose3d, Transform3d, Translation3d, Rotation3d
@@ -39,6 +41,9 @@ ROBOT_TO_LIME_1 = Transform3d(
     ),
     Rotation3d.fromDegrees(0.0, 11.0, 0.0),  # Roll  # Pitch  # Yaw
 )
+
+if wpilib.RobotBase.isSimulation() == False:
+    ROBOT_TO_LIME_1 = Pose3d(Translation3d(0,0,0), Rotation3d(Rotation2d(0)))
 
 COMMON_CAMS = [
     {
@@ -123,7 +128,7 @@ class DrivetrainDependentConstants:
                 "BL_OFFSET_DEG": 125.4-180-2,
                 "BR_OFFSET_DEG": 117.5-90-180-155,
                 "GYRO": "ADIS16470_IMU",
-                "CAMS": [],
+                "CAMS": COMMON_CAMS,
                 "HAS_DRIVETRAIN": True,
             },
             RobotTypes.Spires2025Sim: {
