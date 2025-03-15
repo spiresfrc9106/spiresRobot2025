@@ -3,14 +3,14 @@ from AutoSequencerV2.mode import Mode
 
 
 # Just drives out of the starting zone. That's all.
-class CenterDriveOut(Mode):
+class RedRightDriveOut(Mode):
     def __init__(self):
         #this is naming the mode, in this case "Drive Out"
-        Mode.__init__(self, f"Center Drive Out")
+        Mode.__init__(self, f"R-Right Drive Out")
 
         #This is setting the path command (pathCmd), which is what we will use. The DrivePathCommand must be 
         #exactly the same as it is in the Choreo name. 
-        self.pathCmd = DrivePathCommand("CenterDriveOut")
+        self.pathCmd = DrivePathCommand("RedRightDriveOut")
 
     def getCmdGroup(self):
         # Just return the path command normally, since we're only doing one path. 

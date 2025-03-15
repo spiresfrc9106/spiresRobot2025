@@ -7,9 +7,9 @@ from AutoSequencerV2.sequentialCommandGroup import SequentialCommandGroup
 from Autonomous.modes.driveOut import DriveOut
 from Autonomous.modes.newDriveOut import NewDriveOut
 from Autonomous.modes.reverseDriveOut import ReverseDriveOut
-from Autonomous.modes.rightDriveOut import RightDriveOut
-from Autonomous.modes.leftDriveOut import LeftDriveOut
-from Autonomous.modes.centerDriveOut import CenterDriveOut
+from Autonomous.modes.redRightDriveOut import RedRightDriveOut
+from Autonomous.modes.redLeftDriveOut import RedLeftDriveOut
+from Autonomous.modes.redCenterDriveOut import RedCenterDriveOut
 
 from utils.singleton import Singleton
 from utils.allianceTransformUtils import onRed
@@ -33,9 +33,9 @@ class AutoSequencer(metaclass=Singleton):
         #self.mainModeList.addMode(DriveOut())
         # self.mainModeList.addMode(NewDriveOut())
         # self.mainModeList.addMode(ReverseDriveOut())
-        self.mainModeList.addMode(RightDriveOut())
-        self.mainModeList.addMode(LeftDriveOut())
-        self.mainModeList.addMode(CenterDriveOut())
+        self.mainModeList.addMode(RedRightDriveOut())
+        self.mainModeList.addMode(RedLeftDriveOut())
+        self.mainModeList.addMode(RedCenterDriveOut())
 
         self.topLevelCmdGroup = SequentialCommandGroup()
         self.startPose = Pose2d()
