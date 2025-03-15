@@ -197,6 +197,8 @@ class ElevatorControl(metaclass=Singleton):
             self.curTrapPAccLogger = getNowLogger(f"{self.name}/curProfile_acc_inps2", "inps2")
             addLog(f"{self.name}/des_pos_in", lambda: self.desTrapPState.position, "in")
             addLog(f"{self.name}/des_vel_inps", lambda: self.desTrapPState.velocity, "inps")
+            self.elevCmdPosLogger = getNowLogger(f"{self.name}/cmd_pos_in", "in")
+            self.elevCmdVelLogger = getNowLogger(f"{self.name}/cmd_vel_inps", "inps")
 
             addLog("RPelev/pos", lambda: self.curTrapPState.position, "in")
 
@@ -355,6 +357,9 @@ class ElevatorControl(metaclass=Singleton):
 
         elevatorCommand = ElevatorCommand(heightGoalIn, velocityGoalInps)
         elevatorCommand = self.poseDirector.getElevatorCommand(elevatorCommand)
+
+        self.elevCmdPosLogger.logNow(elevatorCommand.heightIn)
+        self.elevCmdVelLogger.logNow(elevatorCommand.velocityInps)
 
 
         #print(f"elevator {elevatorCommand.heightIn} {elevatorCommand.velocityInps}")

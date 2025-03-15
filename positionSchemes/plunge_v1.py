@@ -48,7 +48,7 @@ class PlungeV1(SetupScheme):
 
         self.elevHeightOfPen = 30.6875
         self.elevHeightOfCoralTouch = 33.6875
-        self.elevSafestPlungeHeight = self.elevHeightOfPen*0.5+self.elevHeightOfCoralTouch*0.5
+        self.elevSafestPlungeHeight = 31.39  #self.elevHeightOfPen*0.5+self.elevHeightOfCoralTouch*0.5
         # change this number to actual!!!!!!
         # !!!!!!!!!!!!!!!!!! and change the elev const.
 
