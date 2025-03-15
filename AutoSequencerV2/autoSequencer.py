@@ -6,6 +6,7 @@ from AutoSequencerV2.builtInModes.waitMode import WaitMode
 from AutoSequencerV2.sequentialCommandGroup import SequentialCommandGroup
 from Autonomous.modes.driveOut import DriveOut
 from Autonomous.modes.newDriveOut import NewDriveOut
+from Autonomous.modes.reverseDriveOut import ReverseDriveOut
 
 from utils.singleton import Singleton
 from utils.allianceTransformUtils import onRed
@@ -28,6 +29,8 @@ class AutoSequencer(metaclass=Singleton):
         #right now, DriveOut is all commented out, so we don't need to add it to the list. 
         #self.mainModeList.addMode(DriveOut())
         self.mainModeList.addMode(NewDriveOut())
+        self.mainModeList.addMode(ReverseDriveOut())
+
 
         self.topLevelCmdGroup = SequentialCommandGroup()
         self.startPose = Pose2d()
