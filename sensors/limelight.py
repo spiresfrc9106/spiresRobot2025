@@ -1,7 +1,7 @@
 import math
 from enum import Enum
 import ntcore
-from wpimath.geometry import Pose3d, Rotation3d, Translation3d
+from wpimath.geometry import Pose3d, Rotation3d, Translation3d, Rotation2d
 
 class Team(Enum):
     RED = 0
@@ -59,7 +59,7 @@ class Limelight:
         self.cam_pos_moving: bool = False
         self.set_pipeline_mode(LimelightPipeline.neural)
         #self.set_led_mode(limelight_led_mode["force_on"])
-        self.set_cam_pose(self.origin_offset)
+        #self.set_cam_pose(Pose3d(Translation3d(0,0,0), Rotation3d(Rotation2d(0)))) Coach mike suggestion, Yavin may be fatally wrong, if breaks it's his fault
 
     def init(self):
         pass

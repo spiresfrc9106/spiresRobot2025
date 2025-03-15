@@ -29,7 +29,7 @@ class PlungeV1(SetupScheme):
         # structure:
         #   base: (Pose2d, velx, vely, velt)
         #   arm: (position_deg, deg/s)
-        #   elev: (pasition_in, in/s)
+        #   elev: (position_in, in/s)
 
         # PROCESS:
         #  base: no action
@@ -91,5 +91,5 @@ class PlungeV1(SetupScheme):
 
         state_max = 6
 
-        # when calculating the scheme prog, we can also add in local progress to show something as we go thru state.
+        # when calculating the scheme prog, we can also add in local progress to show something as we go through state.
         self.schemeProg = min((self.currentState + 1) / (state_max + 1), 1)

@@ -3,7 +3,7 @@ import math
 
 from ntcore import NetworkTableInstance
 import wpilib
-from wpimath.geometry import Pose2d, Rotation2d, Transform3d
+from wpimath.geometry import Pose2d, Rotation2d, Transform3d, Pose3d
 
 from utils.signalLogging import addLog
 from wrappers.wrapperedPoseEstPhotonCamera import WrapperedPoseEstPhotonCamera
@@ -22,7 +22,7 @@ class LimelightCameraPoseObservation:
 
 
 class WrapperedPoseEstLimelight:
-    def __init__(self, camName:str, robotToCam:Transform3d):
+    def __init__(self, camName:str, robotToCam:Pose3d):
         setVersionCheckEnabled(False)
 
         print(f"WrapperedPoseEstLimelight camName {type(camName)} = {camName}")
