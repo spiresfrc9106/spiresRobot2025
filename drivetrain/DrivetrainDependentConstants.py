@@ -3,7 +3,8 @@ from ntcore import NetworkTableInstance
 from wpimath.geometry._geometry import Rotation2d
 from wpimath.units import inchesToMeters
 from wpimath.system.plant import DCMotor
-from wpimath.geometry import Pose3d, Transform3d, Translation3d, Rotation3d
+from wpimath.geometry import Pose3d, Transform3d, Translation3d, Rotation3d, Rotation2d
+import wpilib
 
 from utils.robotIdentification import RobotIdentification, RobotTypes
 from wrappers.wrapperedPoseEstPhotonCamera import WrapperedPoseEstPhotonCamera
@@ -46,46 +47,68 @@ if wpilib.RobotBase.isSimulation() == False:
     ROBOT_TO_LIME_1 = Pose3d(Translation3d(0,0,0), Rotation3d(Rotation2d(0)))
 
 COMMON_CAMS = [
+    # {
+    #     "CAM": WrapperedPoseEstPhotonCamera("LEFT_CAM", ROBOT_TO_LEFT_CAM),
+    #     "POSE_EST_LOG_NAME": "photonL",
+    #     "PUBLISHER":
+    #         (
+    #             NetworkTableInstance.getDefault()
+    #             .getStructTopic("/LeftCamPose", Pose3d)
+    #             .publish()
+    #         ),
+    #     "ROBOT_TO_CAM": ROBOT_TO_LEFT_CAM,
+    # },
+    # {
+    #     "CAM": WrapperedPoseEstPhotonCamera("RIGHT_CAM", ROBOT_TO_RIGHT_CAM),
+    #     "POSE_EST_LOG_NAME": "photonR",
+    #     "PUBLISHER":
+    #         (
+    #             NetworkTableInstance.getDefault()
+    #             .getStructTopic("/RightCamPose", Pose3d)
+    #             .publish()
+    #         ),
+    #     "ROBOT_TO_CAM": ROBOT_TO_RIGHT_CAM,
+    # },
+    # {
+    #     "CAM": WrapperedPoseEstPhotonCamera("FRONT_CAM", ROBOT_TO_FRONT_CAM),
+    #     "POSE_EST_LOG_NAME": "photonF",
+    #     "PUBLISHER":
+    #         (
+    #             NetworkTableInstance.getDefault()
+    #             .getStructTopic("/FrontCamPose", Pose3d)
+    #             .publish()
+    #         ),
+    #     "ROBOT_TO_CAM": ROBOT_TO_FRONT_CAM,
+    # },
     {
-        "CAM": WrapperedPoseEstPhotonCamera("LEFT_CAM", ROBOT_TO_LEFT_CAM),
-        "POSE_EST_LOG_NAME": "photonL",
+        "CAM": wrapperedLimilightCameraFactory("limelight-br", ROBOT_TO_LIME_1),
+        "POSE_EST_LOG_NAME": "limeli-br",
         "PUBLISHER":
             (
                 NetworkTableInstance.getDefault()
-                .getStructTopic("/LeftCamPose", Pose3d)
+                .getStructTopic("/Limili-brPose", Pose3d)
                 .publish()
             ),
-        "ROBOT_TO_CAM": ROBOT_TO_LEFT_CAM,
+        "ROBOT_TO_CAM": ROBOT_TO_LIME_1,
     },
     {
-        "CAM": WrapperedPoseEstPhotonCamera("RIGHT_CAM", ROBOT_TO_RIGHT_CAM),
-        "POSE_EST_LOG_NAME": "photonR",
+        "CAM": wrapperedLimilightCameraFactory("limelight-fl", ROBOT_TO_LIME_1),
+        "POSE_EST_LOG_NAME": "limeli-fl",
         "PUBLISHER":
             (
                 NetworkTableInstance.getDefault()
-                .getStructTopic("/RightCamPose", Pose3d)
+                .getStructTopic("/Limili-flPose", Pose3d)
                 .publish()
             ),
-        "ROBOT_TO_CAM": ROBOT_TO_RIGHT_CAM,
+        "ROBOT_TO_CAM": ROBOT_TO_LIME_1,
     },
     {
-        "CAM": WrapperedPoseEstPhotonCamera("FRONT_CAM", ROBOT_TO_FRONT_CAM),
-        "POSE_EST_LOG_NAME": "photonF",
+        "CAM": wrapperedLimilightCameraFactory("limelight-fr", ROBOT_TO_LIME_1),
+        "POSE_EST_LOG_NAME": "limeli-fr",
         "PUBLISHER":
             (
                 NetworkTableInstance.getDefault()
-                .getStructTopic("/FrontCamPose", Pose3d)
-                .publish()
-            ),
-        "ROBOT_TO_CAM": ROBOT_TO_FRONT_CAM,
-    },
-    {
-        "CAM": wrapperedLimilightCameraFactory("limelight", ROBOT_TO_LIME_1),
-        "POSE_EST_LOG_NAME": "imeli1",
-        "PUBLISHER":
-            (
-                NetworkTableInstance.getDefault()
-                .getStructTopic("/Limili1Pose", Pose3d)
+                .getStructTopic("/Limili-frPose", Pose3d)
                 .publish()
             ),
         "ROBOT_TO_CAM": ROBOT_TO_LIME_1,
@@ -122,7 +145,7 @@ class DrivetrainDependentConstants:
                 "SWERVE_WHEEL_MAX_SPEED_RPS": DCMotor.neoVortex(1).freeSpeed,
                 "WIDTH": 22.5,
                 "LENGTH": 26.5,
-                "MASS_LBS": 60,
+                "MASS_LBS": 104,
                 "FL_OFFSET_DEG": 177.4-90+180-4,
                 "FR_OFFSET_DEG": 0.7-123,
                 "BL_OFFSET_DEG": 125.4-180-2,
