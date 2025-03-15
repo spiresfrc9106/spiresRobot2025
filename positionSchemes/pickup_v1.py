@@ -57,7 +57,7 @@ class PickupV1(SetupScheme):
         match self.currentState:
             case 0: #initializing
                 #self.armCmd/elevCmd could be called here to prep for the fun thing.
-                self.bestTag = PickupIntelligence(self.base).decidePickupPose()
+                self.bestTag = PickupIntelligence(self.base).decidePickupPose(self.inchesToMeters(10))
                 self.baseCmd = (self.bestTag, 0, 0, 0)
                 self.armCmd = None
                 self.elevCmd = None
@@ -75,13 +75,17 @@ class PickupV1(SetupScheme):
                     self.nextState()
             case 2:
                 elevGoalReached = math.isclose(self.elev.getPosition(), self.elevPickupPose, abs_tol=0.5)
+                if self.isSim():
+                    elevGoalReached = self.completedAwait("TODOREMOVEelev1",2.0)
                 if elevGoalReached:
                     self.nextState()
             case 3:
+                self.bestTag = PickupIntelligence(self.base).decidePickupPose(self.inchesToMeters(1))
+                self.baseCmd = (self.bestTag, 0, 0, 0)
                 pass
             case _:
                 pass
 
         state_max = 3
         # when calculating the scheme prog, we can also add in local progress to show something as we go thru state.
-        self.schemeProg = min((self.currentState+1) / (state_max+1), 1)
+        self.schemeProg = min((self.currentState) / (state_max), 1)

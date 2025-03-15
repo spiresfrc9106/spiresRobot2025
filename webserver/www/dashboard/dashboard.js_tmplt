@@ -71,19 +71,19 @@ elev:8, chain:9, progress:10, camFL:11, camFR:12, camBR:13
 }
 window.widScale = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 
+
+
 function checkForStateChange() {
 var state = document.getElementById("widget0").innerText;
 
-if (state=="1") {
+if (state=="1" || state=="2" || state=="3" || state=="4" || state=="5" || state=="6") {
 window.connectedForState = true
 }
 
 if (window.connectedForState) {
 var state = Number(state)
 
-if (state==2) {
-document.getElementById("widget6").style.top="40%";document.getElementById("widget6").style.left="5%";document.getElementById("widget6").style.height=(15*2)+"vw"; document.getElementById("widget6").style.width=(32.7*2)+"vw";document.getElementById("widget6").style.opacity="1";
-}
+
 if (state==1) {
 yavinSetWidgetAppearance(window.widID.field, 5, 35, 2, 1)
 
@@ -106,7 +106,7 @@ yavinSetWidgetAppearance(window.widID.camFR, 0, 10, 1, 0)
 yavinSetWidgetAppearance(window.widID.camBR, 0, 10, 1, 0)
 }
 if (state==2) {
-yavinSetWidgetAppearance(window.widID.field, 5, 35, 2.3, 1)
+yavinSetWidgetAppearance(window.widID.field, 5, 5, 1.65, 1)
 
 yavinSetWidgetAppearance(window.widID.state, 0, 10, 1, 0)
 yavinSetWidgetAppearance(window.widID.errors, 0, 10, 1, 0)
@@ -114,17 +114,108 @@ yavinSetWidgetAppearance(window.widID.errors, 0, 10, 1, 0)
 yavinSetWidgetAppearance(window.widID.auton1, 30, 5, 1, 0)
 yavinSetWidgetAppearance(window.widID.auton2, 30, 20, 1, 0)
 
-yavinSetWidgetAppearance(window.widID.left, 7, 10, 1, 1)
-yavinSetWidgetAppearance(window.widID.right, 17, 10, 1, 1)
+yavinSetWidgetAppearance(window.widID.left, 68, 5, 2, 0)
+yavinSetWidgetAppearance(window.widID.right, 83, 5, 2, 0)
 
-yavinSetWidgetAppearance(window.widID.arm, 80, 5, 0.5, 1)
-yavinSetWidgetAppearance(window.widID.elev, 80, 27, 0.5, 1)
+yavinSetWidgetAppearance(window.widID.arm, 68, 19, 0.5, 1)
+yavinSetWidgetAppearance(window.widID.elev, 83, 19, 0.5, 1)
 yavinSetWidgetAppearance(window.widID.chain, 0, 10, 1, 0)
-yavinSetWidgetAppearance(window.widID.progress, 0, 10, 1, 0)
+yavinSetWidgetAppearance(window.widID.progress, 90, 90, 1.5, 0)
+
+yavinSetWidgetAppearance(window.widID.camFL, 5, 57, 0.5, 1)
+yavinSetWidgetAppearance(window.widID.camFR, 25, 57, 0.5, 1)
+yavinSetWidgetAppearance(window.widID.camBR, 45, 57, 0.5, 1)
+}
+
+if (state==3) {
+yavinSetWidgetAppearance(window.widID.field, 5, 5, 1.65, 1)
+
+yavinSetWidgetAppearance(window.widID.state, 0, 10, 1, 0)
+yavinSetWidgetAppearance(window.widID.errors, 0, 10, 1, 0)
+
+yavinSetWidgetAppearance(window.widID.auton1, 30, 5, 1, 0)
+yavinSetWidgetAppearance(window.widID.auton2, 30, 20, 1, 0)
+
+yavinSetWidgetAppearance(window.widID.left, 68, 5, 2, 1)
+yavinSetWidgetAppearance(window.widID.right, 83, 5, 2, 1)
+
+yavinSetWidgetAppearance(window.widID.arm, 68, 31, 0.5, 1)
+yavinSetWidgetAppearance(window.widID.elev, 83, 31, 0.5, 1)
+yavinSetWidgetAppearance(window.widID.chain, 0, 10, 1, 0)
+yavinSetWidgetAppearance(window.widID.progress, 90, 90, 1.5, 0)
+
+yavinSetWidgetAppearance(window.widID.camFL, 5, 57, 0.5, 1)
+yavinSetWidgetAppearance(window.widID.camFR, 25, 57, 0.5, 1)
+yavinSetWidgetAppearance(window.widID.camBR, 45, 57, 0.5, 1)
+}
+
+
+if (state==4) {
+yavinSetWidgetAppearance(window.widID.field, 5, 5, 1.5, 1)
+
+yavinSetWidgetAppearance(window.widID.state, 0, 10, 1, 0)
+yavinSetWidgetAppearance(window.widID.errors, 0, 10, 1, 0)
+
+yavinSetWidgetAppearance(window.widID.auton1, 30, 5, 1, 0)
+yavinSetWidgetAppearance(window.widID.auton2, 30, 20, 1, 0)
+
+yavinSetWidgetAppearance(window.widID.left, 90, 0, 1, 0)
+yavinSetWidgetAppearance(window.widID.right, 90, 0, 1, 0)
+
+yavinSetWidgetAppearance(window.widID.arm, 80, 5, 0.5, 0)
+yavinSetWidgetAppearance(window.widID.elev, 62, 5, 1.1, 1)
+yavinSetWidgetAppearance(window.widID.chain, 0, 10, 1, 0)
+yavinSetWidgetAppearance(window.widID.progress, 44, 56, 2, 1)
 
 yavinSetWidgetAppearance(window.widID.camFL, 0, 10, 1, 0)
 yavinSetWidgetAppearance(window.widID.camFR, 0, 10, 1, 0)
-yavinSetWidgetAppearance(window.widID.camBR, 0, 10, 1, 0)
+yavinSetWidgetAppearance(window.widID.camBR, 13, 55, 0.8, 1)
+}
+
+
+if (state==5) {
+yavinSetWidgetAppearance(window.widID.field, 5, 10, 1, 1)
+
+yavinSetWidgetAppearance(window.widID.state, 0, 10, 1, 0)
+yavinSetWidgetAppearance(window.widID.errors, 0, 10, 1, 0)
+
+yavinSetWidgetAppearance(window.widID.auton1, 30, 5, 1, 0)
+yavinSetWidgetAppearance(window.widID.auton2, 30, 20, 1, 0)
+
+yavinSetWidgetAppearance(window.widID.left, 86, 11, 1, 1)
+yavinSetWidgetAppearance(window.widID.right, 86, 27, 1, 1)
+
+yavinSetWidgetAppearance(window.widID.arm, 44, 10, 0.75, 1)
+yavinSetWidgetAppearance(window.widID.elev, 65, 10, 0.75, 1)
+yavinSetWidgetAppearance(window.widID.chain, 0, 10, 1, 0)
+yavinSetWidgetAppearance(window.widID.progress, 44, 46, 2.3, 1)
+
+yavinSetWidgetAppearance(window.widID.camFL, 5, 57, 0.5, 0)
+yavinSetWidgetAppearance(window.widID.camFR, 25, 57, 0.5, 0)
+yavinSetWidgetAppearance(window.widID.camBR, 45, 57, 0.5, 0)
+}
+
+
+if (state==6) {
+yavinSetWidgetAppearance(window.widID.field, 7, 5, 1.65, 1)
+
+yavinSetWidgetAppearance(window.widID.state, 0, 10, 1, 0)
+yavinSetWidgetAppearance(window.widID.errors, 0, 10, 1, 0)
+
+yavinSetWidgetAppearance(window.widID.auton1, 30, 5, 1, 0)
+yavinSetWidgetAppearance(window.widID.auton2, 30, 20, 1, 0)
+
+yavinSetWidgetAppearance(window.widID.left, 85, 12, 1.4, 1)
+yavinSetWidgetAppearance(window.widID.right, 85, 32, 1.4, 1)
+
+yavinSetWidgetAppearance(window.widID.arm, 68, 5, 0.55, 1)
+yavinSetWidgetAppearance(window.widID.elev, 68, 30, 0.55, 1)
+yavinSetWidgetAppearance(window.widID.chain, 0, 10, 1, 0)
+yavinSetWidgetAppearance(window.widID.progress, 45, 57, 2.4, 1)
+
+yavinSetWidgetAppearance(window.widID.camFL, 5, 57, 0.5, 1)
+yavinSetWidgetAppearance(window.widID.camFR, 25, 57, 0.5, 1)
+yavinSetWidgetAppearance(window.widID.camBR, 45, 57, 0.5, 0)
 }
 
 }
@@ -143,11 +234,18 @@ widget.style.height=(height/widgetScale*scale)+"vw";
 widget.style.width=(width/widgetScale*scale)+"vw";
 widget.style.opacity=opacity;
 if (opacity<0.01) {
-eval("setTimeout(function() {document.getElementById('"+widgetID+"').style.display='none'},1000)");
+if (widget.innerHTML.includes("camera")) {
+widget.style.display = "none"
+}
 }
 else {
+if (widget.style.display=="none") {
 widget.style.display="block";
 }
+}
+//eval("setTimeout(function() {document.getElementById('"+widgetID+"').style.display='none'},1000)");
+
+
 
 window.widScale[id] = scale;
 }

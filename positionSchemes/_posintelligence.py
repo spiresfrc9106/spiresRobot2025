@@ -30,9 +30,9 @@ class PlacementIntelligence():
         bestTagLocation = self.field.lookup(self.currentTarget).toPose2d()
         front_half_width = self.botLenX / 2
         edge_to_center_d = front_half_width + self.indivBumperWidth
-        safe_fudge_factor = 1.01
+        safe_fudge_factor = 1.003
         fb_offset = edge_to_center_d * safe_fudge_factor
-        newTargetPose = self.adjustLocationRobotRelative(bestTagLocation, fb_offset - bumperToEdge_m,
+        newTargetPose = self.adjustLocationRobotRelative(bestTagLocation, fb_offset + bumperToEdge_m,
                                                          self.shiftToNode_m * sideOfReef)
         pos = YPose(newTargetPose)
         bestTagLocation = Pose2d(pos.x, pos.y, ((math.pi + pos.t) % (2 * math.pi)))
@@ -67,6 +67,7 @@ class PlacementIntelligence():
             sign = 0
         else:
             sign = fb_shift / h
+        h = h * sign
         t = ang_rad
         x_shift = 0
         y_shift = 0
@@ -103,6 +104,7 @@ class PlacementIntelligence():
             sign = 0
         else:
             sign = lr_shift / h
+        h = h * sign
         x_shift = 0
         y_shift = 0
         theta = 30
@@ -111,7 +113,7 @@ class PlacementIntelligence():
             x_shift = 0
             y_shift = -1 * h
         # left: math.isclose(deg2Rad(0), t, abs_tol=0.05):
-        if self.currentTarget == 7 or self.currentTarget == 10:
+        if self.currentTarget == 7 or self.currentTarget == 21:
             x_shift = 0
             y_shift = h
         # up-right:
@@ -147,7 +149,7 @@ class PickupIntelligence:
         self.botLenY = 0.6604
         self.indivBumperWidth = 0.08573
 
-    def decidePickupPose(self, manualSetTarget=0):
+    def decidePickupPose(self, extra_forward_m=0, manualSetTarget=0):
         targetTag = manualSetTarget
         if manualSetTarget <= 0:
             targetTag = self.decidePickupTag()
@@ -156,7 +158,7 @@ class PickupIntelligence:
         edge_to_center_d = front_half_width + self.indivBumperWidth
         safe_fudge_factor = 1.01
         fb_offset = edge_to_center_d * safe_fudge_factor
-        newTargetPose = self.adjustLocationRobotRelative(bestTagLocation, fb_offset, 0)
+        newTargetPose = self.adjustLocationRobotRelative(bestTagLocation, fb_offset+extra_forward_m, 0)
         return newTargetPose
 
     def decidePickupTag(self):

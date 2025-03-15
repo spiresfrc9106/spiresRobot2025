@@ -3,6 +3,7 @@ from wpimath import applyDeadband
 from wpimath.filter import SlewRateLimiter
 from wpilib import XboxController
 
+from dashboardWidgets.icon import Icon
 from drivetrain.drivetrainCommand import DrivetrainCommand
 from drivetrain.drivetrainPhysical import MAX_FWD_REV_SPEED_MPS,MAX_STRAFE_SPEED_MPS,\
 MAX_ROTATE_SPEED_RAD_PER_SEC,MAX_TRANSLATE_ACCEL_MPS2,MAX_ROTATE_ACCEL_RAD_PER_SEC_2
@@ -60,6 +61,19 @@ class OperatorInterface(metaclass=Singleton):
         addLog("OI/elevArmCmdState", lambda: self.elevArmCmdState, "int")
         addLog("OI/ReefLeftOrRight", lambda: self.dPadState, "int")
 
+        addLog("isLeftReef",
+               lambda: (
+                   Icon.kON if self.getReefLeftOrRight() == ReefLeftOrRight.LEFT
+                   else Icon.kOFF)
+               )
+
+        addLog("isRightReef",
+               lambda: (
+                   Icon.kON if self.getReefLeftOrRight() == ReefLeftOrRight.RIGHT
+                   else Icon.kOFF)
+               )
+
+
 
     def update(self):
 
@@ -77,8 +91,8 @@ class OperatorInterface(metaclass=Singleton):
             self.elevatorPosYCmd = vYJoyWithDeadband
             self.armPosYCmd = vYJoy2WithDeadband
 
-            self.updateDPadLeftOrRight()
-            self.launchPlacement = self.ctrl.getStartButton() # wanted to do the pressed but do not trust our code speed
+            updateReefSide = True
+            self.launchPlacement = self.ctrl.getLeftBumperPressed()
 
             if self.ctrl.getRightBumperPressed():
                 self.elevArmCmdState = ElevArmCmdState.VEL_CONTROL  # xyzzy redundant because this is also the default
@@ -89,15 +103,22 @@ class OperatorInterface(metaclass=Singleton):
             elif self.ctrl.getLeftTriggerAxis() > .5:
                 self.elevArmCmdState = ElevArmCmdState.RECEIVE_CORAL
             elif self.ctrl.getAButton():
+                updateReefSide = False
                 self.elevArmCmdState = ElevArmCmdState.L1
             elif self.ctrl.getXButton():
+                updateReefSide = False
                 self.elevArmCmdState = ElevArmCmdState.L2
             elif self.ctrl.getBButton():
+                updateReefSide = False
                 self.elevArmCmdState = ElevArmCmdState.L3
             elif self.ctrl.getYButton():
+                updateReefSide = False
                 self.elevArmCmdState = ElevArmCmdState.L4
             else:
                 self.elevArmCmdState = ElevArmCmdState.VEL_CONTROL
+
+            if updateReefSide:
+                self.updateDPadLeftOrRight()
         else:
             # If the joystick is unplugged, pick safe-state commands and raise a fault
             self.elevatorPosYCmd = 0.0

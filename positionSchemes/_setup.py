@@ -1,3 +1,4 @@
+import wpilib
 from wpimath.geometry import Pose2d
 from utils.fieldTagLayout import FieldTagLayout
 from drivetrain.drivetrainCommand import DrivetrainCommand
@@ -16,6 +17,7 @@ class SetupScheme:
         self.changeInTime = 0
         self.waitTimes = {}
         self.schemeProg = 0
+        self.localProg = 0
         self.baseCmd = None
         self.armCmd = None
         self.elevCmd = None
@@ -23,6 +25,10 @@ class SetupScheme:
 
     def nextState(self):
         self.currentState = self.currentState + 1
+        self.localProg = 0
+
+    def isSim(self):
+        return wpilib.RobotBase.isSimulation()
 
     def completedAwait(self, waitName, duration):
         now = Timer.getFPGATimestamp()

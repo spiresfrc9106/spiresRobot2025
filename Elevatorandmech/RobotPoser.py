@@ -29,6 +29,9 @@ from humanInterface.operatorInterface import OperatorInterface, ElevArmCmdState,
 from positionSchemes.plunge_v1 import PlungeV1
 from positionSchemes.pickup_v1 import PickupV1
 from positionSchemes.place_L4_v1 import PlaceL4V1
+from positionSchemes.place_L3_v1 import PlaceL3V1
+from positionSchemes.place_L2_v1 import PlaceL2V1
+from positionSchemes.place_L1_v1 import PlaceL1V1
 from utils.signalLogging import addLog
 from utils.singleton import Singleton
 
@@ -52,6 +55,10 @@ class PoseDirector(metaclass=Singleton):
         self.getDriveTrainCommand = lambda curCommand : self.currentPositionScheme.getDriveTrainCommand(curCommand)
         self.getElevatorCommand = lambda curCommand :  self.currentPositionScheme.getElevatorCommand(curCommand)
         self.getArmCommand = lambda curCommand : self.currentPositionScheme.getArmCommand(curCommand)
+        self.schemeProg = 0
+        self.dashboardState = 1
+        addLog("RP/schemeProg", lambda: self.schemeProg, "") # don't delete this.
+        addLog("RP/dashboardState", lambda: self.dashboardState, "") # don't delete this.
         addLog("RP/controllerState", lambda: self.controllerState, "int")
 
     def update(self, isAuton=False):
@@ -63,6 +70,12 @@ class PoseDirector(metaclass=Singleton):
             self.getArmCommand = lambda curCommand : self.currentPositionScheme.getArmCommand(curCommand)
             # self.progress = self.currentPositionScheme.schemeProg *100
         self.currentPositionScheme.update()
+        if hasattr(self.currentPositionScheme, "schemeProg"):
+            self.schemeProg=round(self.currentPositionScheme.schemeProg*100)
+        else:
+            self.dashboardState = 3
+        if isAuton:
+            self.dashboardState = 2
 
     def _isControllerStateChanging(self)->bool:
         nextState = self.oInt.getElevArmCmdState()
@@ -86,16 +99,22 @@ class PoseDirector(metaclass=Singleton):
             case ElevArmCmdState.POS_CONTROL:
                 return YavinsPoseClassPositionControl(self.arm, self.driveTrain, self.elevator, self.oInt)
             case ElevArmCmdState.PLUNGE:
+                self.dashboardState = 5
                 return PlungeV1(self.arm, self.driveTrain, self.elevator, self.oInt) # todo fix me
             case ElevArmCmdState.RECEIVE_CORAL:
+                self.dashboardState = 4
                 return PickupV1(self.arm, self.driveTrain, self.elevator, self.oInt) # todo fix me
             case ElevArmCmdState.L1:
-                return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator, self.oInt)  # todo fix me
+                self.dashboardState = 6
+                return PlaceL1V1(self.arm, self.driveTrain, self.elevator, self.oInt)  # todo fix me
             case ElevArmCmdState.L2:
-                return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator, self.oInt)  # todo fix me
+                self.dashboardState = 6
+                return PlaceL2V1(self.arm, self.driveTrain, self.elevator, self.oInt)  # todo fix me
             case ElevArmCmdState.L3:
-                return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator, self.oInt)  # todo fix me
+                self.dashboardState = 6
+                return PlaceL3V1(self.arm, self.driveTrain, self.elevator, self.oInt)  # todo fix me
             case ElevArmCmdState.L4:
+                self.dashboardState = 6
                 return PlaceL4V1(self.arm, self.driveTrain, self.elevator, self.oInt)  # todo fix me
             case _:
                 return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator, self.oInt)  # todo fix me

@@ -21,7 +21,7 @@ class Dashboard:
         # state, errors, field, auton1, auton2, left, right, arm, elev, chain, scheme, progress, front l, front r, back
 
         # 0 state
-        webServer.addDashboardWidget(Text(0, 0, "/SmartDashboard/ytest_position_final_x"))
+        webServer.addDashboardWidget(Text(40, 40, "/SmartDashboard/RP/dashboardState"))
 
         # 1 errors
         webServer.addDashboardWidget(Text(50, 75, "/SmartDashboard/faultDescription"))
@@ -49,18 +49,18 @@ class Dashboard:
         )
 
         # 5 left
-        webServer.addDashboardWidget(Icon(45, 45, "/SmartDashboard/isRedIconState", "#b942f5", "reefLeft"))
+        webServer.addDashboardWidget(Icon(45, 45, "/SmartDashboard/isLeftReef", "#b942f5", "reefLeft"))
         # 6 right
-        webServer.addDashboardWidget(Icon(55, 45, "/SmartDashboard/isBlueIconState", "#b942f5", "reefRight"))
+        webServer.addDashboardWidget(Icon(55, 45, "/SmartDashboard/isRightReef", "#b942f5", "reefRight"))
 
         # 7 arm
-        webServer.addDashboardWidget(CircularGauge(70, 80, "/SmartDashboard/ytest_position_final_x", 0, 20, 0, 20))
+        webServer.addDashboardWidget(CircularGauge(70, 80, "/SmartDashboard/RParm/pos", -90, 90, -100, 100))
         # 8 elev
-        webServer.addDashboardWidget(CircularGauge(20, 80, "/SmartDashboard/ytest_position_final_x", 0, 20, 0, 20))
+        webServer.addDashboardWidget(CircularGauge(20, 80, "/SmartDashboard/RPelev/pos", 15, 60, 10, 65))
         # 9 chain
         webServer.addDashboardWidget(CircularGauge(20, 80, "/SmartDashboard/ytest_position_final_x", 0, 20, 0, 20))
         # 10 scheme progress
-        webServer.addDashboardWidget(ProgressBar(20, 80, "/SmartDashboard/ytest_position_final_x", 0, 20, 0, 20))
+        webServer.addDashboardWidget(ProgressBar(20, 80, "/SmartDashboard/RP/schemeProg", 0, 100, 0, 100))
 
         # 11 cam1: front_l
         webServer.addDashboardWidget(Camera(10, 20, ""))
@@ -75,6 +75,9 @@ class Dashboard:
         # webServer.addDashboardWidget(Icon(65, 45, "/SmartDashboard/PE Vision Targets Seen", "#00FF00", "vision"))
 
         # Add logging for things that don't come from anywhere else
+
+
+
         addLog("isRedIconState",
                lambda: (
                    Icon.kON if wpilib.DriverStation.getAlliance() == wpilib.DriverStation.Alliance.kRed

@@ -48,6 +48,7 @@ class PlungeV1(SetupScheme):
 
         self.elevHeightOfPen = 30.6875
         self.elevHeightOfCoralTouch = 33.6875
+        self.elevSafestPlungeHeight = self.elevHeightOfPen*0.5+self.elevHeightOfCoralTouch*0.5
         # change this number to actual!!!!!!
         # !!!!!!!!!!!!!!!!!! and change the elev const.
 
@@ -58,19 +59,19 @@ class PlungeV1(SetupScheme):
         match self.currentState:
             case 0:  # initializing
                 # this is in case the elev was at the bottom and someone pressed plunge
-                if self.elev.getPosition() < self.elevHeightOfPen:
-                    self.elevCmd = (self.elevHeightOfPen + 4, 0)
+                if self.elev.getPosition() < self.elevSafestPlungeHeight:
+                    self.elevCmd = (self.elevSafestPlungeHeight + 4, 0)
                 else:
                     self.nextState()
-            case 1:  # moving elevator in negative direction, not intending to hit bottom
+            case 1:
                 self.armCmd = (-90, 0)  # lowest and 0 speed when reached
                 self.elevCmd = None  # originally we were going to slowly bring this down but no.
                 if math.isclose(self.arm.getPosition(), -90, abs_tol=2.5):
                     self.nextState()
             case 2:  #
                 self.armCmd = (-90, 0)
-                self.elevCmd = (self.elevHeightOfPen, 0)
-                if math.isclose(self.elev.getPosition(), -90, abs_tol=0.5):
+                self.elevCmd = (self.elevSafestPlungeHeight, 0)
+                if math.isclose(self.elev.getPosition(), self.elevSafestPlungeHeight, abs_tol=0.5):
                     self.nextState()
             case 3:
                 if self.completedAwait("bottomWait", 0.5):
@@ -82,7 +83,7 @@ class PlungeV1(SetupScheme):
             case 5:
                 if self.elev.getPosition() > self.elevConst.posMedium-1:
                     self.armCmd = (90, 0)
-                if math.isclose(self.arm.getPosition(),90, abs_tol=2):
+                if math.isclose(self.arm.getPosition(), 90, abs_tol=2):
                     self.nextState()
             case 6:
                 pass

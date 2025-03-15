@@ -16,7 +16,7 @@ from wpimath.geometry import Pose2d
 
 # if you can't find something here, it's probably in the _setup file.
 
-class PlaceL4V1(SetupScheme):
+class PlaceL1V1(SetupScheme):
     def __init__(self, arm, base, elev, oInt):
         super().__init__(arm, base, elev)
         self.arm = arm
@@ -48,12 +48,12 @@ class PlaceL4V1(SetupScheme):
 
         self.totalRuns = 0
         self.bestTag = 0
-        addLog("yvn_current_placeL4_state", lambda: self.currentState, "")
-        addLog("yvn_placeL4_runs", lambda: self.totalRuns, "")
+        addLog("yvn_current_placeL1_state", lambda: self.currentState, "")
+        addLog("yvn_placeL1_runs", lambda: self.totalRuns, "")
         self.placementIntel = PlacementIntelligence(self.base)
         # DEFINE THESE
-        self.elevPlacePos = 60
-        self.armPlacePos = 60
+        self.elevPlacePos = 18
+        self.armPlacePos = 10
 
     def update(self):
         currentTime = Timer.getFPGATimestamp()
@@ -105,23 +105,16 @@ class PlaceL4V1(SetupScheme):
                     self.nextState()
             case 5: #launch it bruh
                 self.basePrimitiveCmd = None
-                self.armCmd = (50, -15)
-                armGoalReached = math.isclose(self.arm.getPosition(), self.armPlacePos, abs_tol=0.75)
-                if self.isSim():
-                    armGoalReached = self.completedAwait("TODOREMOVEarm2", 2.0)  #
-                if armGoalReached:
-                    self.nextState()
-            case 6:
-                self.armCmd = (-15, 0)
+                self.armCmd = (5, -5)
                 self.bestTag = self.placementIntel.decidePlacementPose(self.pdSideOfReef, self.inchesToMeters(10))
                 self.baseCmd = (self.bestTag, 0, 0, 0)
                 if self.completedTrajectory(self.base):
                     self.nextState()
-            case 7:
+            case 6:
                 pass
             case _:
                 pass
 
-        state_max = 7
+        state_max = 6
         # when calculating the scheme prog, we can also add in local progress to show something as we go thru state.
         self.schemeProg = min((self.currentState+self.localProg) / (state_max), 1)

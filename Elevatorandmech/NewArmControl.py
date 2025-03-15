@@ -219,6 +219,9 @@ class ArmControl(metaclass=Singleton):
             addLog(f"{self.name}/des_pos_deg", lambda: self.desTrapPState.position, "deg")
             addLog(f"{self.name}/des_vel_degps", lambda: self.desTrapPState.velocity, "degps")
 
+
+            addLog("RParm/pos", lambda: self.curTrapPState.position, "deg")
+
             self._changeState(ArmStates.UNINITIALIZED)
 
             self.previousUpdateTimeS = None
