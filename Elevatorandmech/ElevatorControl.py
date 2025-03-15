@@ -200,6 +200,9 @@ class ElevatorControl(metaclass=Singleton):
 
             addLog("RPelev/pos", lambda: self.curTrapPState.position, "in")
 
+            self.poserCmdPosLogger = getNowLogger(f"{self.name}/cmd_pos_in", "in")
+            self.poserCmdVelLogger = getNowLogger(f"{self.name}/cmd_vel_inps", "inps")
+
             self.initialized = True
 
             print(f"Init {self.name} complete")
@@ -310,35 +313,54 @@ class ElevatorControl(metaclass=Singleton):
 
         self.fMotor.setPosCmd(motorPosCmdRad, vFF)
 
-    def _perhapsWeHaveANewRangeCheckedDesiredState(self, newDesHeightIn, newDesVelocityInps):
+    def _perhapsWeHaveANewRangeCheckedDesiredState(self, elevatorCommand: ElevatorCommand )->TrapezoidProfile.State:
+
+        newDesHeightIn = elevatorCommand.heightIn
+        newDesVelocityInps = elevatorCommand.velocityInps
+
+        result = self.desTrapPState
+
         if (self.elevatorState == ElevatorStates.OPERATING) and (self.desTrapPState.position != newDesHeightIn or self.desTrapPState.velocity != newDesVelocityInps):
-            # limit the height goal so that it is less than max height
-            # limit the height goal so that is more than 0
 
-            a = newDesHeightIn
-            b = newDesVelocityInps
-
-            newDesHeightIn = min(newDesHeightIn, self.maxHeightIn)
-            newDesHeightIn = max(newDesHeightIn, self.minHeightIn)
+            #a = newDesHeightIn
+            #b = newDesVelocityInps
 
             newDesVelocityInps = min(newDesVelocityInps, self.maxVelocityIps.get())
             newDesVelocityInps = max(newDesVelocityInps, -self.maxVelocityIps.get())
 
-            # do these checks relative to the curTrapPState
-            # if height goal is to go up, make sure that velocity goal is 0 or +
-            if newDesHeightIn > self.curTrapPState.position:
-                newDesVelocityInps = max(0, newDesVelocityInps)
+            if newDesHeightIn is not None:
 
-            # if height goals is to go down, make sure that the velocity goal is 0 or -
-            elif newDesHeightIn < self.curTrapPState.position:
-                newDesVelocityInps = min(0, newDesVelocityInps)
-            # if height goals is to stay at current height goal
+                # limit the height goal so that it is less than max height
+                # limit the height goal so that is more than 0
+
+                newDesHeightIn = min(newDesHeightIn, self.maxHeightIn)
+                newDesHeightIn = max(newDesHeightIn, self.minHeightIn)
+
+                # do these checks relative to the curTrapPState
+                # if height goal is to go up, make sure that velocity goal is 0 or +
+                if newDesHeightIn > self.curTrapPState.position:
+                    newDesVelocityInps = max(0, newDesVelocityInps)
+
+                # if height goals is to go down, make sure that the velocity goal is 0 or -
+                elif newDesHeightIn < self.curTrapPState.position:
+                    newDesVelocityInps = min(0, newDesVelocityInps)
+                # if height goals is to stay at current height goal
+                else:
+                    newDesVelocityInps = 0
+            elif newDesVelocityInps == 0.0:
+                newDesHeightIn = self.curTrapPState.position
+            elif newDesVelocityInps > 0.0:
+                newDesHeightIn = self.maxHeightIn
+            elif newDesVelocityInps < 0.0:
+                newDesHeightIn = self.minHeightIn
             else:
-                newDesVelocityInps = 0
+                newDesHeightIn = newDesHeightIn
 
-            print(f" a={a} b={b} newDesHeightIn={newDesHeightIn} newDesVelocityInps={newDesVelocityInps}")
+            #print(f" a={a} b={b} newDesHeightIn={newDesHeightIn} newDesVelocityInps={newDesVelocityInps}")
 
-            self.desTrapPState = self.trapProfiler.State(newDesHeightIn, newDesVelocityInps)
+            result = self.trapProfiler.State(newDesHeightIn, newDesVelocityInps)
+
+        return result
 
     def _updateOperating(self) -> None:
         self.currentUpdateTimeS = Timer.getFPGATimestamp()
@@ -356,16 +378,15 @@ class ElevatorControl(metaclass=Singleton):
         elevatorCommand = ElevatorCommand(heightGoalIn, velocityGoalInps)
         elevatorCommand = self.poseDirector.getElevatorCommand(elevatorCommand)
 
+        if elevatorCommand.heightIn is None:
+            self.poserCmdPosLogger.logNow(100)
+        else:
+            self.poserCmdPosLogger.logNow(elevatorCommand.heightIn)
+        self.poserCmdVelLogger.logNow(elevatorCommand.velocityInps)
 
         #print(f"elevator {elevatorCommand.heightIn} {elevatorCommand.velocityInps}")
-        if elevatorCommand.heightIn is None and elevatorCommand.velocityInps == 0.0:
-            elevatorCommand.heightIn = heightGoalIn
-        elif elevatorCommand.heightIn is None and elevatorCommand.velocityInps > 0.0:
-            elevatorCommand.heightIn = self.maxHeightIn
-        else:
-            elevatorCommand.heightIn = self.minHeightIn
 
-        self.desTrapPState = TrapezoidProfile.State(elevatorCommand.heightIn, elevatorCommand.velocityInps)
+        self.desTrapPState = self._perhapsWeHaveANewRangeCheckedDesiredState(elevatorCommand)
 
         # Update motor closed-loop calibration
         if self.kP.isChanged():
