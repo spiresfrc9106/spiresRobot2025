@@ -1,7 +1,7 @@
 import math
 from enum import Enum
 import ntcore
-from wpimath.geometry import Pose3d, Rotation3d, Translation3d, Rotation2d
+from wpimath.geometry import Pose3d, Rotation3d, Translation3d, Rotation2d, Translation3d
 
 class Team(Enum):
     RED = 0
@@ -26,7 +26,7 @@ class Limelight:
     A class for interfacing with the limelight camera.
     """
 
-    def __init__(self, origin_offset: Pose3d, name: str = "limelight"):
+    def __init__(self, origin_offset: Translation3d, name: str = "limelight"):
         """
 
         :param origin_offset: The offset of the limelight from the robot's origin in meters
@@ -44,7 +44,7 @@ class Limelight:
         self.tv: float = 0
         self.ta: float = 0
         self.tid: float = -1.0
-        self.origin_offset: Pose3d = origin_offset
+        self.origin_offset: Translation3d = origin_offset
         self.drive_cam = False
         self.pipeline: LimelightPipeline = LimelightPipeline.feducial
         self.t_class = None

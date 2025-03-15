@@ -3,7 +3,7 @@ import math
 
 from ntcore import NetworkTableInstance
 import wpilib
-from wpimath.geometry import Pose2d, Rotation2d, Transform3d, Pose3d
+from wpimath.geometry import Pose2d, Rotation2d, Transform3d, Pose3d, Translation3d
 
 from utils.signalLogging import addLog
 from wrappers.wrapperedPoseEstPhotonCamera import WrapperedPoseEstPhotonCamera
@@ -22,7 +22,7 @@ class LimelightCameraPoseObservation:
 
 
 class WrapperedPoseEstLimelight:
-    def __init__(self, camName:str, robotToCam:Pose3d):
+    def __init__(self, camName:str, robotToCam:Translation3d):
         setVersionCheckEnabled(False)
 
         print(f"WrapperedPoseEstLimelight camName {type(camName)} = {camName}")
@@ -37,7 +37,7 @@ class WrapperedPoseEstLimelight:
         self.disconFault = Fault(f"LL Camera {camName} not sending data")
         self.timeoutSec = 1.0
         self.poseEstimates: list[LimelightCameraPoseObservation] = []
-        self.robotToCam: Transform3d = robotToCam
+        self.robotToCam: Translation3d = robotToCam
 
         self.CamPublisher = (
             NetworkTableInstance.getDefault()
