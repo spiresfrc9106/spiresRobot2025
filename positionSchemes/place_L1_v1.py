@@ -81,9 +81,6 @@ class PlaceL1V1(SetupScheme):
             case 3:
                 elevGoalReached = math.isclose(self.elev.getPosition(), self.elevPlacePos, abs_tol=0.5)
                 armGoalReached = math.isclose(self.arm.getPosition(), self.armPlacePos, abs_tol=5)  # is abs_tol# good?
-                if self.isSim():
-                    elevGoalReached = self.completedAwait("TODOREMOVEelev1",3.5)
-                    armGoalReached = self.completedAwait("TODOREMOVEarm1", 2.0)
                 baseGoalReached = self.completedTrajectory(self.base)
                 if elevGoalReached and armGoalReached and baseGoalReached:
                     self.nextState()
