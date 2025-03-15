@@ -92,7 +92,7 @@ class DrivetrainControl(metaclass=Singleton):
         addLog("yvn_drive_cmd_vely", lambda: self.cmdVelY, "")
         addLog("yvn_drive_cmd_velt", lambda: self.cmdVelT, "")
 
-    def setManualCmd(self, cmd: DrivetrainCommand, robotRel):
+    def setManualCmd(self, cmd: DrivetrainCommand, robotRel=False):
         """Send commands to the robot for motion relative to the field
 
         Args:
