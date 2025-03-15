@@ -59,8 +59,8 @@ class PlungeV1(SetupScheme):
         match self.currentState:
             case 0:  # initializing
                 # this is in case the elev was at the bottom and someone pressed plunge
-                if self.elev.getPosition() < self.elevSafestPlungeHeight:
-                    self.elevCmd = (self.elevSafestPlungeHeight + 4, 0)
+                if self.elev.getPosition() < self.elevSafestPlungeHeight + 4:
+                    self.elevCmd = (self.elevSafestPlungeHeight + 5, 0)
                 else:
                     self.nextState()
             case 1:
