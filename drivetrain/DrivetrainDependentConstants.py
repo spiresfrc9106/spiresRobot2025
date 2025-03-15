@@ -80,39 +80,45 @@ COMMON_CAMS = [
     #         ),
     #     "ROBOT_TO_CAM": ROBOT_TO_FRONT_CAM,
     # },
-    {
-        "CAM": wrapperedLimilightCameraFactory("limelight-br", ROBOT_TO_LIME_1),
-        "POSE_EST_LOG_NAME": "limeli-br",
-        "PUBLISHER":
-            (
-                NetworkTableInstance.getDefault()
-                .getStructTopic("/Limili-brPose", Pose3d)
-                .publish()
-            ),
-        "ROBOT_TO_CAM": ROBOT_TO_LIME_1,
-    },
-    {
-        "CAM": wrapperedLimilightCameraFactory("limelight-fl", ROBOT_TO_LIME_1),
-        "POSE_EST_LOG_NAME": "limeli-fl",
-        "PUBLISHER":
-            (
-                NetworkTableInstance.getDefault()
-                .getStructTopic("/Limili-flPose", Pose3d)
-                .publish()
-            ),
-        "ROBOT_TO_CAM": ROBOT_TO_LIME_1,
-    },
-    {
-        "CAM": wrapperedLimilightCameraFactory("limelight-fr", ROBOT_TO_LIME_1),
-        "POSE_EST_LOG_NAME": "limeli-fr",
-        "PUBLISHER":
-            (
-                NetworkTableInstance.getDefault()
-                .getStructTopic("/Limili-frPose", Pose3d)
-                .publish()
-            ),
-        "ROBOT_TO_CAM": ROBOT_TO_LIME_1,
-    },
+
+
+
+
+
+
+    # {
+    #     "CAM": wrapperedLimilightCameraFactory("limelight-br", ROBOT_TO_LIME_1),
+    #     "POSE_EST_LOG_NAME": "limeli-br",
+    #     "PUBLISHER":
+    #         (
+    #             NetworkTableInstance.getDefault()
+    #             .getStructTopic("/Limili-brPose", Pose3d)
+    #             .publish()
+    #         ),
+    #     "ROBOT_TO_CAM": ROBOT_TO_LIME_1,
+    # },
+    # {
+    #     "CAM": wrapperedLimilightCameraFactory("limelight-fl", ROBOT_TO_LIME_1),
+    #     "POSE_EST_LOG_NAME": "limeli-fl",
+    #     "PUBLISHER":
+    #         (
+    #             NetworkTableInstance.getDefault()
+    #             .getStructTopic("/Limili-flPose", Pose3d)
+    #             .publish()
+    #         ),
+    #     "ROBOT_TO_CAM": ROBOT_TO_LIME_1,
+    # },
+    # {
+    #     "CAM": wrapperedLimilightCameraFactory("limelight-fr", ROBOT_TO_LIME_1),
+    #     "POSE_EST_LOG_NAME": "limeli-fr",
+    #     "PUBLISHER":
+    #         (
+    #             NetworkTableInstance.getDefault()
+    #             .getStructTopic("/Limili-frPose", Pose3d)
+    #             .publish()
+    #         ),
+    #     "ROBOT_TO_CAM": ROBOT_TO_LIME_1,
+    # },
 ]
 
 class DrivetrainDependentConstants:

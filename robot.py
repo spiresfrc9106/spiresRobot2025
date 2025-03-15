@@ -201,7 +201,7 @@ class MyRobot(wpilib.TimedRobot):
         # Probably not noticeable, but should be corrected.
 
         if drivetrainDepConstants['HAS_DRIVETRAIN']:
-            self.driveTrain.setManualCmd(self.dInt.getCmd())
+            self.driveTrain.setManualCmd(self.dInt.getCmd(), self.dInt.getRobotRelative())
 
         self.poseDirector.update()
 

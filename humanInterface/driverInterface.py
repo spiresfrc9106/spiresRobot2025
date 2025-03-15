@@ -37,6 +37,8 @@ class DriverInterface(metaclass=Singleton):
 
         # Utility - reset to zero-angle at the current pose
         self.gyroResetCmd = False
+        #utility - use robot-relative commands
+        self.robotRelative = False
         self.motorTestCmd = 0
 
         self.processedStrafe = 0
@@ -72,18 +74,27 @@ class DriverInterface(metaclass=Singleton):
             vYJoyRaw = self.ctrl.getLeftX() * -1
             vRotJoyRaw = self.ctrl.getRightX() * -1
 
+
+            self.robotRelative = self.ctrl.getLeftBumper()
+
+            if not self.robotRelative:
+                # Correct for alliance
+                if onRed():
+                    vXJoyRaw *= -1.0
+                    vYJoyRaw *= -1.0
+
             # Correct for alliance
             if onRed():
                 vXJoyRaw *= -1.0
                 vYJoyRaw *= -1.0
 
             # deadband
-            vXJoyWithDeadband = applyDeadband(vXJoyRaw, 0.15)
-            vYJoyWithDeadband = applyDeadband(vYJoyRaw, 0.15)
-            vRotJoyWithDeadband = applyDeadband(vRotJoyRaw, 0.2)
+            vXJoyWithDeadband = applyDeadband(vXJoyRaw, 0.05)
+            vYJoyWithDeadband = applyDeadband(vYJoyRaw, 0.05)
+            vRotJoyWithDeadband = applyDeadband(vRotJoyRaw, 0.05)
 
             # TODO - if the driver wants a slow or sprint button, add it here.
-            slowMult = 1.0 if (self.ctrl.getRightBumper()) else 0.75
+            slowMult = 1.0 if (self.ctrl.getRightBumper()) else 0.5
             #slowMult = 1.0
 
             # Shape velocity command
@@ -91,13 +102,19 @@ class DriverInterface(metaclass=Singleton):
             velCmdYRaw = vYJoyWithDeadband * MAX_FWD_REV_SPEED_MPS * slowMult
             velCmdRotRaw = vRotJoyWithDeadband * MAX_ROTATE_SPEED_RAD_PER_SEC
 
+
+            if self.robotRelative:
+                velCmdXRaw *= .5
+                velCmdYRaw *= .5
+                velCmdRotRaw *= .5
+
+
             # Slew rate limiter
             self.velXCmd = self.velXSlewRateLimiter.calculate(velCmdXRaw)
             self.velYCmd = self.velYSlewRateLimiter.calculate(velCmdYRaw)
             self.velTCmd = self.velTSlewRateLimiter.calculate(velCmdRotRaw)
 
             self.gyroResetCmd = False
-
             self.autoDriveToSpeaker = False
             self.autoDriveToPickup = False
             self.createDebugObstacle = False
@@ -168,3 +185,6 @@ class DriverInterface(metaclass=Singleton):
 
     def getCreateObstacle(self) -> bool:
         return self.createDebugObstacle
+
+    def getRobotRelative(self):
+        return self.robotRelative

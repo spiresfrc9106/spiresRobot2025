@@ -59,7 +59,7 @@ class PoseDirector(metaclass=Singleton):
         self.dashboardState = 1
         addLog("RP/schemeProg", lambda: self.schemeProg, "") # don't delete this.
         addLog("RP/dashboardState", lambda: self.dashboardState, "") # don't delete this.
-        addLog("RP/controllerState", lambda: self.controllerState, "int")
+        # addLog("RP/controllerState", lambda: self.controllerState, "int")
 
     def update(self, isAuton=False):
 

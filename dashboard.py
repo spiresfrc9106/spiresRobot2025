@@ -63,11 +63,11 @@ class Dashboard:
         webServer.addDashboardWidget(ProgressBar(20, 80, "/SmartDashboard/RP/schemeProg", 0, 100, 0, 100))
 
         # 11 cam1: front_l
-        webServer.addDashboardWidget(Camera(10, 20, ""))
+        webServer.addDashboardWidget(Camera(10, 20, "http://limelight-fl.local:5800/"))
         # 12 cam2: front_r
-        webServer.addDashboardWidget(Camera(10, 20, ""))
+        webServer.addDashboardWidget(Camera(10, 20, "http://limelight-fr.local:5800/"))
         # 13 cam3: back
-        webServer.addDashboardWidget(Camera(10, 20, ""))
+        webServer.addDashboardWidget(Camera(10, 20, "http://limelight-br.local:5800/"))
 
         # extra stuff.
         # webServer.addDashboardWidget(Icon(45, 45, "/SmartDashboard/isRedIconState", "#FF0000", "allianceRed"))

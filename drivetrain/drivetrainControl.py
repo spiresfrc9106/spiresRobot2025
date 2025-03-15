@@ -77,6 +77,8 @@ class DrivetrainControl(metaclass=Singleton):
         self.curManCmd = DrivetrainCommand()
         self.curCmd = DrivetrainCommand()
 
+        self.useRobotRelative = False
+
         self.gains = SwerveModuleGainSet()
 
         self.poseEst = DrivetrainPoseEstimator(self.getModulePositions(), self.gyro)
@@ -90,13 +92,14 @@ class DrivetrainControl(metaclass=Singleton):
         addLog("yvn_drive_cmd_vely", lambda: self.cmdVelY, "")
         addLog("yvn_drive_cmd_velt", lambda: self.cmdVelT, "")
 
-    def setManualCmd(self, cmd: DrivetrainCommand):
+    def setManualCmd(self, cmd: DrivetrainCommand, robotRel):
         """Send commands to the robot for motion relative to the field
 
         Args:
             cmd (DrivetrainCommand): manual command input
         """
         self.curManCmd = cmd
+        self.useRobotRelative = robotRel
 
 
     def setCoastCmd(self, coast:bool):
@@ -125,10 +128,13 @@ class DrivetrainControl(metaclass=Singleton):
         self.cmdVelY = self.curCmd.velY
         self.cmdVelT = self.curCmd.velT
 
-        # Transform the current command to be robot relative
-        tmp = ChassisSpeeds.fromFieldRelativeSpeeds(
-            self.curCmd.velX, self.curCmd.velY, self.curCmd.velT, curEstPose.rotation()
-        )
+        if self.useRobotRelative:
+            # This isn't working yet?
+            tmp = ChassisSpeeds(self.curCmd.velX, self.curCmd.velY, self.curCmd.velT)
+        else:
+            tmp = ChassisSpeeds.fromFieldRelativeSpeeds(
+                self.curCmd.velX, self.curCmd.velY, self.curCmd.velT, curEstPose.rotation()
+            )
         self.desChSpd = _discretizeChSpd(tmp)
 
         # Set the desired pose for telemetry purposes
