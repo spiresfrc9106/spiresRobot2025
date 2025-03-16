@@ -32,7 +32,7 @@ class DrivetrainPoseTelemetry:
 
         self.camPublishers = []
         self.robotToCams = []
-
+        self.variabchnag =0
         self.theInterestingValue = []
         self.interestingTracker = []
 
