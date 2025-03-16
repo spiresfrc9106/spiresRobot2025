@@ -75,8 +75,6 @@ class PickupV1(SetupScheme):
                     self.nextState()
             case 2:
                 elevGoalReached = math.isclose(self.elev.getPosition(), self.elevPickupPose, abs_tol=0.5)
-                if self.isSim():
-                    elevGoalReached = self.completedAwait("TODOREMOVEelev1",2.0)
                 if elevGoalReached:
                     self.nextState()
             case 3:

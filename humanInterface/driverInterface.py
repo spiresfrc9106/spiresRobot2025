@@ -94,13 +94,13 @@ class DriverInterface(metaclass=Singleton):
             vRotJoyWithDeadband = applyDeadband(vRotJoyRaw, 0.05)
 
             # TODO - if the driver wants a slow or sprint button, add it here.
-            slowMult = 1.0 if (self.ctrl.getRightBumper()) else 0.5
+            slowMult = 1.0 if (self.ctrl.getRightBumper()) else 0.25
             #slowMult = 1.0
 
             # Shape velocity command
             velCmdXRaw = vXJoyWithDeadband * MAX_STRAFE_SPEED_MPS * slowMult
             velCmdYRaw = vYJoyWithDeadband * MAX_FWD_REV_SPEED_MPS * slowMult
-            velCmdRotRaw = vRotJoyWithDeadband * MAX_ROTATE_SPEED_RAD_PER_SEC
+            velCmdRotRaw = vRotJoyWithDeadband * MAX_ROTATE_SPEED_RAD_PER_SEC * slowMult
 
 
             if self.robotRelative:
