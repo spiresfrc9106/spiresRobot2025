@@ -28,6 +28,8 @@ class WrapperedPoseEstPhotonCamera:
 
         self.cam = PhotonCamera(camName)
 
+
+
         self.disconFault = Fault(f"Camera {camName} not sending data")
         self.timeoutSec = 1.0
         self.poseEstimates:list[CameraPoseObservation] = []

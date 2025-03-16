@@ -83,11 +83,6 @@ class DriverInterface(metaclass=Singleton):
                     vXJoyRaw *= -1.0
                     vYJoyRaw *= -1.0
 
-            # Correct for alliance
-            if onRed():
-                vXJoyRaw *= -1.0
-                vYJoyRaw *= -1.0
-
             # deadband
             vXJoyWithDeadband = applyDeadband(vXJoyRaw, 0.05)
             vYJoyWithDeadband = applyDeadband(vYJoyRaw, 0.05)

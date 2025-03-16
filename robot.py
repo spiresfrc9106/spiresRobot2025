@@ -140,6 +140,8 @@ class MyRobot(wpilib.TimedRobot):
         # Start up the autonomous sequencer
         self.autoSequencer.initialize()
 
+        #consider resetting gyro here
+
         if drivetrainDepConstants['HAS_DRIVETRAIN']:
             # Use the autonomous routines starting pose to init the pose estimator
             self.driveTrain.poseEst.setKnownPose(self.autoSequencer.getStartingPose())  #position set.

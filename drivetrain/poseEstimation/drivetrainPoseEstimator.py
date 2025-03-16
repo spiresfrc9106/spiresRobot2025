@@ -118,7 +118,7 @@ class DrivetrainPoseEstimator:
                 cam.update(self._curEstPose)
                 observations = cam.getPoseEstimates()
                 for observation in observations:
-                    if False:
+                    if True:
                         self._poseEst.addVisionMeasurement(
                             observation.estFieldPose, observation.time,
                             (observation.xyStdDev, observation.xyStdDev, observation.rotStdDev)
