@@ -443,4 +443,3 @@ class ArmControl(metaclass=Singleton):
 
     def getVelocity(self):
         return self.getCurProfileVelocityDegps()
-
