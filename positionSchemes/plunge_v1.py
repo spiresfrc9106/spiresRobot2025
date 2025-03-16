@@ -48,7 +48,7 @@ class PlungeV1(SetupScheme):
 
         self.elevHeightOfPen = 30.6875
         self.elevHeightOfCoralTouch = 33.6875
-        self.elevSafestPlungeHeight = self.elevHeightOfPen*0.5+self.elevHeightOfCoralTouch*0.5
+        self.elevSafestPlungeHeight = self.elevHeightOfPen*0.5+self.elevHeightOfCoralTouch*0.5-2-1
         # change this number to actual!!!!!!
         # !!!!!!!!!!!!!!!!!! and change the elev const.
 
@@ -59,8 +59,8 @@ class PlungeV1(SetupScheme):
         match self.currentState:
             case 0:  # initializing
                 # this is in case the elev was at the bottom and someone pressed plunge
-                if self.elev.getPosition() < self.elevSafestPlungeHeight + 4:
-                    self.elevCmd = (self.elevSafestPlungeHeight + 5, 0)
+                if self.elev.getPosition() < self.elevSafestPlungeHeight + 9:
+                    self.elevCmd = (self.elevSafestPlungeHeight + 10, 0)
                 else:
                     self.nextState()
             case 1:
