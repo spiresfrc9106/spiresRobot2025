@@ -4,12 +4,13 @@ from AutoSequencerV2.modeList import ModeList
 from AutoSequencerV2.builtInModes.doNothingMode import DoNothingMode
 from AutoSequencerV2.builtInModes.waitMode import WaitMode
 from AutoSequencerV2.sequentialCommandGroup import SequentialCommandGroup
+from Autonomous.modes.blueRightDriveOut import BlueRightDriveOut
 from Autonomous.modes.driveOut import DriveOut
-from Autonomous.modes.newDriveOut import NewDriveOut
-from Autonomous.modes.reverseDriveOut import ReverseDriveOut
 from Autonomous.modes.redRightDriveOut import RedRightDriveOut
 from Autonomous.modes.redLeftDriveOut import RedLeftDriveOut
 from Autonomous.modes.redCenterDriveOut import RedCenterDriveOut
+from Autonomous.modes.blueLeftDriveOut import BlueLeftDriveOut
+from Autonomous.modes.blueCenterDriveOut import BlueCenterDriveOut
 
 from utils.singleton import Singleton
 from utils.allianceTransformUtils import onRed
@@ -31,11 +32,12 @@ class AutoSequencer(metaclass=Singleton):
         self.mainModeList.addMode(DoNothingMode())
         #right now, DriveOut is all commented out, so we don't need to add it to the list. 
         #self.mainModeList.addMode(DriveOut())
-        # self.mainModeList.addMode(NewDriveOut())
-        # self.mainModeList.addMode(ReverseDriveOut())
         self.mainModeList.addMode(RedRightDriveOut())
         self.mainModeList.addMode(RedLeftDriveOut())
         self.mainModeList.addMode(RedCenterDriveOut())
+        self.mainModeList.addMode(BlueLeftDriveOut())
+        self.mainModeList.addMode(BlueCenterDriveOut())
+        self.mainModeList.addMode(BlueRightDriveOut())
 
         self.topLevelCmdGroup = SequentialCommandGroup()
         self.startPose = Pose2d()
