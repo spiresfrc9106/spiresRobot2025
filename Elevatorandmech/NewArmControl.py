@@ -51,7 +51,7 @@ class ArmDependentConstants:
                 "MIN_ARM_POS_DEG": -92,
                 "MAX_ARM_VEL_DEGPS": 90, # Was 180
                 "MAX_ARM_ACCEL_DEGPS2": 180, # Was 720
-                "ABS_SENSOR_MOUNT_OFFSET_DEG": 160.0,
+                "ABS_SENSOR_MOUNT_OFFSET_DEG": -50.0,
                 "ABS_SENSOR_INVERTED": False,
             },
             RobotTypes.Spires2025Sim: {
@@ -219,8 +219,10 @@ class ArmControl(metaclass=Singleton):
             addLog(f"{self.name}/des_pos_deg", lambda: self.desTrapPState.position, "deg")
             addLog(f"{self.name}/des_vel_degps", lambda: self.desTrapPState.velocity, "degps")
 
-
             addLog("RParm/pos", lambda: self.curTrapPState.position, "deg")
+
+            self.poserCmdPosLogger = getNowLogger(f"{self.name}/cmd_pos_deg", "deg")
+            self.poserCmdVelLogger = getNowLogger(f"{self.name}/cmd_vel_degps", "degps")
 
             self._changeState(ArmStates.UNINITIALIZED)
 
@@ -305,29 +307,48 @@ class ArmControl(metaclass=Singleton):
 
         self._changeState(ArmStates.OPERATING)
 
-    def _perhapsWeHaveANewRangeCheckedDesiredState(self, newDesPosDeg, newDesVelocityDegs):
-        if (self.state == ArmStates.OPERATING) and (self.desTrapPState.position != newDesPosDeg or self.desTrapPState.velocity != newDesVelocityDegs):
-            # limit the height goal so that it is less than max height
-            # limit the height goal so that is more than 0
-            newDesPosDeg = min(newDesPosDeg, self.maxPosDeg.get())
-            newDesPosDeg = max(newDesPosDeg, self.minPosDeg.get())
+    def _perhapsWeHaveANewRangeCheckedDesiredState(self, armCommand: ArmCommand)->TrapezoidProfile.State:
 
-            newDesVelocityDegs = min(newDesVelocityDegs, self.maxVelocityDegps.get())
-            newDesVelocityDegs = max(newDesVelocityDegs, -self.maxVelocityDegps.get())
+        newDesPosDeg = armCommand.angleDeg
+        newDesVelocityDegps = armCommand.velocityDegps
 
-            # do these checks relative to the curTrapPState
-            # if height goal is to go up, make sure that velocity goal is 0 or +
-            if newDesPosDeg > self.curTrapPState.position:
-                newDesVelocityDegs = max(0, newDesVelocityDegs)
+        result = self.desTrapPState
 
-            # if height goals is to go down, make sure that the velocity goal is 0 or -
-            elif newDesPosDeg < self.curTrapPState.position:
-                newDesVelocityDegs = min(0, newDesVelocityDegs)
-            # if height goals is to stay at current height goal
+        if (self.state == ArmStates.OPERATING) and (self.desTrapPState.position != newDesPosDeg or self.desTrapPState.velocity != newDesVelocityDegps):
+
+            newDesVelocityDegps = min(newDesVelocityDegps, self.maxVelocityDegps.get())
+            newDesVelocityDegps = max(newDesVelocityDegps, -self.maxVelocityDegps.get())
+
+            if newDesPosDeg is not None:
+                # limit the height goal so that it is less than max height
+                # limit the height goal so that is more than 0
+                newDesPosDeg = min(newDesPosDeg, self.maxPosDeg.get())
+                newDesPosDeg = max(newDesPosDeg, self.minPosDeg.get())
+
+                # do these checks relative to the curTrapPState
+                # if height goal is to go up, make sure that velocity goal is 0 or +
+                if newDesPosDeg > self.curTrapPState.position:
+                    newDesVelocityDegps = max(0, newDesVelocityDegps)
+
+                # if height goals is to go down, make sure that the velocity goal is 0 or -
+                elif newDesPosDeg < self.curTrapPState.position:
+                    newDesVelocityDegps = min(0, newDesVelocityDegps)
+                # if height goals is to stay at current height goal
+                else:
+                    newDesVelocityDegps = 0
+            elif newDesVelocityDegps == 0.0:
+                newDesPosDeg = self.curTrapPState.position
+            elif newDesVelocityDegps > 0.0:
+                newDesPosDeg = self.maxPosDeg.get()
+            elif newDesVelocityDegps < 0.0:
+                newDesPosDeg = self.minPosDeg.get()
             else:
-                newDesVelocityDegs = 0
+                newDesPosDeg = newDesPosDeg
 
-            self.desTrapPState = self.trapProfiler.State(newDesPosDeg, newDesVelocityDegs)
+            result = self.trapProfiler.State(newDesPosDeg, newDesVelocityDegps)
+
+        return result
+
 
     def _setMotorPosAndFF(self) -> None:
         oldVelocityDegps = self.curTrapPState.velocity
@@ -388,14 +409,14 @@ class ArmControl(metaclass=Singleton):
 
         armCommand = self.poseDirector.getArmCommand(armCommand)
 
-        if armCommand.angleDeg is None and armCommand.velocityDegps == 0.0:
-            armCommand.angleDeg = posGoalDeg
-        elif armCommand.angleDeg is None and armCommand.velocityDegps > 0.0:
-            armCommand.angleDeg = self.maxPosDeg.get()
+        if armCommand.angleDeg is None:
+            self.poserCmdPosLogger.logNow(360)
         else:
-            armCommand.angleDeg = self.minPosDeg.get()
+            self.poserCmdPosLogger.logNow(armCommand.angleDeg)
 
-        self.desTrapPState = TrapezoidProfile.State(armCommand.angleDeg, armCommand.velocityDegps)
+        self.poserCmdVelLogger.logNow(armCommand.velocityDegps)
+
+        self.desTrapPState = self._perhapsWeHaveANewRangeCheckedDesiredState(armCommand)
 
         # Update motor closed-loop calibration
         if self.kP.isChanged():
@@ -417,8 +438,8 @@ class ArmControl(metaclass=Singleton):
         self.previousUpdateTimeS = self.currentUpdateTimeS
 
     # todo make an new API function:
-    def setPosVelocityGoal(self, posGoalDeg:float, velocityGoalDegps:float) -> None:
-        self._perhapsWeHaveANewRangeCheckedDesiredState(newDesPosDeg=posGoalDeg, newDesVelocityDegs=velocityGoalDegps)
+    #def setPosVelocityGoal(self, posGoalDeg:float, velocityGoalDegps:float) -> None:
+    #    self._perhapsWeHaveANewRangeCheckedDesiredState(newDesPosDeg=posGoalDeg, newDesVelocityDegs=velocityGoalDegps)
 
     def setManualAdjCmd(self, cmd:float) -> None:
         self.manualAdjCmd = cmd
@@ -443,4 +464,3 @@ class ArmControl(metaclass=Singleton):
 
     def getVelocity(self):
         return self.getCurProfileVelocityDegps()
-

@@ -142,7 +142,7 @@ class MyRobot(wpilib.TimedRobot):
 
         if drivetrainDepConstants['HAS_DRIVETRAIN']:
             # Use the autonomous routines starting pose to init the pose estimator
-            self.driveTrain.poseEst.setKnownPose(self.autoSequencer.getStartingPose())
+            self.driveTrain.poseEst.setKnownPose(self.autoSequencer.getStartingPose())  #position set.
 
         # Mark we at least started autonomous
         self.autoHasRun = True # pylint: disable=attribute-defined-outside-init
@@ -230,7 +230,7 @@ class MyRobot(wpilib.TimedRobot):
         self.autodrive.setRequest(self.dInt.getNavToSpeaker(), self.dInt.getNavToPickup())
 
         if armDepConstants['HAS_ARM']:
-            self.arm.setPosVelocityGoal(posGoalDeg=self.oInt.getDesArmAngleDeg(), velocityGoalDegps=0.0)
+            #self.arm.setPosVelocityGoal(posGoalDeg=self.oInt.getDesArmAngleDeg(), velocityGoalDegps=0.0)
             self.arm.update()
             self.stt.mark("Arm-teleop")
 

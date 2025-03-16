@@ -17,23 +17,23 @@ from wrappers.wrapperedSparFlex import WrapperedSparkFlex
 # which is in the center of the chassis on the ground
 ROBOT_TO_LEFT_CAM = Transform3d(
     Translation3d(
-        inchesToMeters(3.7), inchesToMeters(13.8), inchesToMeters(7.4)  # X  # Y  # Z
+        inchesToMeters(10), inchesToMeters(12), inchesToMeters(22)  # X  # Y  # Z
     ),
-    Rotation3d.fromDegrees(0, -30, 90.0),  # Roll  # Pitch  # Yaw
+    Rotation3d.fromDegrees(0, -10, 90.0),  # Roll  # Pitch  # Yaw
 )
 
 ROBOT_TO_RIGHT_CAM = Transform3d(
     Translation3d(
-        inchesToMeters(3.7), inchesToMeters(-13.8), inchesToMeters(7.4)  # X  # Y  # Z
+        inchesToMeters(10), inchesToMeters(12), inchesToMeters(22)  # X  # Y  # Z
     ),
-    Rotation3d.fromDegrees(0, -30, -90.0),  # Roll  # Pitch  # Yaw
+    Rotation3d.fromDegrees(0, -10, -90.0),  # Roll  # Pitch  # Yaw
 )
 
 ROBOT_TO_FRONT_CAM = Transform3d(
     Translation3d(
-        inchesToMeters(14), inchesToMeters(2.75), inchesToMeters(9)  # X  # Y  # Z
+        inchesToMeters(8), inchesToMeters(10), inchesToMeters(16)  # X  # Y  # Z
     ),
-    Rotation3d.fromDegrees(0.0, 3.0, 0.0),  # Roll  # Pitch  # Yaw
+    Rotation3d.fromDegrees(0.0, -10, 0.0),  # Roll  # Pitch  # Yaw
 )
 
 ROBOT_TO_LIME_1 = Transform3d(
@@ -47,45 +47,39 @@ ROBOT_TO_LIME_1 = Transform3d(
 #     ROBOT_TO_LIME_1 = Pose3d(Translation3d(0,0,0), Rotation3d(Rotation2d(0)))
 
 COMMON_CAMS = [
-    # {
-    #     "CAM": WrapperedPoseEstPhotonCamera("LEFT_CAM", ROBOT_TO_LEFT_CAM),
-    #     "POSE_EST_LOG_NAME": "photonL",
-    #     "PUBLISHER":
-    #         (
-    #             NetworkTableInstance.getDefault()
-    #             .getStructTopic("/LeftCamPose", Pose3d)
-    #             .publish()
-    #         ),
-    #     "ROBOT_TO_CAM": ROBOT_TO_LEFT_CAM,
-    # },
-    # {
-    #     "CAM": WrapperedPoseEstPhotonCamera("RIGHT_CAM", ROBOT_TO_RIGHT_CAM),
-    #     "POSE_EST_LOG_NAME": "photonR",
-    #     "PUBLISHER":
-    #         (
-    #             NetworkTableInstance.getDefault()
-    #             .getStructTopic("/RightCamPose", Pose3d)
-    #             .publish()
-    #         ),
-    #     "ROBOT_TO_CAM": ROBOT_TO_RIGHT_CAM,
-    # },
-    # {
-    #     "CAM": WrapperedPoseEstPhotonCamera("FRONT_CAM", ROBOT_TO_FRONT_CAM),
-    #     "POSE_EST_LOG_NAME": "photonF",
-    #     "PUBLISHER":
-    #         (
-    #             NetworkTableInstance.getDefault()
-    #             .getStructTopic("/FrontCamPose", Pose3d)
-    #             .publish()
-    #         ),
-    #     "ROBOT_TO_CAM": ROBOT_TO_FRONT_CAM,
-    # },
-
-    #
-    #
-    #
-    #
-    #
+    {
+        "CAM": WrapperedPoseEstPhotonCamera("RIGHT_CAM", ROBOT_TO_RIGHT_CAM),
+        "POSE_EST_LOG_NAME": "photonR",
+        "PUBLISHER":
+            (
+                NetworkTableInstance.getDefault()
+                .getStructTopic("/RightCamPose", Pose3d)
+                .publish()
+            ),
+        "ROBOT_TO_CAM": ROBOT_TO_RIGHT_CAM,
+    },
+    {
+        "CAM": WrapperedPoseEstPhotonCamera("LEFT_CAM", ROBOT_TO_LEFT_CAM),
+        "POSE_EST_LOG_NAME": "photonL",
+        "PUBLISHER":
+            (
+                NetworkTableInstance.getDefault()
+                .getStructTopic("/LeftCamPose", Pose3d)
+                .publish()
+            ),
+        "ROBOT_TO_CAM": ROBOT_TO_LEFT_CAM,
+    },
+    {
+        "CAM": WrapperedPoseEstPhotonCamera("FRONT_CAM", ROBOT_TO_FRONT_CAM),
+        "POSE_EST_LOG_NAME": "photonF",
+        "PUBLISHER":
+            (
+                NetworkTableInstance.getDefault()
+                .getStructTopic("/FrontCamPose", Pose3d)
+                .publish()
+            ),
+        "ROBOT_TO_CAM": ROBOT_TO_FRONT_CAM,
+    },
     {
         "CAM": wrapperedLimilightCameraFactory("limelight-br", ROBOT_TO_LIME_1),
         "POSE_EST_LOG_NAME": "limeli-br",
@@ -141,6 +135,7 @@ class DrivetrainDependentConstants:
                 "GYRO": "NAVX", # "NAVX", # "ADIS16470_IMU",
                 "CAMS": [],
                 "HAS_DRIVETRAIN": True,
+                "USE_PHOTON_NAV": False,
             },
             RobotTypes.Spires2025: {
                 "WHEEL_MOTOR_WRAPPER": WrapperedSparkFlex,
@@ -149,8 +144,8 @@ class DrivetrainDependentConstants:
                 "SWERVE_WHEEL_GEAR_RATIO": 4.71, # Base High
                 "SWERVE_WHEEL_DIAMETER_IN": 3.0,
                 "SWERVE_WHEEL_MAX_SPEED_RPS": DCMotor.neoVortex(1).freeSpeed,
-                "WIDTH": 22.5,
-                "LENGTH": 26.5,
+                "WIDTH": 26.0,
+                "LENGTH": 33.0,
                 "MASS_LBS": 104,
                 "FL_OFFSET_DEG": 177.4-90+180-4,
                 "FR_OFFSET_DEG": 0.7-123,
@@ -159,6 +154,7 @@ class DrivetrainDependentConstants:
                 "GYRO": "ADIS16470_IMU",
                 "CAMS": COMMON_CAMS,
                 "HAS_DRIVETRAIN": True,
+                "USE_PHOTON_NAV": True,
             },
             RobotTypes.Spires2025Sim: {
                 "WHEEL_MOTOR_WRAPPER": WrapperedSparkFlex,
@@ -177,6 +173,7 @@ class DrivetrainDependentConstants:
                 "CAMS": COMMON_CAMS,
                 "GYRO": "ADIS16470_IMU",
                 "HAS_DRIVETRAIN": True,
+                "USE_PHOTON_NAV": True,
             },
             RobotTypes.SpiresTestBoard: {
                 "WHEEL_MOTOR_WRAPPER": WrapperedSparkMax,
@@ -195,6 +192,7 @@ class DrivetrainDependentConstants:
                 "GYRO": "NoGyro",
                 "CAMS": [],
                 "HAS_DRIVETRAIN": False,
+                "USE_PHOTON_NAV": False,
             },
             RobotTypes.SpiresRoboRioV1: {
                 "WHEEL_MOTOR_WRAPPER": WrapperedSparkMax,
@@ -213,6 +211,7 @@ class DrivetrainDependentConstants:
                 "GYRO": "NoGyro",
                 "CAMS": [],
                 "HAS_DRIVETRAIN": False,
+                "USE_PHOTON_NAV": False,
             },
         }
 

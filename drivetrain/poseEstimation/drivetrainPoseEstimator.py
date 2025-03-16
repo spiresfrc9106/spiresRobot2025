@@ -118,12 +118,13 @@ class DrivetrainPoseEstimator:
                 cam.update(self._curEstPose)
                 observations = cam.getPoseEstimates()
                 for observation in observations:
-                    self._poseEst.addVisionMeasurement(
-                        observation.estFieldPose, observation.time,
-                        (observation.xyStdDev, observation.xyStdDev, observation.rotStdDev)
-                    )
-                    self.lastCamEstRobotPos = observation.estFieldPose
-                    self._camTargetsVisible = True
+                    if False:
+                        self._poseEst.addVisionMeasurement(
+                            observation.estFieldPose, observation.time,
+                            (observation.xyStdDev, observation.xyStdDev, observation.rotStdDev)
+                        )
+                        self.lastCamEstRobotPos = observation.estFieldPose
+                        self._camTargetsVisible = True
                 self._telemetry.addVisionObservations(observations)
                 self.posEstLogs[index].update(cam.getPoseEstFormatted())
                 index = index + 1

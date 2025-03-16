@@ -55,10 +55,6 @@ class WrapperedPoseEstLimelight:
         self.yStdDev = 0
         self.tStdDev = 0
 
-        addLog("ytest_limelight_sd_x", lambda: self.xStdDev, "")
-        addLog("ytest_limelight_sd_y", lambda: self.yStdDev, "")
-        addLog("ytest_limelight_sd_t", lambda: self.tStdDev, "")
-
 
         self.targetLength = 0
         addLog("ytest_targets_limelight_seen", lambda: self.targetLength, "")
@@ -136,7 +132,7 @@ class WrapperedPoseEstLimelight:
             c = 0.0795458
 
         y = a * pow(b, x) + d * x + c
-        return max(y, 0.0127)
+        return max(y, 1.0) #max(y, 0.0127)
 
 
 def wrapperedLimilightCameraFactory(camName:str, robotToCam):

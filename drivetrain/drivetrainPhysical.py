@@ -93,11 +93,14 @@ else:
     #MAX_DT_MOTOR_SPEED_RPS = DCMotor.neoVortex(1).freeSpeed
 MAX_DT_LINEAR_SPEED_MPS = MAX_DT_MOTOR_SPEED_RPS / WHEEL_GEAR_RATIO * in2m(WHEEL_RADIUS_IN)
 # Fudged max expected performance
-MAX_FWD_REV_SPEED_MPS = MAX_DT_LINEAR_SPEED_MPS * 0.98  # fudge factor due to gearbox losses
-MAX_STRAFE_SPEED_MPS = MAX_DT_LINEAR_SPEED_MPS * 0.98  # fudge factor due to gearbox losses
+
+speed_multiple_at_comp = 2
+
+MAX_FWD_REV_SPEED_MPS = MAX_DT_LINEAR_SPEED_MPS * 0.98 * speed_multiple_at_comp  # fudge factor due to gearbox losses
+MAX_STRAFE_SPEED_MPS = MAX_DT_LINEAR_SPEED_MPS * 0.98 * speed_multiple_at_comp  # fudge factor due to gearbox losses
 MAX_ROTATE_SPEED_RAD_PER_SEC = deg2Rad(
     360.0
-)  # Fixed at the maximum rotational speed we'd want.
+) * speed_multiple_at_comp  # Fixed at the maximum rotational speed we'd want.
 # Accelerations - also a total guess
 MAX_TRANSLATE_ACCEL_MPS2 = (
     #MAX_FWD_REV_SPEED_MPS / 0.50
