@@ -48,17 +48,6 @@ ROBOT_TO_LIME_1 = Transform3d(
 
 COMMON_CAMS = [
     {
-        "CAM": WrapperedPoseEstPhotonCamera("LEFT_CAM", ROBOT_TO_LEFT_CAM),
-        "POSE_EST_LOG_NAME": "photonL",
-        "PUBLISHER":
-            (
-                NetworkTableInstance.getDefault()
-                .getStructTopic("/LeftCamPose", Pose3d)
-                .publish()
-            ),
-        "ROBOT_TO_CAM": ROBOT_TO_LEFT_CAM,
-    },
-    {
         "CAM": WrapperedPoseEstPhotonCamera("RIGHT_CAM", ROBOT_TO_RIGHT_CAM),
         "POSE_EST_LOG_NAME": "photonR",
         "PUBLISHER":
@@ -68,6 +57,17 @@ COMMON_CAMS = [
                 .publish()
             ),
         "ROBOT_TO_CAM": ROBOT_TO_RIGHT_CAM,
+    },
+    {
+        "CAM": WrapperedPoseEstPhotonCamera("LEFT_CAM", ROBOT_TO_LEFT_CAM),
+        "POSE_EST_LOG_NAME": "photonL",
+        "PUBLISHER":
+            (
+                NetworkTableInstance.getDefault()
+                .getStructTopic("/LeftCamPose", Pose3d)
+                .publish()
+            ),
+        "ROBOT_TO_CAM": ROBOT_TO_LEFT_CAM,
     },
     {
         "CAM": WrapperedPoseEstPhotonCamera("FRONT_CAM", ROBOT_TO_FRONT_CAM),
