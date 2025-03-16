@@ -71,7 +71,7 @@ class PlungeV1(SetupScheme):
             case 2:  #
                 self.armCmd = (-90, 0)
                 self.elevCmd = (self.elevSafestPlungeHeight, 0)
-                if math.isclose(self.elev.getPosition(), self.elevSafestPlungeHeight, abs_tol=0.5):
+                if math.isclose(self.elev.getPosition(), self.elevSafestPlungeHeight, abs_tol=0.4):
                     self.nextState()
             case 3:
                 if self.completedAwait("bottomWait", 0.5):

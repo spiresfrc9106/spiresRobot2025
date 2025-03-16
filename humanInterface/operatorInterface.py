@@ -51,7 +51,7 @@ class OperatorInterface(metaclass=Singleton):
         #self.velXSlewRateLimiter = SlewRateLimiter(rateLimit=MAX_TRANSLATE_ACCEL_MPS2)
 
         self.dPadState = ReefLeftOrRight.LEFT
-
+        self.skipNext = False
 
         # Logging
         addLog("OI/Elevator Pos Cmd", lambda: self.elevatorPosYCmd, "frac")
@@ -90,6 +90,7 @@ class OperatorInterface(metaclass=Singleton):
 
             self.elevatorPosYCmd = vYJoyWithDeadband
             self.armPosYCmd = vYJoy2WithDeadband
+            self.skipNext = self.ctrl.getBackButtonPressed()
 
             updateReefSide = True
             self.launchPlacement = self.ctrl.getLeftBumperPressed()

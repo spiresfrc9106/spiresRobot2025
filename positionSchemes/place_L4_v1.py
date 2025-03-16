@@ -65,7 +65,7 @@ class PlaceL4V1(SetupScheme):
                 self.baseCmd = (self.bestTag, 0, 0, 0)
                 # CAN WE DO BETTER?  YES OF COURSE WE CAN.
                 self.armCmd = (90, 0)  # straight up so no bumping.
-                if self.completedAwait("awaitbasecmdsend", 0.2):
+                if self.completedAwait("awaitbasecmdsendplz", 0.2):
                     self.nextState()
             case 1:
                 if self.completedTrajectory(self.base):
