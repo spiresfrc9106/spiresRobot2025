@@ -43,7 +43,7 @@ class DrivetrainPoseTelemetry:
             camName = camConfig['POSE_EST_LOG_NAME']
 
             self.interestingTracker.append(NetworkTableInstance.getDefault()
-            .getStructTopic("/pos-interesting-output-" + camName, Pose2d)
+            .getStructTopic("/pos-interesting-output-" + camName, Pose3d)
             .publish())
             icount += 1
 
