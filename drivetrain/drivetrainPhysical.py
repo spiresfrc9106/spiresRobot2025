@@ -64,7 +64,7 @@ else:
 # by driving the robot a known distance, seeing the measured distance in software,
 # and adjusting this factor till the measured distance matches known
 # Might have to be different for colson wheels?
-WHEEL_FUDGE_FACTOR = 0.9238
+WHEEL_FUDGE_FACTOR = 0.9238*(48-4.5)/48
 
 # Nominal 4-inch diameter swerve drive wheels
 # https:#www.swervedrivespecialties.com/collections/mk4i-parts/products/billet-wheel-4d-x-1-5w-bearing-bore
