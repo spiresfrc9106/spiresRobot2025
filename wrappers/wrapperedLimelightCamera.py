@@ -89,6 +89,11 @@ class WrapperedPoseEstLimelight:
             self.CamPublisher.set(bestCandidate)
             secondCandidate = self._toPose2d(botpose=self.cam.botposemeta2)
             self.MetaTag2CamPublisher.set(secondCandidate)
+        else:
+            # Publish a 0 pose in networktables when we don't have an observation to
+            # make it easier to understand what is happening in advantage scope.
+            self.CamPublisher.set(Pose2d())
+            self.MetaTag2CamPublisher(Pose2d())
         self.targetLength = self.cam.get_april_length()
 
     def _adjust(self, pos):

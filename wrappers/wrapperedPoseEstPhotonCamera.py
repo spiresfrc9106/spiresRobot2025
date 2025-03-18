@@ -78,6 +78,10 @@ class WrapperedPoseEstPhotonCamera:
         # We should also filter out targets that are too far away, and poses which
         # don't make sense.
         self.targetLength = len(res.getTargets())
+        # Pick the candidate closest to the last estimate
+        bestCandidate: (Pose2d | None) = None
+        bestCandidateDist = 99999999.0
+        observations = []
         for target in res.getTargets():
             # Transform both poses to on-field poses
             tgtID = target.getFiducialId()
@@ -113,16 +117,24 @@ class WrapperedPoseEstPhotonCamera:
                             bestCandidate = candidate
                             bestCandidateDist = delta
 
-                    # Finally, add our best candidate the list of pose observations
-                    if bestCandidate is not None:
-                        # TODO: we can probably get better standard deviations than just
-                        # assuming the default. Check out what 254 did in 2024:
-                        # https://github.com/Team254/FRC-2024-Public/blob/040f653744c9b18182be5f6bc51a7e505e346e59/src/main/java/com/team254/frc2024/subsystems/vision/VisionSubsystem.java#L381
-                        self.poseEstimates.append(
-                            CameraPoseObservation(obsTime, bestCandidate)
-                        )
-                        self.recordedBestCandidate = bestCandidate
-                        self.CamPublisher.set(bestCandidate)
+                        # Finally, add our best candidate the list of pose observations
+                        if bestCandidate is not None:
+                            # TODO: we can probably get better standard deviations than just
+                            # assuming the default. Check out what 254 did in 2024:
+                            # https://github.com/Team254/FRC-2024-Public/blob/040f653744c9b18182be5f6bc51a7e505e346e59/src/main/java/com/team254/frc2024/subsystems/vision/VisionSubsystem.java#L381
+                            self.poseEstimates.append(
+                                CameraPoseObservation(obsTime, bestCandidate)
+                            )
+                            self.recordedBestCandidate = bestCandidate
+                            observations.append(bestCandidate)
+
+        # We only show one Cam Based Observation, xyzzy improve this
+        if bestCandidate is not None:
+            self.CamPublisher.set(observations[0]) # todo fix this up so we show all of the observations
+        else:
+            # Publish a 0 pose in networktables when we don't have an observation to
+            # make it easier to understand what is happening in advantage scope.
+            self.CamPublisher.set(Pose2d())
 
     def getPoseEstimates(self):
         return self.poseEstimates

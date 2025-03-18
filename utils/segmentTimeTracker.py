@@ -9,13 +9,17 @@ class SegmentTimeTracker:
     Utilties for tracking how long certain chunks of code take
     including logging overall loop execution time
     """
-    def __init__(self, longLoopThresh=0.020):
+    def __init__(self, longLoopThresh=0.020, longLoopPrintEnable=True, epochTracerEnable=True):
         self.longLoopThresh = longLoopThresh
+        self.longLoopPrintEnable = longLoopPrintEnable
         self.markNamePadLen = 35
         self.doOptionalPerhapsMarks = False
         self.minLoopsToEnableTracking = 10
         self.minLoopPeriodToEnableTracking = 0.015
-        self.tracer = wpilib.Tracer()
+        if epochTracerEnable:
+            self.tracer = wpilib.Tracer()
+        else:
+            self.tracer = None
         self.loopStartTime = wpilib.Timer.getFPGATimestamp()
         self.loopEndTime = wpilib.Timer.getFPGATimestamp()
         self.prevLoopStartTime = self.loopStartTime
@@ -40,7 +44,8 @@ class SegmentTimeTracker:
         """
         Mark the start of a periodic loop
         """
-        self.tracer.clearEpochs()
+        if self.tracer is not None:
+            self.tracer.clearEpochs()
         self.prevLoopStartTime = self.loopStartTime
         self.loopStartTime = wpilib.Timer.getFPGATimestamp()
         if self.numLoops >= self.minLoopsToEnableTracking and self.curPeriod >= self.minLoopPeriodToEnableTracking:
@@ -106,7 +111,8 @@ class SegmentTimeTracker:
         Mark an intermediate step complete during a periodic loop
         """
         if self.trackingEnabled:
-            self.tracer.addEpoch(name)
+            if self.tracer is not None:
+                self.tracer.addEpoch(name)
 
     def perhapsMark(self, name):
         if self.trackingEnabled and self.doOptionalPerhapsMarks:
@@ -125,7 +131,9 @@ class SegmentTimeTracker:
             loopDurationMs = self.curLoopExecDur * 1000.0
             if self.curLoopExecDur > self.longLoopThresh:
                 self.numOverRuns += 1
-                self.tracer.printEpochs()
+                if self.longLoopPrintEnable:
+                    if self.tracer is not None:
+                        self.tracer.printEpochs()
             self.smoothLoopDurationMs.append(loopDurationMs)
             self.loopDurationLogger.logNow(loopDurationMs)
             self.loopOverRunCountLogger.logNow(self.numOverRuns)

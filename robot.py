@@ -66,7 +66,7 @@ class MyRobot(wpilib.TimedRobot):
 
         self.autodrive = AutoDrive()
 
-        self.stt = SegmentTimeTracker()      
+        self.stt = SegmentTimeTracker(longLoopPrintEnable=False, epochTracerEnable=False)
 
         self.dInt = DriverInterface()
         self.oInt = OperatorInterface()
