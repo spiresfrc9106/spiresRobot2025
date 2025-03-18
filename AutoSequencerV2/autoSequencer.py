@@ -15,7 +15,6 @@ from Autonomous.modes.blueCenterDriveOut import BlueCenterDriveOut
 from Autonomous.modes.square import Square
 
 from utils.singleton import Singleton
-from utils.allianceTransformUtils import onRed
 from utils.allianceTransformUtils import transform
 
 class AutoSequencer(metaclass=Singleton):
