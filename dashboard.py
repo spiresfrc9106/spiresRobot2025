@@ -77,7 +77,6 @@ class Dashboard:
         # Add logging for things that don't come from anywhere else
 
 
-
         addLog("isRedIconState",
                lambda: (
                    Icon.kON if wpilib.DriverStation.getAlliance() == wpilib.DriverStation.Alliance.kRed
