@@ -56,9 +56,11 @@ class DrivetrainPoseEstimator:
 
         self.cams = []
         self.posEstLogs = []
+        self.includeInFilter = []
         for camConfig in CAMS:
             self.cams.append(camConfig['CAM'])
             self.posEstLogs.append(YTestForPosition(camConfig['POSE_EST_LOG_NAME']))
+            self.includeInFilter.append(camConfig['WEIGH_IN_FILTER'])
 
         self.finalPosEst = YTestForPosition("final")
 
@@ -118,7 +120,7 @@ class DrivetrainPoseEstimator:
                 cam.update(self._curEstPose)
                 observations = cam.getPoseEstimates()
                 for observation in observations:
-                    if True:
+                    if self.includeInFilter[index]:
                         self._poseEst.addVisionMeasurement(
                             observation.estFieldPose, observation.time,
                             (observation.xyStdDev, observation.xyStdDev, observation.rotStdDev)

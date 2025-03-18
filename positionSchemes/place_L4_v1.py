@@ -22,7 +22,7 @@ class PlaceL4V1(SetupScheme):
         self.arm = arm
         self.base = base
         self.elev = elev
-        self.oInt = oInt
+        self.oInt: OperatorInterface = oInt
         self.dInt = DriverInterface()
         self.pdReefSideState = self.oInt.dPadState
         self.pdSideOfReef = -1
@@ -68,7 +68,7 @@ class PlaceL4V1(SetupScheme):
                 if self.completedAwait("awaitbasecmdsendplz", 0.2):
                     self.nextState()
             case 1:
-                if self.completedTrajectory(self.base):
+                if self.completedTrajectory(self.base) or self.oInt.skipNext:
                     self.nextState()
                 pass
             case 2:
@@ -82,7 +82,7 @@ class PlaceL4V1(SetupScheme):
                 elevGoalReached = math.isclose(self.elev.getPosition(), self.elevPlacePos, abs_tol=0.5)
                 armGoalReached = math.isclose(self.arm.getPosition(), self.armPlacePos, abs_tol=5)  # is abs_tol# good?
                 baseGoalReached = self.completedTrajectory(self.base)
-                if elevGoalReached and armGoalReached and baseGoalReached:
+                if (elevGoalReached and armGoalReached and baseGoalReached) or self.oInt.skipNext:
                     self.nextState()
                 else:
                     self.localProg = sum([elevGoalReached, armGoalReached, baseGoalReached])/3
@@ -104,13 +104,13 @@ class PlaceL4V1(SetupScheme):
                 self.basePrimitiveCmd = None
                 self.armCmd = (50, -15)
                 armGoalReached = math.isclose(self.arm.getPosition(), self.armPlacePos, abs_tol=0.75)
-                if armGoalReached:
+                if armGoalReached or self.oInt.skipNext:
                     self.nextState()
             case 6:
                 self.armCmd = (-15, 0)
                 self.bestTag = self.placementIntel.decidePlacementPose(self.pdSideOfReef, self.inchesToMeters(10))
                 self.baseCmd = (self.bestTag, 0, 0, 0)
-                if self.completedTrajectory(self.base):
+                if self.completedTrajectory(self.base) or self.oInt.skipNext:
                     self.nextState()
             case 7:
                 pass
