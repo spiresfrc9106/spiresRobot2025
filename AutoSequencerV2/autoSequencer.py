@@ -15,7 +15,6 @@ from Autonomous.modes.blueCenterDriveOut import BlueCenterDriveOut
 from Autonomous.modes.square import Square
 
 from utils.singleton import Singleton
-from utils.allianceTransformUtils import onRed
 from utils.allianceTransformUtils import transform
 
 class AutoSequencer(metaclass=Singleton):
@@ -35,14 +34,13 @@ class AutoSequencer(metaclass=Singleton):
         #right now, DriveOut is all commented out, so we don't need to add it to the list. 
         #self.mainModeList.addMode(DriveOut())
         self.mainModeList.addMode(Square())
-        # if onRed():
-        #     self.mainModeList.addMode(RedRightDriveOut())
-        #     self.mainModeList.addMode(RedLeftDriveOut())
-        #     self.mainModeList.addMode(RedCenterDriveOut())
-        # else:
-        #     self.mainModeList.addMode(BlueLeftDriveOut())
-        #     self.mainModeList.addMode(BlueCenterDriveOut())
-        #     self.mainModeList.addMode(BlueRightDriveOut())
+
+        self.mainModeList.addMode(RedRightDriveOut())
+        self.mainModeList.addMode(RedLeftDriveOut())
+        self.mainModeList.addMode(RedCenterDriveOut())
+        self.mainModeList.addMode(BlueLeftDriveOut())
+        self.mainModeList.addMode(BlueCenterDriveOut())
+        self.mainModeList.addMode(BlueRightDriveOut())
 
 
         self.topLevelCmdGroup = SequentialCommandGroup()
