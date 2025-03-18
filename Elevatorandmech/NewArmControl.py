@@ -46,11 +46,11 @@ class ArmDependentConstants:
                 "ARM_GEARBOX_GEAR_RATIO": 50.0 / 1.0,
                 "ARM_M_CANID": 23,
                 "ARM_M_INVERTED": False,
-                "ARM_M_CURRENT_LIMIT_A": 40,
+                "ARM_M_CURRENT_LIMIT_A": 60,
                 "MAX_ARM_POS_DEG": 80,
                 "MIN_ARM_POS_DEG": -92,
-                "MAX_ARM_VEL_DEGPS": 90, # Was 180
-                "MAX_ARM_ACCEL_DEGPS2": 180, # Was 720
+                "MAX_ARM_VEL_DEGPS": 720, # Was 180
+                "MAX_ARM_ACCEL_DEGPS2": 720*4, # Was 720
                 "ABS_SENSOR_MOUNT_OFFSET_DEG": -50.0 - 10,
                 "ABS_SENSOR_INVERTED": False,
             },
