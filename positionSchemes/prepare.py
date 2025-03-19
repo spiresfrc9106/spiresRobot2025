@@ -13,7 +13,7 @@ from positionSchemes._posintelligence import PickupIntelligence
 
 #if you can't find something here, it's probably in the _setup file.
 
-class PickupV1(SetupScheme):
+class PrepareV1(SetupScheme):
     def __init__(self, arm, base, elev, oInt):
         super().__init__(arm, base, elev)
         self.arm = arm
@@ -46,29 +46,17 @@ class PickupV1(SetupScheme):
 
         self.totalRuns = 0
         self.bestTag = 0
-        addLog("yvn_current_pickup_state", lambda: self.currentState, "")
-        addLog("yvn_pickup_runs", lambda: self.totalRuns, "")
+        addLog("yvn_current_prepare_state", lambda: self.currentState, "")
+        addLog("yvn_prepare_runs", lambda: self.totalRuns, "")
 
-        self.elevPickupPose = 47.6875  #inches
+        self.elevPickupPose = 47.6875-3  #inches
 
     def update(self):
         currentTime = Timer.getFPGATimestamp()
         time = currentTime - self.startTime
         match self.currentState:
             case 0: #initializing
-                #self.armCmd/elevCmd could be called here to prep for the fun thing.
-                self.bestTag = PickupIntelligence(self.base).decidePickupPose(self.inchesToMeters(10))
-                self.baseCmd = (self.bestTag, 0, 0, 0)
-                self.armCmd = None
-                self.elevCmd = None
-                # CAN WE DO BETTER?  YES OF COURSE WE CAN.
-                # one thing that comes to mind is perhaps breaking down
-                # 1) long commutes or 2) big rotation distances
-                # into two or more seperate trajectory commands.
-                # however, since this won't be as likely on the field,
-                # we're leaving it here
-                if self.completedAwait("awaitbasecmdsend", 0.2):
-                    self.nextState()
+                self.nextState()
             case 1:
                 self.elevCmd = (self.elevPickupPose, 0)
                 if self.completedTrajectory(self.base):

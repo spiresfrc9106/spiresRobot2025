@@ -25,6 +25,7 @@ class ElevArmCmdState(IntEnum):
     L2 = 5
     L3 = 6
     L4 = 7
+    PREPARE = 8
     UNINITIALIZED = -1
 
 class OperatorInterface(metaclass=Singleton):
@@ -93,14 +94,14 @@ class OperatorInterface(metaclass=Singleton):
             self.skipNext = self.ctrl.getBackButtonPressed()
 
             updateReefSide = True
-            self.launchPlacement = self.ctrl.getLeftBumperPressed()
+            self.launchPlacement = self.ctrl.getLeftBumperPressed() or self.ctrl.getStartButtonPressed()
 
             if self.ctrl.getRightBumperPressed():
                 self.elevArmCmdState = ElevArmCmdState.VEL_CONTROL  # xyzzy redundant because this is also the default
             elif self.ctrl.getLeftBumperPressed():
                 pass #self.elevArmCmdState = ElevArmCmdState.POS_CONTROL
             elif self.ctrl.getRightTriggerAxis() > .5:
-                self.elevArmCmdState = ElevArmCmdState.PLUNGE
+                self.elevArmCmdState = ElevArmCmdState.PREPARE
             elif self.ctrl.getLeftTriggerAxis() > .5:
                 self.elevArmCmdState = ElevArmCmdState.RECEIVE_CORAL
             elif self.ctrl.getAButton():

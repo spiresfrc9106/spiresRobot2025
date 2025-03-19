@@ -31,11 +31,19 @@ class PlacementIntelligence():
         front_half_width = self.botLenX / 2
         edge_to_center_d = front_half_width + self.indivBumperWidth
         safe_fudge_factor = 1.003
-        fb_offset = edge_to_center_d * safe_fudge_factor
-        newTargetPose = self.adjustLocationRobotRelative(bestTagLocation, fb_offset + bumperToEdge_m,
-                                                         self.shiftToNode_m * sideOfReef)
+        fb_offset = edge_to_center_d * safe_fudge_factor + bumperToEdge_m
+        rl_offset = self.shiftToNode_m * sideOfReef
+        newTargetPose = self.adjustLocationRobotRelative(bestTagLocation, fb_offset, rl_offset)
         pos = YPose(newTargetPose)
-        bestTagLocation = Pose2d(pos.x, pos.y, ((math.pi + pos.t) % (2 * math.pi)))
+        cur = YPose(self.base.poseEst.getCurEstPose())
+        y_error = pos.y - cur.y
+        x_error = pos.x - cur.x
+        y_sign = y_error/abs(y_error+0.00001)
+        x_sign = x_error/abs(x_error+0.00001)
+        overshoot_extremity = 0.1
+        y_add = y_sign*overshoot_extremity
+        x_add = x_sign*overshoot_extremity
+        bestTagLocation = Pose2d(pos.x+x_add, pos.y+y_add, ((math.pi + pos.t) % (2 * math.pi)))
         return bestTagLocation
 
     def decidePlacementTag(self):

@@ -27,11 +27,12 @@ will keep on doing the procedure as long as the button is held down, person can 
 from Elevatorandmech.replaceWithYavinsPosesClass import YavinsPoseClassNoChange, YavinsPoseClassPositionControl, YavinsPoseClassVelocityControl
 from humanInterface.operatorInterface import OperatorInterface, ElevArmCmdState, ReefLeftOrRight
 from positionSchemes.plunge_v1 import PlungeV1
-from positionSchemes.pickup_v1 import PickupV1
+from positionSchemes.pickup import PickupV1
 from positionSchemes.place_L4_v1 import PlaceL4V1
 from positionSchemes.place_L3_v1 import PlaceL3V1
 from positionSchemes.place_L2_v1 import PlaceL2V1
 from positionSchemes.place_L1_v1 import PlaceL1V1
+from positionSchemes.prepare import PrepareV1
 from utils.signalLogging import addLog
 from utils.singleton import Singleton
 
@@ -101,9 +102,9 @@ class PoseDirector(metaclass=Singleton):
             case ElevArmCmdState.PLUNGE:
                 self.dashboardState = 5
                 return PlungeV1(self.arm, self.driveTrain, self.elevator, self.oInt) # todo fix me
-            case ElevArmCmdState.RECEIVE_CORAL:
+            case ElevArmCmdState.PREPARE:
                 self.dashboardState = 4
-                return PickupV1(self.arm, self.driveTrain, self.elevator, self.oInt) # todo fix me
+                return PrepareV1(self.arm, self.driveTrain, self.elevator, self.oInt) # todo fix me
             case ElevArmCmdState.L1:
                 self.dashboardState = 6
                 return PlaceL1V1(self.arm, self.driveTrain, self.elevator, self.oInt)  # todo fix me
