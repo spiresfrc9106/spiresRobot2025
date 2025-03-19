@@ -1,4 +1,5 @@
 import math
+import wpilib
 from wpimath.controller import PIDController
 from wpimath.geometry import Pose2d
 from drivetrain.drivetrainCommand import DrivetrainCommand
@@ -9,7 +10,7 @@ from drivetrain.drivetrainPhysical import (
 #from drivetrain.controlStrategies.autoDrive import AutoDrive
 from jormungandr.choreoTrajectory import ChoreoTrajectoryState
 from utils.calibration import Calibration
-from utils.signalLogging import addLog
+from utils.signalLogging import addLog, getNowLogger
 from utils.mathUtils import limit
 
 class HolonomicDriveController:
@@ -43,12 +44,17 @@ class HolonomicDriveController:
         self.yFB = 0.0
         self.tFB = 0.0
 
-        addLog(f"{name} HDC xFF", lambda:self.xFF, "mps")
-        addLog(f"{name} HDC yFF", lambda:self.yFF, "mps")
-        addLog(f"{name} HDC tFF", lambda:self.tFF, "radpersec")
-        addLog(f"{name} HDC xFB", lambda:self.xFB, "mps")
-        addLog(f"{name} HDC yFB", lambda:self.yFB, "mps")
-        addLog(f"{name} HDC tFB", lambda:self.tFB, "radpersec")
+        addLog(f"{name}/HDC/xFF", lambda:self.xFF, "mps")
+        addLog(f"{name}/HDC/yFF", lambda:self.yFF, "mps")
+        addLog(f"{name}/HDC/tFF", lambda:self.tFF, "radpersec")
+        addLog(f"{name}/HDC/xFB", lambda:self.xFB, "mps")
+        addLog(f"{name}/HDC/yFB", lambda:self.yFB, "mps")
+        addLog(f"{name}/HDC/tFB", lambda:self.tFB, "radpersec")
+
+        self.trajCmdPosField = wpilib.Field2d()
+        self.curEstPoseField = wpilib.Field2d()
+        wpilib.SmartDashboard.putData(f"{name}/HDC/trajCmdPose", self.trajCmdPosField)
+        wpilib.SmartDashboard.putData(f"{name}/HDC/curEstPose", self.curEstPoseField)
 
         # Closed-loop control for the X position
         self.xCtrl = PIDController(
@@ -93,8 +99,10 @@ class HolonomicDriveController:
         xFF = trajCmd.velocityX
         yFF = trajCmd.velocityY
         tFF = trajCmd.angularVelocity
-        cmdPose = trajCmd.getPose()
-        return self.update2(xFF,yFF,tFF,cmdPose,curEstPose)
+        trajCmdPose = trajCmd.getPose()
+        self.trajCmdPosField.setRobotPose(trajCmdPose)
+        self.curEstPoseField.setRobotPose(curEstPose)
+        return self.update2(xFF,yFF,tFF,trajCmdPose,curEstPose)
 
     def update2(self, xFF, yFF, tFF, cmdPose:Pose2d, curEstPose:Pose2d):
         # Feed-Back - Apply additional correction if we're not quite yet at the spot on the field we
