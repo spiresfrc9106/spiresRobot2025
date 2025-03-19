@@ -187,6 +187,10 @@ class MyRobot(wpilib.TimedRobot):
         # If we're starting teleop but haven't run auto, set a nominal default pose
         # This is needed because initial pose is usually set by the autonomous routine
         if drivetrainDepConstants['HAS_DRIVETRAIN']:
+            # xyzzy todo Noah, can we change this so that:
+            # we always have a default autonoumous pose?
+            # that if auto hasn't run, we set our default poss to the default, or selected autonoumous pose?
+            # -Thanks Coach Mike
             if not self.autoHasRun:
                 self.driveTrain.poseEst.setKnownPose(
                     Pose2d(1.0, 1.0, Rotation2d(0.0))
