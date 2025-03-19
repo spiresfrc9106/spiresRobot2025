@@ -17,7 +17,7 @@ from utils.faults import Fault
 class LimelightCameraPoseObservation:
     time: float
     estFieldPose: Pose2d
-    xyStdDev: float  # std dev of error in measurment, units of meters.
+    xyStdDev: float  # std dev of error in measurement, units of meters.
     rotStdDev: float # std dev of measurement, in units of radians
 
 
@@ -41,13 +41,13 @@ class WrapperedPoseEstLimelight:
 
         self.CamPublisher = (
             NetworkTableInstance.getDefault()
-            .getStructTopic("/positionbyLL" + camName, Pose2d)
+            .getStructTopic("/positionby" + camName, Pose2d)
             .publish()
         )
 
         self.MetaTag2CamPublisher = (
             NetworkTableInstance.getDefault()
-            .getStructTopic("/TESTINGposbyLL" + camName, Pose2d)
+            .getStructTopic("/TESTINGposby" + camName, Pose2d)
             .publish()
         )
 
