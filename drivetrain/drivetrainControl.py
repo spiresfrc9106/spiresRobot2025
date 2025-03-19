@@ -115,14 +115,16 @@ class DrivetrainControl(metaclass=Singleton):
         # calculate the current drivetrain commands.
 
         self.curCmd = self.curManCmd
+        self.curCmd = self.poser.getDriveTrainCommand(self.curCmd)
+        if hasattr(self.curCmd, "heading"): # TODO a hack to check if curCmd is ChoreoTrajectoryState better to just check for the class
+            Trajectory().setCmd(self.curCmd)
+        else:
+            Trajectory().setCmd(None)
         self.curCmd = Trajectory().update(self.curCmd, curEstPose)
         self.curCmd = AutoDrive().update(self.curCmd, curEstPose)
 
         #yavin's interpret
-        self.curCmd = self.poser.getDriveTrainCommand(self.curCmd)
-        if hasattr(self.curCmd, "heading"):
-            Trajectory().setCmd(self.curCmd)
-            self.curCmd = Trajectory().update(self.curCmd, curEstPose)
+
 
         self.cmdVelX = self.curCmd.velX
         self.cmdVelY = self.curCmd.velY

@@ -202,6 +202,9 @@ class MyRobot(wpilib.TimedRobot):
         if elevDepConstants['HAS_ELEVATOR']:
             self.elev.initialize()
 
+        # Default to No trajectory in Teleop, The PoseDirector does send commands through in teleop
+        Trajectory().setCmd(None)
+
     def teleopPeriodic(self):
         # TODO - this is technically one loop delayed, which could induce lag
         # Probably not noticeable, but should be corrected.
@@ -248,10 +251,6 @@ class MyRobot(wpilib.TimedRobot):
         if elevDepConstants['HAS_ELEVATOR']:
             self.elev.update()
             self.stt.mark("Elevator-teleop")
-
-
-        # No trajectory in Teleop
-        Trajectory().setCmd(None)
 
     #########################################################
     ## Disabled-Specific init and update
