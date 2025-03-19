@@ -17,23 +17,23 @@ from wrappers.wrapperedSparFlex import WrapperedSparkFlex
 # which is in the center of the chassis on the ground
 ROBOT_TO_LEFT_CAM = Transform3d(
     Translation3d(
-        inchesToMeters(10), inchesToMeters(12), inchesToMeters(22)  # X  # Y  # Z
+        inchesToMeters(-10), inchesToMeters(-12), inchesToMeters(22)  # X  # Y  # Z
     ),
     Rotation3d.fromDegrees(0, -10, 90.0),  # Roll  # Pitch  # Yaw
 )
 
 ROBOT_TO_RIGHT_CAM = Transform3d(
     Translation3d(
-        inchesToMeters(10), inchesToMeters(12), inchesToMeters(22)  # X  # Y  # Z
+        inchesToMeters(-10), inchesToMeters(12), inchesToMeters(22)  # X  # Y  # Z
     ),
     Rotation3d.fromDegrees(0, -10, -90.0),  # Roll  # Pitch  # Yaw
 )
 
 ROBOT_TO_FRONT_CAM = Transform3d(
     Translation3d(
-        inchesToMeters(8), inchesToMeters(10), inchesToMeters(16)  # X  # Y  # Z
+        inchesToMeters(8), inchesToMeters(-10), inchesToMeters(16)  # X  # Y  # Z
     ),
-    Rotation3d.fromDegrees(0.0, -10, 180.0),  # Roll  # Pitch  # Yaw
+    Rotation3d.fromDegrees(0.0, -10, 0.0),  # Roll  # Pitch  # Yaw
 )
 
 ROBOT_TO_LIME_1 = Transform3d(
