@@ -14,3 +14,11 @@ class DrivetrainCommand:
     velT:float = 0.0  # Rotational speed in rad/sec
     # pylint: disable=unnecessary-lambda
     desPose:Pose2d = field(default_factory = lambda: Pose2d())  # Current desired pose of the drivetrain
+
+    def scaleBy(self, scale:float):
+        """
+        Scale all motion commands by a single factor
+        """
+        self.velX *= scale
+        self.velY *= scale
+        self.velT *= scale

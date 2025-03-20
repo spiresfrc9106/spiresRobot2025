@@ -28,7 +28,7 @@ class PickupV1(SetupScheme):
         self.changeInTime = 0
         self.waitTimes = {}
         self.schemeProg = 0
-        self.baseCmd = None
+        self.setDriveTrainBaseCommand(None)
         self.armCmd = None
         self.elevCmd = None
 
@@ -58,7 +58,7 @@ class PickupV1(SetupScheme):
             case 0: #initializing
                 #self.armCmd/elevCmd could be called here to prep for the fun thing.
                 self.bestTag = PickupIntelligence(self.base).decidePickupPose(self.inchesToMeters(10))
-                self.baseCmd = (self.bestTag, 0, 0, 0)
+                self.setDriveTrainBaseCommand(self.bestTag)
                 self.armCmd = None
                 self.elevCmd = None
                 # CAN WE DO BETTER?  YES OF COURSE WE CAN.
@@ -79,7 +79,7 @@ class PickupV1(SetupScheme):
                     self.nextState()
             case 3:
                 self.bestTag = PickupIntelligence(self.base).decidePickupPose(self.inchesToMeters(1))
-                self.baseCmd = (self.bestTag, 0, 0, 0)
+                self.setDriveTrainBaseCommand(self.bestTag)
                 pass
             case _:
                 pass

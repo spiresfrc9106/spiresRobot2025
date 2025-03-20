@@ -76,15 +76,19 @@ class MyRobot(wpilib.TimedRobot):
 
         self.dashboard = Dashboard()
 
-        self.rioMonitor = RIOMonitor()
-        self.pwrMon = PowerMonitor()
+        #self.rioMonitor = RIOMonitor()
+        if False:
+            self.pwrMon = PowerMonitor()
+        else:
+            self.pwrMon = None
 
         if motorDepConstants['HAS_MOTOR_TEST']:
             self.motorCtrlFun = MotorControl()
 
         # Normal robot code updates every 20ms, but not everything needs to be that fast.
         # Register slower-update periodic functions
-        self.addPeriodic(self.pwrMon.update, 0.2, 0.0)
+        if self.pwrMon is not None:
+            self.addPeriodic(self.pwrMon.update, 0.2, 0.0)
         self.addPeriodic(self.crashLogger.update, 1.0, 0.0)
         self.addPeriodic(CalibrationWrangler().update, 0.5, 0.0)
         self.addPeriodic(FaultWrangler().update, 0.2, 0.0)
@@ -203,7 +207,7 @@ class MyRobot(wpilib.TimedRobot):
             self.elev.initialize()
 
         # Default to No trajectory in Teleop, The PoseDirector does send commands through in teleop
-        Trajectory().setCmd(None)
+        Trajectory().setCmdFromChoreoAuton(None)
 
     def teleopPeriodic(self):
         # TODO - this is technically one loop delayed, which could induce lag
@@ -260,6 +264,7 @@ class MyRobot(wpilib.TimedRobot):
 
 
     def disabledInit(self):
+        self.poseDirector.setDashboardState(1) # State 1, put the autonomous menu back up on the webserver dashboard
         self.autoSequencer.updateMode(True)
         if armDepConstants['HAS_ARM'] and self.arm is not None:
             self.arm.disable()

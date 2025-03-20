@@ -24,7 +24,7 @@ class Template(SetupScheme):
         self.changeInTime = 0
         self.waitTimes = {}
         self.schemeProg = 0
-        self.baseCmd = None
+        self.setDriveTrainBaseCommand(None)
         self.armCmd = None
         self.elevCmd = None
 

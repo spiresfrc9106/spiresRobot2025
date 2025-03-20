@@ -55,7 +55,7 @@ class PlungeV1(SetupScheme):
     def update(self):
         currentTime = Timer.getFPGATimestamp()
         time = currentTime - self.startTime
-        self.baseCmd = None  # because this never changes, we're not going to bother with it.
+        self.setDriveTrainBaseCommand(None)  # because this never changes, we're not going to bother with it.
         match self.currentState:
             case 0:  # initializing
                 # this is in case the elev was at the bottom and someone pressed plunge

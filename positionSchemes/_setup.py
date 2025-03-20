@@ -2,6 +2,7 @@ import wpilib
 from wpimath.geometry import Pose2d
 from utils.fieldTagLayout import FieldTagLayout
 from drivetrain.drivetrainCommand import DrivetrainCommand
+from drivetrain.controlStrategies.trajectory import Trajectory
 from Elevatorandmech.ElevatorCommand import ElevatorCommand
 from Elevatorandmech.ArmCommand import ArmCommand
 from wpimath.geometry import Pose2d
@@ -18,7 +19,7 @@ class SetupScheme:
         self.waitTimes = {}
         self.schemeProg = 0
         self.localProg = 0
-        self.baseCmd = None
+        self.setDriveTrainBaseCommand(None)
         self.armCmd = None
         self.elevCmd = None
         self.basePrimitiveCmd = None
@@ -42,19 +43,40 @@ class SetupScheme:
     def completedTrajectory(self, base):
         return abs(base.cmdVelX) < 0.08 and abs(base.cmdVelY) < 0.08 and abs(base.cmdVelT) < 3
 
+
+    def setDriveTrainBaseCommand(self, pose: Pose2d | None, vxMps: float = 0.0, vyMps: float = 0.0, vtRadps: float = 0.0 ):
+        
+        if pose is None:
+            self.baseCmd = None
+
+            Trajectory().setCmdFromPoser(None)
+        else:
+            if True:
+                # save these off in base command for historical reasons as we refactor, might never be used
+                self.baseCmd = (pose,  vxMps, vyMps, vtRadps)
+
+                Trajectory().setCmdFromPoser(
+                    ChoreoTrajectoryState(
+                        timestamp=1,  # TODO: no idea if this should be some sort of other type of time...
+                        x=pose.X(),
+                        y=pose.Y(),
+                        heading=pose.rotation().radians(),
+                        velocityX=vxMps,
+                        velocityY=vyMps,
+                        angularVelocity=vtRadps
+                    )
+                )
+
+    def deactivate(self):
+        self.setDriveTrainBaseCommand(None)
+
+
+
     def getDriveTrainCommand(self, curCommand: DrivetrainCommand):
         drivetrain_cmd = curCommand
         if self.baseCmd is not None:
-            drivetrain_cmd = ChoreoTrajectoryState(
-                timestamp = 1, #TODO: no idea if this should be some sort of other type of time...
-                x=YPose(self.baseCmd[0]).x,
-                y=YPose(self.baseCmd[0]).y,
-                heading = YPose(self.baseCmd[0]).t,
-                velocityX=self.baseCmd[1],
-                velocityY=self.baseCmd[2],
-                angularVelocity=self.baseCmd[3]
-            )
-        if self.basePrimitiveCmd is not None:
+            drivetrain_cmd = drivetrain_cmd
+        elif self.basePrimitiveCmd is not None:
             drivetrain_cmd = DrivetrainCommand(
                 velX=self.basePrimitiveCmd[0],
                 velY=self.basePrimitiveCmd[1],
@@ -64,25 +86,6 @@ class SetupScheme:
 
     def inchesToMeters(self, inches):
         return inches/39.37
-
-        # self.timestamp = timestamp
-        # self.x = x
-        # self.y = y
-        # self.heading = heading
-        # self.velocityX = velocityX
-        # self.velocityY = velocityY
-        # self.angularVelocity = angularVelocity
-
-    # def getDriveTrainCommand(self, curCommand: DrivetrainCommand):
-    #     drivetrain_cmd = curCommand
-    #     if self.baseCmd is not None:
-    #         drivetrain_cmd = DrivetrainCommand(
-    #             velX=self.baseCmd[1],
-    #             velY=self.baseCmd[2],
-    #             velT=self.baseCmd[3],
-    #             desPose=self.baseCmd[0]
-    #         )
-    #     return drivetrain_cmd  # if we have nothing to change, we return the current command
 
     def getElevatorCommand(self, curCommand: ElevatorCommand):
         elev_cmd = curCommand

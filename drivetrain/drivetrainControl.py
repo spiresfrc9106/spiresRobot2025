@@ -1,5 +1,6 @@
 from wpimath.kinematics import ChassisSpeeds, SwerveModuleState
 from wpimath.geometry import Pose2d, Rotation2d
+from wpilib import Timer
 #from Autonomous.commands.driveForwardSlowCommand import DriveForwardSlowCommand
 from drivetrain.poseEstimation.drivetrainPoseEstimator import DrivetrainPoseEstimator
 from drivetrain.swerveModuleControl import SwerveModuleControl
@@ -77,6 +78,8 @@ class DrivetrainControl(metaclass=Singleton):
         self.curManCmd = DrivetrainCommand()
         self.curCmd = DrivetrainCommand()
 
+        self.elevSpeedLimit = 1.0
+
         self.useRobotRelative = False
 
         self.gains = SwerveModuleGainSet()
@@ -105,6 +108,22 @@ class DrivetrainControl(metaclass=Singleton):
     def setCoastCmd(self, coast:bool):
         self.coastCmd = coast
 
+    def _debugCurCmd(self, step:str)->None:
+        if self.curCmd is None:
+            print(f"_debugCurCmd:{step}:{Timer.getFPGATimestamp():.3f}"
+                  f" NONE")
+        else:
+            style = "D"
+            if hasattr(self.curCmd, "heading"):
+                style = "C"
+            print(
+                f"_debugCurCmd:{step}: {style} {Timer.getFPGATimestamp():.3f}"
+                f" X:{self.curCmd.desPose.X():+10.1f}"
+                f" Y:{self.curCmd.desPose.Y():+10.1f}"
+                f" T:{self.curCmd.desPose.rotation().degrees():+10.1f}"
+
+            )
+
     def update(self):
         """
         Main periodic update, should be called every 20ms
@@ -115,16 +134,15 @@ class DrivetrainControl(metaclass=Singleton):
         # calculate the current drivetrain commands.
 
         self.curCmd = self.curManCmd
-        self.curCmd = self.poser.getDriveTrainCommand(self.curCmd)
-        if hasattr(self.curCmd, "heading"): # TODO a hack to check if curCmd is ChoreoTrajectoryState better to just check for the class
-            Trajectory().setCmd(self.curCmd)
-        else:
-            Trajectory().setCmd(None)
+        #self._debugCurCmd("manCmd     ")
         self.curCmd = Trajectory().update(self.curCmd, curEstPose)
-        self.curCmd = AutoDrive().update(self.curCmd, curEstPose)
+        #self._debugCurCmd("Trajectory ")
+        self.curCmd = self.poser.getDriveTrainCommand(self.curCmd)
+        #self._debugCurCmd("poser      ")
+
+        #self.curCmd.scaleBy(self.elevSpeedLimit)
 
         #yavin's interpret
-
 
         self.cmdVelX = self.curCmd.velX
         self.cmdVelY = self.curCmd.velY
@@ -213,7 +231,9 @@ class DrivetrainControl(metaclass=Singleton):
     def getCurEstPose(self) -> Pose2d:
         # Return the current best-guess at our pose on the field.
         return self.poseEst.getCurEstPose()
-
+    
+    def setElevLimiter(self, elevLimit):
+        self.elevSpeedLimit = elevLimit
 
 def _discretizeChSpd(chSpd):
     """See https://www.chiefdelphi.com/t/whitepaper-swerve-drive-skew-and-second-order-kinematics/416964/30
@@ -226,7 +246,7 @@ def _discretizeChSpd(chSpd):
     Returns:
         ChassisSpeeds: Adjusted ch speed
     """
-    dt = 0.02
+    dt = 0.04
     poseVel = Pose2d(chSpd.vx * dt, chSpd.vy * dt, Rotation2d(chSpd.omega * dt))
     twistVel = Pose2d().log(poseVel)
     return ChassisSpeeds(twistVel.dx / dt, twistVel.dy / dt, twistVel.dtheta / dt)

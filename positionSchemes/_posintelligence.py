@@ -1,7 +1,8 @@
 import math
 from wpimath.geometry import Pose2d
+from wpilib import Timer
 from utils.fieldTagLayout import FieldTagLayout
-from utils.units import deg2Rad
+from utils.units import deg2Rad, rad2Deg, in2m
 from utils.signalLogging import addLog
 
 
@@ -13,11 +14,11 @@ class PlacementIntelligence():
         self.poseEst = self.base.poseEst
         self.curPoseEst = self.poseEst.getCurEstPose()
         # all in meters
-        self.botLenX = 0.8382
-        self.botLenY = 0.6604
-        self.indivBumperWidth = 0.08573
+        self.botLenX = in2m(33) # 0.8382
+        self.botLenY = in2m(26) # 0.6604
+        self.indivBumperWidth = in2m(3.375) # 0.08575
         self.currentTarget = 0
-        self.shiftToNode_m = 0.152  # the distance from center to the right side of note of the center of robot front
+        self.shiftToNode_m = in2m(6)  # the distance from center to the right side of note of the center of robot front
 
         addLog("yvn_current_placeL4_tag", lambda: self.currentTarget, "")
 
@@ -55,12 +56,11 @@ class PlacementIntelligence():
         t_clean = YPose(og_pose).t
         t = t_clean  # if that's what the man says #((2*math.pi) - YPose(og_pose).t)
 
-        print(t_clean)
-        print(t)
-
         ang_rad = ((t + (2 * math.pi) * 2) % (2 * math.pi))
+        print(f"adjustLocationRobotRelative"
+            f" time={Timer.getFPGATimestamp():.3f}s"
+            f" t={rad2Deg(t):+7.1f}deg ang_rad.degrees()={rad2Deg(ang_rad):+7.1f}deg")
 
-        print(ang_rad)
         # first we'll do f/b shift.
         h = abs(fb_shift)
         if h == 0:

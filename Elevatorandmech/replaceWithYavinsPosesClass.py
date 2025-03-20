@@ -25,6 +25,9 @@ class YavinsPoseClassNoChange():
     def getArmCommand(self, curCommand: ArmCommand):
         return curCommand # if we have nothing to change, we return the current command
 
+    def deactivate(self):
+        pass
+
 
 
 class YavinsPoseClassPositionControl():
@@ -65,6 +68,9 @@ class YavinsPoseClassPositionControl():
         )
         return curCommand # if we have nothing to change, we return the current command
 
+    def deactivate(self):
+        pass
+
 
 class YavinsPoseClassVelocityControl():
 
@@ -102,3 +108,6 @@ class YavinsPoseClassVelocityControl():
             velocityDegps=self.armVelocityDegps
         )
         return armCommand # if we have nothing to change, we return the current command
+
+    def deactivate(self):
+        pass

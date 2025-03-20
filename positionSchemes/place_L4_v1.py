@@ -37,7 +37,7 @@ class PlaceL4V1(SetupScheme):
         self.changeInTime = 0
         self.waitTimes = {}
         self.schemeProg = 0
-        self.baseCmd = None
+        self.setDriveTrainBaseCommand(None)
         self.armCmd = None
         self.elevCmd = None
 
@@ -62,8 +62,8 @@ class PlaceL4V1(SetupScheme):
             case 0:  # initializing
                 # self.armCmd/elevCmd could be called here to prep for the fun thing.
                 self.bestTag = self.placementIntel.decidePlacementPose(self.pdSideOfReef, self.inchesToMeters(11))
-                print(f"place l4 {self.bestTag.x} {self.bestTag.y} {self.bestTag.rotation().degrees()}")
-                self.baseCmd = (self.bestTag, 0, 0, 0)
+                print(f"place l4 time = {Timer.getFPGATimestamp():.3f}s x={self.bestTag.x:+10.1f}m y={self.bestTag.y:+10.1f}m t={self.bestTag.rotation().degrees():+10.1f}deg")
+                self.setDriveTrainBaseCommand(self.bestTag)
                 # CAN WE DO BETTER?  YES OF COURSE WE CAN.
                 self.armCmd = (90, 0)  # straight up so no bumping.
                 if self.completedAwait("awaitbasecmdsendplz", 0.2):
@@ -76,7 +76,7 @@ class PlaceL4V1(SetupScheme):
                 self.bestTag = self.placementIntel.decidePlacementPose(self.pdSideOfReef, self.inchesToMeters(7))
                 self.elevCmd = (self.elevPlacePos, 0)
                 self.armCmd = (self.armPlacePos, 0)
-                self.baseCmd = (self.bestTag, 0, 0, 0)
+                self.setDriveTrainBaseCommand(self.bestTag)
                 if self.completedAwait("waitforcmdsend1", 0.2):
                     self.nextState()
             case 3:
@@ -110,7 +110,7 @@ class PlaceL4V1(SetupScheme):
             case 6:
                 self.armCmd = (-15, 0)
                 self.bestTag = self.placementIntel.decidePlacementPose(self.pdSideOfReef, self.inchesToMeters(10))
-                self.baseCmd = (self.bestTag, 0, 0, 0)
+                self.setDriveTrainBaseCommand(self.bestTag)
                 if self.completedTrajectory(self.base) or self.oInt.skipNext:
                     self.nextState()
             case 7:

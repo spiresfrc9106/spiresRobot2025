@@ -47,10 +47,10 @@ class DrivePathCommand(Command):
 
         curState = transform(curState)
 
-        self.trajCtrl.setCmd(curState)
+        self.trajCtrl.setCmdFromChoreoAuton(curState)
 
         if curTime >= self.duration:
-            self.trajCtrl.setCmd(None)
+            self.trajCtrl.setCmdFromChoreoAuton(None)
             self.poseTelem.setChoreoTrajectory(None)
             self.done = True
 
@@ -58,7 +58,7 @@ class DrivePathCommand(Command):
         return self.done
 
     def end(self,interrupt):
-        self.trajCtrl.setCmd(None)
+        self.trajCtrl.setCmdFromChoreoAuton(None)
         self.poseTelem.setChoreoTrajectory(None)
 
     def getName(self):

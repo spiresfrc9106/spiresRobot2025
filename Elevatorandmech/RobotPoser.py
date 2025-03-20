@@ -56,14 +56,18 @@ class PoseDirector(metaclass=Singleton):
         self.getElevatorCommand = lambda curCommand :  self.currentPositionScheme.getElevatorCommand(curCommand)
         self.getArmCommand = lambda curCommand : self.currentPositionScheme.getArmCommand(curCommand)
         self.schemeProg = 0
-        self.dashboardState = 1
+        self.dashboardState = 1 # State 1, put the autonomous menu back up on the webserver dashboard
         addLog("RP/schemeProg", lambda: self.schemeProg, "") # don't delete this.
         addLog("RP/dashboardState", lambda: self.dashboardState, "") # don't delete this.
         # addLog("RP/controllerState", lambda: self.controllerState, "int")
 
+    def setDashboardState(self, dashboardState: int):
+        self.dashboardState = dashboardState
+
     def update(self, isAuton=False):
 
-        if self._isControllerStateChanging():
+        if (not isAuton) and self._isControllerStateChanging():
+            self.currentPositionScheme.deactivate()
             self.currentPositionScheme = self.pickTheNewScheme()
             self.getDriveTrainCommand = lambda curCommand : self.currentPositionScheme.getDriveTrainCommand(curCommand)
             self.getElevatorCommand = lambda curCommand: self.currentPositionScheme.getElevatorCommand(curCommand)
@@ -72,10 +76,11 @@ class PoseDirector(metaclass=Singleton):
         self.currentPositionScheme.update()
         if hasattr(self.currentPositionScheme, "schemeProg"):
             self.schemeProg=round(self.currentPositionScheme.schemeProg*100)
+            # xyzzy, todo ask Yavin, shouldn't we set a dashboard state here?
         else:
-            self.dashboardState = 3
+            self.setDashboardState(3)
         if isAuton:
-            self.dashboardState = 2
+            self.setDashboardState(2)
 
     def _isControllerStateChanging(self)->bool:
         nextState = self.oInt.getElevArmCmdState()
@@ -99,22 +104,22 @@ class PoseDirector(metaclass=Singleton):
             case ElevArmCmdState.POS_CONTROL:
                 return YavinsPoseClassPositionControl(self.arm, self.driveTrain, self.elevator, self.oInt)
             case ElevArmCmdState.PLUNGE:
-                self.dashboardState = 5
+                self.setDashboardState(5)
                 return PlungeV1(self.arm, self.driveTrain, self.elevator, self.oInt) # todo fix me
             case ElevArmCmdState.RECEIVE_CORAL:
-                self.dashboardState = 4
+                self.setDashboardState(4)
                 return PickupV1(self.arm, self.driveTrain, self.elevator, self.oInt) # todo fix me
             case ElevArmCmdState.L1:
-                self.dashboardState = 6
+                self.setDashboardState(6)
                 return PlaceL1V1(self.arm, self.driveTrain, self.elevator, self.oInt)  # todo fix me
             case ElevArmCmdState.L2:
-                self.dashboardState = 6
+                self.setDashboardState(6)
                 return PlaceL2V1(self.arm, self.driveTrain, self.elevator, self.oInt)  # todo fix me
             case ElevArmCmdState.L3:
-                self.dashboardState = 6
+                self.setDashboardState(6)
                 return PlaceL3V1(self.arm, self.driveTrain, self.elevator, self.oInt)  # todo fix me
             case ElevArmCmdState.L4:
-                self.dashboardState = 6
+                self.setDashboardState(6)
                 return PlaceL4V1(self.arm, self.driveTrain, self.elevator, self.oInt)  # todo fix me
             case _:
                 return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator, self.oInt)  # todo fix me

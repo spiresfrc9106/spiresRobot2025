@@ -37,7 +37,7 @@ class PlaceL3V1(SetupScheme):
         self.changeInTime = 0
         self.waitTimes = {}
         self.schemeProg = 0
-        self.baseCmd = None
+        self.setDriveTrainBaseCommand(None)
         self.armCmd = None
         self.elevCmd = None
 
@@ -63,7 +63,7 @@ class PlaceL3V1(SetupScheme):
             case 0:  # initializing
                 # self.armCmd/elevCmd could be called here to prep for the fun thing.
                 self.bestTag = self.placementIntel.decidePlacementPose(self.pdSideOfReef, self.inchesToMeters(11))
-                self.baseCmd = (self.bestTag, 0, 0, 0)
+                self.setDriveTrainBaseCommand(self.bestTag)
                 # CAN WE DO BETTER?  YES OF COURSE WE CAN.
                 self.armCmd = (90, 0)  # straight up so no bumping.
                 if self.completedAwait("awaitbasecmdsend", 0.2):
@@ -76,7 +76,7 @@ class PlaceL3V1(SetupScheme):
                 self.bestTag = self.placementIntel.decidePlacementPose(self.pdSideOfReef, self.inchesToMeters(7))
                 self.elevCmd = (self.elevPlacePos, 0)
                 self.armCmd = (self.armPlacePos, 0)
-                self.baseCmd = (self.bestTag, 0, 0, 0)
+                self.setDriveTrainBaseCommand(self.bestTag)
                 if self.completedAwait("waitforcmdsend1", 0.2):
                     self.nextState()
             case 3:
@@ -104,7 +104,7 @@ class PlaceL3V1(SetupScheme):
             case 5: #launch it bruh
                 self.basePrimitiveCmd = None
                 self.bestTag = self.placementIntel.decidePlacementPose(self.pdSideOfReef, self.inchesToMeters(3.5))
-                self.baseCmd = (self.bestTag, 0, 0, 0)
+                self.setDriveTrainBaseCommand(self.bestTag)
                 if self.completedAwait("delayfornodecapture",0.4):
                     self.nextState()
             case 6:
