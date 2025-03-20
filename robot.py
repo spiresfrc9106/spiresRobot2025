@@ -20,9 +20,15 @@ from utils.calibration import CalibrationWrangler
 from utils.crashLogger import CrashLogger
 from utils.faults import FaultWrangler
 from utils.powerMonitor import PowerMonitor
+<<<<<<< Updated upstream
 from utils.rioMonitor import RIOMonitor
 from utils.signalLogging import logUpdate
 from utils.singleton import destroyAllSingletonInstances
+=======
+from utils.units import deg2Rad
+from utils.allianceTransformUtils import onRed
+
+>>>>>>> Stashed changes
 from webserver.webserver import Webserver
 import wpilib
 
@@ -161,6 +167,34 @@ class MyRobot(wpilib.TimedRobot):
         # Ensure auto-steer starts disabled, no motion without driver command
         self.autosteer.setInhibited()
 
+<<<<<<< Updated upstream
+=======
+        # If we're starting teleop but haven't run auto, set a nominal default pose
+        # This is needed because initial pose is usually set by the autonomous routine
+        if drivetrainDepConstants['HAS_DRIVETRAIN']:
+            # xyzzy todo Noah, can we change this so that:
+            # we always have a default autonoumous pose?
+            # that if auto hasn't run, we set our default poss to the default, or selected autonoumous pose?
+            # -Thanks Coach Mike
+            if not self.autoHasRun:
+                if onRed():
+                    self.driveTrain.poseEst.setKnownPose(
+                        Pose2d(10.4279, 3.722, Rotation2d(0))
+                    )
+                else:
+                    self.driveTrain.poseEst.setKnownPose(
+                        Pose2d(7.1411, 3.722, Rotation2d(deg2Rad(180)))
+                    )
+
+        if armDepConstants['HAS_ARM']:
+            self.arm.initialize()
+
+        if elevDepConstants['HAS_ELEVATOR']:
+            self.elev.initialize()
+
+        # Default to No trajectory in Teleop, The PoseDirector does send commands through in teleop
+        Trajectory().setCmdFromChoreoAuton(None)
+>>>>>>> Stashed changes
 
     def teleopPeriodic(self):
 
