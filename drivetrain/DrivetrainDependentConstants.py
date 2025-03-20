@@ -31,8 +31,9 @@ ROBOT_TO_RIGHT_CAM = Transform3d(
 
 ROBOT_TO_FRONT_CAM = Transform3d(
     Translation3d(
-        inchesToMeters(8), inchesToMeters(-10), inchesToMeters(16)  # X  # Y  # Z
-    ),
+        #inchesToMeters(-7.5), inchesToMeters(+11), inchesToMeters(13)  # X  # Y  # Z
+        inchesToMeters(-7.5), inchesToMeters(11), inchesToMeters(13)  # X  # Y  # Z
+),
     Rotation3d.fromDegrees(0.0, -10, 0.0),  # Roll  # Pitch  # Yaw
 )
 
