@@ -35,12 +35,15 @@ class AutoSequencer(metaclass=Singleton):
         #self.mainModeList.addMode(DriveOut())
         self.mainModeList.addMode(Square())
 
-        self.mainModeList.addMode(RedRightDriveOut())
-        self.mainModeList.addMode(RedLeftDriveOut())
-        self.mainModeList.addMode(RedCenterDriveOut())
-        self.mainModeList.addMode(BlueLeftDriveOut())
-        self.mainModeList.addMode(BlueCenterDriveOut())
-        self.mainModeList.addMode(BlueRightDriveOut())
+        self.currentTeam = onRed() #i was doing something with this
+        if onRed():
+            self.mainModeList.addMode(RedRightDriveOut())
+            self.mainModeList.addMode(RedLeftDriveOut())
+            self.mainModeList.addMode(RedCenterDriveOut())
+        else:
+            self.mainModeList.addMode(BlueLeftDriveOut())
+            self.mainModeList.addMode(BlueCenterDriveOut())
+            self.mainModeList.addMode(BlueRightDriveOut())
 
 
         self.topLevelCmdGroup = SequentialCommandGroup()
