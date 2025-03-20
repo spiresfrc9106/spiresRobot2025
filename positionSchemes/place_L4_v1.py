@@ -62,6 +62,7 @@ class PlaceL4V1(SetupScheme):
             case 0:  # initializing
                 # self.armCmd/elevCmd could be called here to prep for the fun thing.
                 self.bestTag = self.placementIntel.decidePlacementPose(self.pdSideOfReef, self.inchesToMeters(11))
+                print(f"place l4 {self.bestTag.x} {self.bestTag.y} {self.bestTag.rotation().degrees()}")
                 self.baseCmd = (self.bestTag, 0, 0, 0)
                 # CAN WE DO BETTER?  YES OF COURSE WE CAN.
                 self.armCmd = (90, 0)  # straight up so no bumping.

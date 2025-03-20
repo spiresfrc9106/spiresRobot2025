@@ -51,7 +51,7 @@ class ArmDependentConstants:
                 "MIN_ARM_POS_DEG": -92,
                 "MAX_ARM_VEL_DEGPS": 720, # Was 180
                 "MAX_ARM_ACCEL_DEGPS2": 720*4, # Was 720
-                "ABS_SENSOR_MOUNT_OFFSET_DEG": -50.0 - 10,
+                "ABS_SENSOR_MOUNT_OFFSET_DEG": -50.0 - 10 - 16,
                 "ABS_SENSOR_INVERTED": False,
             },
             RobotTypes.Spires2025Sim: {
