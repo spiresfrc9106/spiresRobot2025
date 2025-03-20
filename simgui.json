@@ -40,6 +40,7 @@
     "types": {
       "/FMSInfo": "FMSInfo",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       "/LiveWindow/Ungrouped/ADXRS450_Gyro[0]": "Gyro",
       "/LiveWindow/Ungrouped/DigitalInput[0]": "Digital Input",
       "/LiveWindow/Ungrouped/DigitalInput[1]": "Digital Input",
@@ -53,6 +54,8 @@
     "windows": {
       "/SmartDashboard/Carriage": {
 =======
+=======
+>>>>>>> Stashed changes
       "/SmartDashboard/AutoDrive/HDC/curEstPose": "Field2d",
       "/SmartDashboard/AutoDrive/HDC/trajCmdPose": "Field2d",
       "/SmartDashboard/DT Pose 2D": "Field2d",
@@ -63,11 +66,15 @@
     },
     "windows": {
       "/FMSInfo": {
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         "window": {
           "visible": true
         }
       },
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
       "/SmartDashboard/DT Pose 2D": {
         "ModulePoses": {
@@ -165,6 +172,8 @@
         "units": "meters",
         "width": 17.54825210571289,
 =======
+=======
+>>>>>>> Stashed changes
       "/SmartDashboard/Field": {
         "bottom": 1476,
         "height": 8.210550308227539,
