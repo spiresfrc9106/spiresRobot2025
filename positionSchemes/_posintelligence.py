@@ -18,7 +18,7 @@ class PlacementIntelligence():
         self.botLenY = in2m(26) # 0.6604
         self.indivBumperWidth = in2m(3.375) # 0.08575
         self.currentTarget = 0
-        self.shiftToNode_m = in2m(6)  # the distance from center to the right side of note of the center of robot front
+        self.shiftToNode_m = in2m(6.50)  # the distance from center to the right side of note of the center of robot front
 
         addLog("yvn_current_placeL4_tag", lambda: self.currentTarget, "")
 

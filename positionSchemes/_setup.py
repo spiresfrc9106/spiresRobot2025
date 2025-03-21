@@ -1,3 +1,5 @@
+import math
+
 import wpilib
 from wpimath.geometry import Pose2d
 from utils.fieldTagLayout import FieldTagLayout
@@ -8,6 +10,7 @@ from Elevatorandmech.ArmCommand import ArmCommand
 from wpimath.geometry import Pose2d
 from wpilib import Timer
 from drivetrain.controlStrategies.trajectory import ChoreoTrajectoryState
+from utils.units import deg2Rad, rad2Deg, in2m, m2in
 
 ### these are intrisic to any pos scheme class
 
@@ -23,6 +26,7 @@ class SetupScheme:
         self.armCmd = None
         self.elevCmd = None
         self.basePrimitiveCmd = None
+        self.bestTag = Pose2d()
 
     def nextState(self):
         self.currentState = self.currentState + 1
@@ -41,11 +45,21 @@ class SetupScheme:
             return False
 
     def completedTrajectory(self, base):
-        return abs(base.cmdVelX) < 0.08 and abs(base.cmdVelY) < 0.08 and abs(base.cmdVelT) < 3
+        desPose = self.bestTag
+        curPose = base.poseEst.getCurEstPose()
+        desX = YPose(desPose).x
+        desY = YPose(desPose).y
+        desT = YPose(desPose).t
+        curX = YPose(curPose).x
+        curY = YPose(curPose).y
+        curT = YPose(curPose).t
+        dist_translate = math.sqrt(pow((desX-curX), 2)+pow((desY-curY), 2))
+        dist_rotate = abs(curT-desT)
+        return dist_translate < m2in(1) and dist_rotate < 5
 
 
     def setDriveTrainBaseCommand(self, pose: Pose2d | None, vxMps: float = 0.0, vyMps: float = 0.0, vtRadps: float = 0.0 ):
-        
+
         if pose is None:
             self.baseCmd = None
 

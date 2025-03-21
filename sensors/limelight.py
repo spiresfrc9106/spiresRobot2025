@@ -56,6 +56,7 @@ class Limelight:
         self.botpose: list[float] = [0,0,0,0,0,0,0,0,0,0,0]
         self.botposemeta2: list[float] = [0,0,0,0,0,0,0,0,0,0,0]
         self.targetpose: Pose3d = Pose3d(Translation3d(0, 0, 0), Rotation3d(0, 0, 0))
+        self.targetPoseByRobot: list[float] = [0, 0, 0, 0, 0, 0]
         self.cam_pos_moving: bool = False
         self.set_pipeline_mode(LimelightPipeline.neural)
         #self.set_led_mode(limelight_led_mode["force_on"])
@@ -223,6 +224,7 @@ class Limelight:
         self.get_neural_classId()
         # self.botpose_red = self.table.getEntry("botpose_wpired").getDoubleArray([0, 0, 0, 0, 0, 0])
         self.update_bot_pose()
+        self.updateTargetPosition()
         
     def update_generic(self):
         '''
@@ -237,7 +239,13 @@ class Limelight:
 
     def getTargetSize(self):
         return self.ta
-        
+
+    def updateTargetPosition(self):
+        target_entry_name = "targetpose_robotspace"
+        target_pose = self.table.getEntry(target_entry_name)
+        target_formation = target_pose.getDoubleArray([0, 0, 0, 0, 0, 0])
+        self.targetPoseByRobot = target_formation
+
     def update_bot_pose(self, megatag2:bool = False):
         '''
         Updates botpose values from the limelight network table

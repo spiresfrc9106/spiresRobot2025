@@ -55,7 +55,8 @@ class WrapperedPoseEstLimelight:
         self.yStdDev = 0
         self.tStdDev = 0
 
-
+        self.targetTransformation = None
+        self.targetInView = None
         self.targetLength = 0
         addLog("ytest_targets_limelight_seen", lambda: self.targetLength, "")
 
@@ -89,11 +90,15 @@ class WrapperedPoseEstLimelight:
             self.CamPublisher.set(bestCandidate)
             secondCandidate = self._toPose2d(botpose=self.cam.botposemeta2)
             self.MetaTag2CamPublisher.set(secondCandidate)
+            self.targetTransformation = self.getTargetPoseEstFormatted()
+            self.targetInView = self.getTargetIDInView()  # TODO: PLEASE FIX THIS.  we need to coordinate tag id+pos,
+            # TODO: so we can give the tag ids and their positions to the pose schemes and schemes decide to use what
         else:
             # Publish a 0 pose in networktables when we don't have an observation to
             # make it easier to understand what is happening in advantage scope.
             self.CamPublisher.set(Pose2d())
             self.MetaTag2CamPublisher.set(Pose2d())
+            self.targetTransformation = None
         self.targetLength = self.cam.get_april_length()
 
     def _adjust(self, pos):
@@ -102,8 +107,17 @@ class WrapperedPoseEstLimelight:
     def _toPose2d(self, botpose:list): #init: +9.0, +4.5
         #CAUSES WILD OSCILATION BETWEEN 180 and -180 or wtv:
         # return Pose3d(Translation3d(botpose[0], botpose[1], botpose[2]),Rotation3d(botpose[3], botpose[4], math.radians(botpose[5])),).toPose2d()
-
         return Pose2d(botpose[0], botpose[1], Rotation2d(math.radians(botpose[5]))) # initially: self._adjust(Pose3d())
+
+    def getTargetIDInView(self):
+        return self.cam.tid
+
+    def getTargetPoseEstFormatted(self):
+        if self.cam is not None:
+            tagPosition:tuple = (self.cam.targetPoseByRobot[2], self.cam.targetPoseByRobot[0])
+            return tagPosition
+        else:
+            return None
 
     def getPoseEstFormatted(self):
         if self.cam is not None:

@@ -79,6 +79,7 @@ class DrivetrainPoseEstimator:
         #addLog("PE Gyro Angle", self._curRawGyroAngle.degrees, "deg")
 
         self._telemetry = DrivetrainPoseTelemetry()
+        self.limelightPoseOfTarget = None
 
         # Simulation Only - maintain a rough estimate of pose from velocities
         # Using just inverse kinematics, no kalman filter. This is used only
@@ -112,7 +113,7 @@ class DrivetrainPoseEstimator:
 
         # Add any vision observations to the pose estimate
         self._camTargetsVisible = False
-
+        rawTargetPoses = []
         if(self._useAprilTags):
             # uses sloppy way to test. don't judge
             index = 0
@@ -128,8 +129,11 @@ class DrivetrainPoseEstimator:
                         self.lastCamEstRobotPos = observation.estFieldPose
                         self._camTargetsVisible = True
                 self._telemetry.addVisionObservations(observations)
+                if cam.targetTransformation is not None:
+                    rawTargetPoses.append(cam.targetTransformation)
                 self.posEstLogs[index].update(cam.getPoseEstFormatted())
                 index = index + 1
+        self.limelightPoseOfTarget = self._processTargetPose(rawTargetPoses)
         self.finalPosEst.update(self.getCurEstPose())
         self._gyroDisconFault.set(not self._gyro.isConnected())
         if wpilib.TimedRobot.isSimulation():
@@ -170,6 +174,20 @@ class DrivetrainPoseEstimator:
         the pose estimate will go inaccurate
         """
         self._useAprilTags = use
+
+    def _processTargetPose(self, listOfTargetPoseTuples):
+        if len(listOfTargetPoseTuples) == 0:
+            return None
+        if len(listOfTargetPoseTuples) > 0:
+            fb = []
+            lr = []
+            for targetTuple in listOfTargetPoseTuples:
+                fb.append(targetTuple[0])
+                lr.append(targetTuple[1])
+            mean_fb = sum(fb) / len(fb)
+            mean_lr = sum(lr) / len(lr)
+            final_position:tuple = (mean_fb, mean_lr)
+            return final_position
 
     # Local helper to wrap the real hardware angle into a Rotation2d
     def _getGyroAngle(self)->Rotation2d:
