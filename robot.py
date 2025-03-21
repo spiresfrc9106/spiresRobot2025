@@ -26,6 +26,8 @@ from utils.rioMonitor import RIOMonitor
 from utils.robotIdentification import RobotIdentification
 from utils.singleton import destroyAllSingletonInstances
 from utils.powerMonitor import PowerMonitor
+from utils.allianceTransformUtils import onRed
+from utils.units import deg2Rad
 
 from webserver.webserver import Webserver
 from AutoSequencerV2.autoSequencer import AutoSequencer
@@ -196,9 +198,14 @@ class MyRobot(wpilib.TimedRobot):
             # that if auto hasn't run, we set our default poss to the default, or selected autonoumous pose?
             # -Thanks Coach Mike
             if not self.autoHasRun:
-                self.driveTrain.poseEst.setKnownPose(
-                    Pose2d(1.0, 1.0, Rotation2d(0.0))
-                )
+                if onRed():
+                    self.driveTrain.poseEst.setKnownPose(
+                        Pose2d(10.4279, 3.722, Rotation2d(0))
+                    )
+                else:
+                    self.driveTrain.poseEst.setKnownPose(
+                        Pose2d(7.1411, 3.722, Rotation2d(deg2Rad(180)))
+                    )
 
         if armDepConstants['HAS_ARM']:
             self.arm.initialize()

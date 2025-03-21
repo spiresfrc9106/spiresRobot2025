@@ -24,6 +24,13 @@ class ModeList:
     def addMode(self, modeIn):
         self.modes.append(modeIn)
 
+    def deleteOppositeColorModes(self):
+        for i in range(2, len(self.modes)):
+            del self.modes[-1]
+
+        for i in range(100):
+            print(self.modes)
+
     def updateMode(self, force=False):
         prevModeIdx = self.curModeIdx
         tmp = self.desModeIdxPublisher.getAtomic()

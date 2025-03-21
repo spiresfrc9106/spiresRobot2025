@@ -35,12 +35,15 @@ class AutoSequencer(metaclass=Singleton):
         #self.mainModeList.addMode(DriveOut())
         self.mainModeList.addMode(Square())
 
-        self.mainModeList.addMode(RedRightDriveOut())
-        self.mainModeList.addMode(RedLeftDriveOut())
-        self.mainModeList.addMode(RedCenterDriveOut())
-        self.mainModeList.addMode(BlueLeftDriveOut())
-        self.mainModeList.addMode(BlueCenterDriveOut())
-        self.mainModeList.addMode(BlueRightDriveOut())
+        self.currentTeam = onRed() #i was doing something with this
+        if onRed():
+            self.mainModeList.addMode(RedRightDriveOut())
+            self.mainModeList.addMode(RedLeftDriveOut())
+            self.mainModeList.addMode(RedCenterDriveOut())
+        else:
+            self.mainModeList.addMode(BlueLeftDriveOut())
+            self.mainModeList.addMode(BlueCenterDriveOut())
+            self.mainModeList.addMode(BlueRightDriveOut())
 
 
         self.topLevelCmdGroup = SequentialCommandGroup()
@@ -61,6 +64,16 @@ class AutoSequencer(metaclass=Singleton):
 
     def addMode(self, newMode):
         self.mainModeList.addMode(newMode)
+
+    def addRedAllianceModes(self):
+        self.mainModeList.addMode(RedRightDriveOut())
+        self.mainModeList.addMode(RedLeftDriveOut())
+        self.mainModeList.addMode(RedCenterDriveOut())
+
+    def addBlueAllianceModes(self):
+        self.mainModeList.addMode(BlueLeftDriveOut())
+        self.mainModeList.addMode(BlueCenterDriveOut())
+        self.mainModeList.addMode(BlueRightDriveOut())
 
     # Call this periodically while disabled to keep the dashboard updated
     # and, when things change, re-init modes
