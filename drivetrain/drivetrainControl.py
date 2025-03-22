@@ -24,7 +24,7 @@ from drivetrain.drivetrainPhysical import (
 from drivetrain.drivetrainCommand import DrivetrainCommand
 from drivetrain.controlStrategies.autoDrive import AutoDrive
 from drivetrain.controlStrategies.trajectory import Trajectory
-from drivetrain.controlStrategies.tcTrajectory import TCTrajectory
+from drivetrain.controlStrategies.trajectoryGuts import TrajectoryGuts
 from utils.singleton import Singleton
 from utils.allianceTransformUtils import onRed
 from utils.constants import (DT_FL_WHEEL_CANID, 
@@ -98,6 +98,9 @@ class DrivetrainControl(metaclass=Singleton):
         addLog("yvn_drive_cmd_vely", lambda: self.cmdVelY, "")
         addLog("yvn_drive_cmd_velt", lambda: self.cmdVelT, "")
 
+        self.tcTraj = TrajectoryGuts()
+        self.tcTraj.setName("TrajectoryTC")
+
     def setManualCmd(self, cmd: DrivetrainCommand, robotRel=False):
         """Send commands to the robot for motion relative to the field
 
@@ -140,7 +143,7 @@ class DrivetrainControl(metaclass=Singleton):
         self.curCmd = self.curManCmd
         #self._debugCurCmd("manCmd     ")
         self.curCmd = Trajectory().update(self.curCmd, curEstPose)
-        self.curCmd = TCTrajectory().update(self.curCmd, tcEstPose)
+        self.curCmd = self.tcTraj.update(self.curCmd, tcEstPose)
         #self._debugCurCmd("Trajectory ")
         self.curCmd = self.poser.getDriveTrainCommand(self.curCmd)
         #self._debugCurCmd("poser      ")

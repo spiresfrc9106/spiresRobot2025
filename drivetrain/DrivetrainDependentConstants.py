@@ -58,7 +58,8 @@ COMMON_CAMS = [
             ),
         "ROBOT_TO_CAM": ROBOT_TO_RIGHT_CAM,
         "WEIGH_IN_FILTER": False,
-        "USE_IN_TC_FILTER": False,
+        "USE_IN_TC_FRONT": False,
+        "USE_IN_TC_BACK": False,
     },
     {
         "CAM": WrapperedPoseEstPhotonCamera("LEFT_CAM", ROBOT_TO_LEFT_CAM),
@@ -71,7 +72,8 @@ COMMON_CAMS = [
             ),
         "ROBOT_TO_CAM": ROBOT_TO_LEFT_CAM,
         "WEIGH_IN_FILTER": False,
-        "USE_IN_TC_FILTER": False,
+        "USE_IN_TC_FRONT": False,
+        "USE_IN_TC_BACK": False,
     },
     {
         "CAM": WrapperedPoseEstPhotonCamera("FRONT_CAM", ROBOT_TO_FRONT_CAM),
@@ -84,7 +86,8 @@ COMMON_CAMS = [
             ),
         "ROBOT_TO_CAM": ROBOT_TO_FRONT_CAM,
         "WEIGH_IN_FILTER": False,
-        "USE_IN_TC_FILTER": False,
+        "USE_IN_TC_FRONT": False,
+        "USE_IN_TC_BACK": False,
     },
     {
         "CAM": wrapperedLimilightCameraFactory("limelight-br", ROBOT_TO_LIME_1),
@@ -97,7 +100,8 @@ COMMON_CAMS = [
             ),
         "ROBOT_TO_CAM": ROBOT_TO_LIME_1,
         "WEIGH_IN_FILTER": True,
-        "USE_IN_TC_FILTER": False,
+        "USE_IN_TC_FRONT": False,
+        "USE_IN_TC_BACK": True,
     },
     {
         "CAM": wrapperedLimilightCameraFactory("limelight-fl", ROBOT_TO_LIME_1),
@@ -110,7 +114,8 @@ COMMON_CAMS = [
             ),
         "ROBOT_TO_CAM": ROBOT_TO_LIME_1,
         "WEIGH_IN_FILTER": True,
-        "USE_IN_TC_FILTER": True,
+        "USE_IN_TC_FRONT": True,
+        "USE_IN_TC_BACK": False,
     },
     {
         "CAM": wrapperedLimilightCameraFactory("limelight-fr", ROBOT_TO_LIME_1),
@@ -123,7 +128,8 @@ COMMON_CAMS = [
             ),
         "ROBOT_TO_CAM": ROBOT_TO_LIME_1,
         "WEIGH_IN_FILTER": True,
-        "USE_IN_TC_FILTER": True,
+        "USE_IN_TC_FRONT": True,
+        "USE_IN_TC_BACK": False,
     },
 ]
 
@@ -145,7 +151,7 @@ class DrivetrainDependentConstants:
                 "BL_OFFSET_DEG": -56.2+180,
                 "BR_OFFSET_DEG": -11.2-90+180,
                 "GYRO": "NAVX", # "NAVX", # "ADIS16470_IMU",
-                "CAMS": [],
+                "CAMS": COMMON_CAMS,
                 "HAS_DRIVETRAIN": True,
                 "USE_PHOTON_NAV": False,
             },

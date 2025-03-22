@@ -8,14 +8,17 @@ from utils.signalLogging import getNowLogger
 from utils.singleton import Singleton
 
 
-class TCTrajectory(metaclass=Singleton):
+class TrajectoryGuts:
     def __init__(self):
-        self._name = "TCTrajectory"
+        self._name = "TrajectoryGuts"
         self.trajHDC = HolonomicDriveController(self._name)
         self.curTrajCmdFromChoreaAuton = None
         self.curTrajCmdFromPoser = None
 
         self.curTrajCmdActiveLogger = getNowLogger(f"{self._name}/curTrajCmdActive")
+
+    def setName(self, name):
+        self._name = name
 
     def _activeLogger(self, cmd: ChoreoTrajectoryState | None):
         active = 0

@@ -10,7 +10,7 @@ from Elevatorandmech.RobotPoser import PoseDirector
 from testingMotors.motorCtrl import MotorControl, motorDepConstants
 from drivetrain.controlStrategies.autoDrive import AutoDrive
 from drivetrain.controlStrategies.trajectory import Trajectory
-from drivetrain.controlStrategies.tcTrajectory import TCTrajectory
+from drivetrain.controlStrategies.trajectoryGuts import TrajectoryGuts
 from drivetrain.drivetrainCommand import DrivetrainCommand
 from drivetrain.drivetrainControl import DrivetrainControl
 from drivetrain.DrivetrainDependentConstants import drivetrainDepConstants
@@ -52,6 +52,7 @@ class MyRobot(wpilib.TimedRobot):
         if drivetrainDepConstants['HAS_DRIVETRAIN']:
             print(f"drivetrainDepConstants['HAS_DRIVETRAIN']={drivetrainDepConstants['HAS_DRIVETRAIN']}")
             self.driveTrain = DrivetrainControl()
+            self.tcTraj = self.driveTrain.tcTraj
 
         self.arm = None
         if armDepConstants['HAS_ARM']:
@@ -214,7 +215,7 @@ class MyRobot(wpilib.TimedRobot):
 
         # Default to No trajectory in Teleop, The PoseDirector does send commands through in teleop
         Trajectory().setCmdFromChoreoAuton(None)
-        TCTrajectory().setCmdFromChoreoAuton(None)
+        self.tcTraj.setCmdFromChoreoAuton(None)
 
     def teleopPeriodic(self):
         # TODO - this is technically one loop delayed, which could induce lag
@@ -268,7 +269,7 @@ class MyRobot(wpilib.TimedRobot):
     def disabledPeriodic(self):
         self.autoSequencer.updateMode()
         Trajectory().trajHDC.updateCals()
-        TCTrajectory().trajHDC.updateCals()
+        self.tcTraj.trajHDC.updateCals()
 
 
     def disabledInit(self):

@@ -60,7 +60,7 @@ class TargetCentricPoseEstimator:
         for camConfig in CAMS:
             self.cams.append(camConfig['CAM'])
             self.posEstLogs.append(YTestForPosition(camConfig['POSE_EST_LOG_NAME']))
-            self.includeInFilter.append(camConfig['USE_IN_TC_FILTER'])
+            self.includeInFilter.append(camConfig['USE_IN_TC_FRONT'])
 
         self.finalPosEst = YTestForPosition("final_TC")
 
@@ -86,6 +86,8 @@ class TargetCentricPoseEstimator:
         # to produce a reasonable-looking simulated gyroscope.
         self._simPose = Pose2d()
         self.lastCamEstRobotPos = Pose2d()
+
+        self.camDirection = TargetCentricDirection.FRONT
 
 
     def setKnownPose(self, knownPose:Pose2d):
@@ -192,3 +194,13 @@ class TargetCentricPoseEstimator:
     # Local helper to wrap the real hardware angle into a Rotation2d
     def _getGyroAngle(self)->Rotation2d:
         return self._gyro.getGyroAngleRotation2d()
+
+    def setDirection(self, state):
+        prevDirection = self.camDirection
+        self.camDirection = state
+        if state != prevDirection:
+            pass
+
+class TargetCentricDirection:
+    FRONT = 0
+    BACK = 1
