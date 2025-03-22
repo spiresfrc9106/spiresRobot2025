@@ -46,6 +46,33 @@ ROBOT_TO_LIME_1 = Transform3d(
 # if wpilib.RobotBase.isSimulation() == False:
 #     ROBOT_TO_LIME_1 = Pose3d(Translation3d(0,0,0), Rotation3d(Rotation2d(0)))
 
+
+class CameraDependentConstants:
+    def __init__(self):
+        self.drivetrainConstants = {
+            RobotTypes.Spires2023: {
+                "LL_PIPELINE": 2,
+            },
+            RobotTypes.Spires2025: {
+                "LL_PIPELINE": 1,
+            },
+            RobotTypes.Spires2025Sim: {
+                "LL_PIPELINE": 1,
+            },
+            RobotTypes.SpiresTestBoard: {
+                "LL_PIPELINE": 1,
+            },
+            RobotTypes.SpiresRoboRioV1: {
+                "LL_PIPELINE": 1,
+            },
+        }
+
+    def get(self):
+        return self.drivetrainConstants[RobotIdentification().getRobotType()]
+
+
+cameraDepConstants = CameraDependentConstants().get()
+
 COMMON_CAMS = [
     {
         "CAM": WrapperedPoseEstPhotonCamera("RIGHT_CAM", ROBOT_TO_RIGHT_CAM),
@@ -90,7 +117,7 @@ COMMON_CAMS = [
         "USE_IN_TC_BACK": False,
     },
     {
-        "CAM": wrapperedLimilightCameraFactory("limelight-br", ROBOT_TO_LIME_1),
+        "CAM": wrapperedLimilightCameraFactory("limelight-br", ROBOT_TO_LIME_1, cameraDepConstants['LL_PIPELINE']),
         "POSE_EST_LOG_NAME": "limeli-br",
         "PUBLISHER":
             (
@@ -104,7 +131,7 @@ COMMON_CAMS = [
         "USE_IN_TC_BACK": True,
     },
     {
-        "CAM": wrapperedLimilightCameraFactory("limelight-fl", ROBOT_TO_LIME_1),
+        "CAM": wrapperedLimilightCameraFactory("limelight-fl", ROBOT_TO_LIME_1, cameraDepConstants['LL_PIPELINE']),
         "POSE_EST_LOG_NAME": "limeli-fl",
         "PUBLISHER":
             (
@@ -118,7 +145,7 @@ COMMON_CAMS = [
         "USE_IN_TC_BACK": False,
     },
     {
-        "CAM": wrapperedLimilightCameraFactory("limelight-fr", ROBOT_TO_LIME_1),
+        "CAM": wrapperedLimilightCameraFactory("limelight-fr", ROBOT_TO_LIME_1, cameraDepConstants['LL_PIPELINE']),
         "POSE_EST_LOG_NAME": "limeli-fr",
         "PUBLISHER":
             (
@@ -235,5 +262,6 @@ class DrivetrainDependentConstants:
 
     def get(self):
         return self.drivetrainConstants[RobotIdentification().getRobotType()]
+
 
 drivetrainDepConstants = DrivetrainDependentConstants().get()

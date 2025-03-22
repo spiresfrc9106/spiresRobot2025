@@ -22,13 +22,13 @@ class LimelightCameraPoseObservation:
 
 
 class WrapperedPoseEstLimelight:
-    def __init__(self, camName:str, robotToCam:Translation3d):
+    def __init__(self, camName:str, robotToCam:Translation3d, pipeline_mode):
         setVersionCheckEnabled(False)
 
         print(f"WrapperedPoseEstLimelight camName {type(camName)} = {camName}")
 
         try:
-            self.cam = Limelight(robotToCam, camName)
+            self.cam = Limelight(robotToCam, camName, pipeline_mode)
         except Exception as e:
             # Handle any exception
             print(f"An error occurred: {e}")
@@ -157,10 +157,10 @@ class WrapperedPoseEstLimelight:
             return max(y, 1.0) #Theta of one radian is about 60 degrees
 
 
-def wrapperedLimilightCameraFactory(camName:str, robotToCam):
+def wrapperedLimilightCameraFactory(camName:str, robotToCam, pipeline_mode):
     if wpilib.RobotBase.isSimulation():
         print(f"In simulation substituting PhotonCamera for LimeLight Camera {camName}")
         wrapperedCam = WrapperedPoseEstPhotonCamera(camName, robotToCam)
     else:
-        wrapperedCam = WrapperedPoseEstLimelight(camName, robotToCam)
+        wrapperedCam = WrapperedPoseEstLimelight(camName, robotToCam, pipeline_mode)
     return wrapperedCam

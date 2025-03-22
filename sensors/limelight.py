@@ -26,7 +26,7 @@ class Limelight:
     A class for interfacing with the limelight camera.
     """
 
-    def __init__(self, origin_offset: Translation3d, name: str = "limelight"):
+    def __init__(self, origin_offset: Translation3d, name: str = "limelight", mode_given=1.0):
         """
 
         :param origin_offset: The offset of the limelight from the robot's origin in meters
@@ -58,7 +58,7 @@ class Limelight:
         self.targetpose: Pose3d = Pose3d(Translation3d(0, 0, 0), Rotation3d(0, 0, 0))
         self.targetPoseByRobot: list[float] = [0, 0, 0, 0, 0, 0]
         self.cam_pos_moving: bool = False
-        self.set_pipeline_mode(LimelightPipeline.neural)
+        self.set_pipeline_mode(mode_given)
         #self.set_led_mode(limelight_led_mode["force_on"])
         #self.set_cam_pose(Pose3d(Translation3d(0,0,0), Rotation3d(Rotation2d(0)))) Coach mike suggestion, Yavin may be fatally wrong, if breaks it's his fault
 
