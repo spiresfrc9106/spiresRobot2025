@@ -9,8 +9,12 @@
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
+      "/SmartDashboard/AutoDrive/HDC/curEstPose": "Field2d",
+      "/SmartDashboard/AutoDrive/HDC/trajCmdPose": "Field2d",
       "/SmartDashboard/DT Pose 2D": "Field2d",
       "/SmartDashboard/Field": "Field2d",
+      "/SmartDashboard/Trajectory/HDC/curEstPose": "Field2d",
+      "/SmartDashboard/Trajectory/HDC/trajCmdPose": "Field2d",
       "/SmartDashboard/VisionSystemSim-main/Sim Field": "Field2d"
     },
     "windows": {
