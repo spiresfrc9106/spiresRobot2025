@@ -58,6 +58,7 @@ COMMON_CAMS = [
             ),
         "ROBOT_TO_CAM": ROBOT_TO_RIGHT_CAM,
         "WEIGH_IN_FILTER": False,
+        "USE_IN_TC_FILTER": False,
     },
     {
         "CAM": WrapperedPoseEstPhotonCamera("LEFT_CAM", ROBOT_TO_LEFT_CAM),
@@ -70,6 +71,7 @@ COMMON_CAMS = [
             ),
         "ROBOT_TO_CAM": ROBOT_TO_LEFT_CAM,
         "WEIGH_IN_FILTER": False,
+        "USE_IN_TC_FILTER": False,
     },
     {
         "CAM": WrapperedPoseEstPhotonCamera("FRONT_CAM", ROBOT_TO_FRONT_CAM),
@@ -82,6 +84,7 @@ COMMON_CAMS = [
             ),
         "ROBOT_TO_CAM": ROBOT_TO_FRONT_CAM,
         "WEIGH_IN_FILTER": False,
+        "USE_IN_TC_FILTER": False,
     },
     {
         "CAM": wrapperedLimilightCameraFactory("limelight-br", ROBOT_TO_LIME_1),
@@ -94,6 +97,7 @@ COMMON_CAMS = [
             ),
         "ROBOT_TO_CAM": ROBOT_TO_LIME_1,
         "WEIGH_IN_FILTER": True,
+        "USE_IN_TC_FILTER": False,
     },
     {
         "CAM": wrapperedLimilightCameraFactory("limelight-fl", ROBOT_TO_LIME_1),
@@ -106,6 +110,7 @@ COMMON_CAMS = [
             ),
         "ROBOT_TO_CAM": ROBOT_TO_LIME_1,
         "WEIGH_IN_FILTER": True,
+        "USE_IN_TC_FILTER": True,
     },
     {
         "CAM": wrapperedLimilightCameraFactory("limelight-fr", ROBOT_TO_LIME_1),
@@ -118,6 +123,7 @@ COMMON_CAMS = [
             ),
         "ROBOT_TO_CAM": ROBOT_TO_LIME_1,
         "WEIGH_IN_FILTER": True,
+        "USE_IN_TC_FILTER": True,
     },
 ]
 

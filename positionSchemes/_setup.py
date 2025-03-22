@@ -4,7 +4,7 @@ import wpilib
 from wpimath.geometry import Pose2d
 from utils.fieldTagLayout import FieldTagLayout
 from drivetrain.drivetrainCommand import DrivetrainCommand
-from drivetrain.controlStrategies.trajectory import Trajectory
+from drivetrain.controlStrategies.tcTrajectory import TCTrajectory
 from Elevatorandmech.ElevatorCommand import ElevatorCommand
 from Elevatorandmech.ArmCommand import ArmCommand
 from wpimath.geometry import Pose2d
@@ -63,13 +63,13 @@ class SetupScheme:
         if pose is None:
             self.baseCmd = None
 
-            Trajectory().setCmdFromPoser(None)
+            TCTrajectory().setCmdFromPoser(None)
         else:
             if True:
                 # save these off in base command for historical reasons as we refactor, might never be used
                 self.baseCmd = (pose,  vxMps, vyMps, vtRadps)
 
-                Trajectory().setCmdFromPoser(
+                TCTrajectory().setCmdFromPoser(
                     ChoreoTrajectoryState(
                         timestamp=1,  # TODO: no idea if this should be some sort of other type of time...
                         x=pose.X(),

@@ -3,6 +3,7 @@ from wpimath.geometry import Pose2d, Rotation2d
 from wpilib import Timer
 #from Autonomous.commands.driveForwardSlowCommand import DriveForwardSlowCommand
 from drivetrain.poseEstimation.drivetrainPoseEstimator import DrivetrainPoseEstimator
+from drivetrain.poseEstimation.targetcentricPoseEstimator import TargetCentricPoseEstimator
 from drivetrain.swerveModuleControl import SwerveModuleControl
 from drivetrain.swerveModuleGainSet import SwerveModuleGainSet
 from drivetrain.drivetrainPhysical import (
@@ -23,6 +24,7 @@ from drivetrain.drivetrainPhysical import (
 from drivetrain.drivetrainCommand import DrivetrainCommand
 from drivetrain.controlStrategies.autoDrive import AutoDrive
 from drivetrain.controlStrategies.trajectory import Trajectory
+from drivetrain.controlStrategies.tcTrajectory import TCTrajectory
 from utils.singleton import Singleton
 from utils.allianceTransformUtils import onRed
 from utils.constants import (DT_FL_WHEEL_CANID, 
@@ -85,6 +87,7 @@ class DrivetrainControl(metaclass=Singleton):
         self.gains = SwerveModuleGainSet()
 
         self.poseEst = DrivetrainPoseEstimator(self.getModulePositions(), self.gyro)
+        self.tcPoseEst = TargetCentricPoseEstimator(self.getModulePositions(), self.gyro)
 
         self._updateAllCals()
         self.poser = PoseDirector()
@@ -129,6 +132,7 @@ class DrivetrainControl(metaclass=Singleton):
         Main periodic update, should be called every 20ms
         """
         curEstPose = self.poseEst.getCurEstPose()
+        tcEstPose = self.tcPoseEst.getCurEstPose()
 
         # Iterate through all strategies for controlling the drivetrain to
         # calculate the current drivetrain commands.
@@ -136,6 +140,7 @@ class DrivetrainControl(metaclass=Singleton):
         self.curCmd = self.curManCmd
         #self._debugCurCmd("manCmd     ")
         self.curCmd = Trajectory().update(self.curCmd, curEstPose)
+        self.curCmd = TCTrajectory().update(self.curCmd, tcEstPose)
         #self._debugCurCmd("Trajectory ")
         self.curCmd = self.poser.getDriveTrainCommand(self.curCmd)
         #self._debugCurCmd("poser      ")
@@ -159,6 +164,7 @@ class DrivetrainControl(metaclass=Singleton):
 
         # Set the desired pose for telemetry purposes
         self.poseEst._telemetry.setDesiredPose(self.curCmd.desPose)
+        self.tcPoseEst._telemetry.setDesiredPose(self.curCmd.desPose)
 
         # pylint: disable=condition-evals-to-constant
         if (False and
@@ -187,6 +193,7 @@ class DrivetrainControl(metaclass=Singleton):
 
         # Update the estimate of our pose
         self.poseEst.update(self.getModulePositions(), self.getModuleStates())
+        self.tcPoseEst.update(self.getModulePositions(), self.getModuleStates())
 
         # Update calibration values if they've changed
         if self.gains.hasChanged():
@@ -227,11 +234,20 @@ class DrivetrainControl(metaclass=Singleton):
         )
         newPose = Pose2d(curTranslation, newGyroRotation)
         self.poseEst.setKnownPose(newPose)
+        curTranslation = self.tcPoseEst.getCurEstPose().translation()
+        newGyroRotation = (
+            Rotation2d.fromDegrees(180.0) if (onRed()) else Rotation2d.fromDegrees(0.0)
+        )
+        newPose = Pose2d(curTranslation, newGyroRotation)
+        self.tcPoseEst.setKnownPose(newPose)
 
     def getCurEstPose(self) -> Pose2d:
         # Return the current best-guess at our pose on the field.
         return self.poseEst.getCurEstPose()
-    
+
+    def getTCCurEstPose(self):
+        return self.tcPoseEst.getCurEstPose()
+
     def setElevLimiter(self, elevLimit):
         self.elevSpeedLimit = elevLimit
 
