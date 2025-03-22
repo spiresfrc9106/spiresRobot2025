@@ -5,6 +5,7 @@ from wpilib import TimedRobot
 from utils.signalLogging import addLog
 from utils.units import rev2Rad, rad2Rev, radPerSec2RPM, RPM2RadPerSec
 from utils.faults import Fault
+from wrappers.wrapperedSparkCommon import MotorControlStates
 
 
 ## Wrappered Spark Max
@@ -20,6 +21,7 @@ class WrapperedSparkMax:
         self.closedLoopCtrl = self.ctrl.getClosedLoopController()
         self.encoder = self.ctrl.getEncoder()
         self.name = name
+        self.currentLimitA = round(currentLimitA)
         self.configSuccess = False
         self.disconFault = Fault(f"Spark Max {name} ID {canID} disconnected")
         self.simActPos = 0
@@ -32,6 +34,7 @@ class WrapperedSparkMax:
         self.actPosRad = 0
         self.actVelRadps = 0
         self.actVolt = 0
+        self.controlState = MotorControlStates.UNKNOWN
 
         self.cfg = SparkMaxConfig()
         self.cfg.signals.appliedOutputPeriodMs(200)
@@ -39,7 +42,7 @@ class WrapperedSparkMax:
         self.cfg.signals.primaryEncoderPositionPeriodMs(20)
         self.cfg.signals.primaryEncoderVelocityPeriodMs(200)
         self.cfg.setIdleMode(SparkBaseConfig.IdleMode.kBrake if brakeMode else SparkBaseConfig.IdleMode.kCoast)
-        self.cfg.smartCurrentLimit(round(currentLimitA),0,5700)
+        self.cfg.smartCurrentLimit(self.currentLimitA,0,5700)
 
         self._sparkmax_config(retries=10, resetMode=SparkBase.ResetMode.kResetSafeParameters, persistMode=SparkBase.PersistMode.kPersistParameters, step="Initial Config")
 
@@ -126,6 +129,7 @@ class WrapperedSparkMax:
                 arbFF,
                 SparkClosedLoopController.ArbFFUnits.kVoltage,
             )
+            self.controlState = MotorControlStates.POSITION
 
             self.disconFault.set(err != REVLibError.kOk)
 
@@ -151,12 +155,14 @@ class WrapperedSparkMax:
                 arbFF,
                 SparkClosedLoopController.ArbFFUnits.kVoltage,
             )
+            self.controlState = MotorControlStates.VELOCITY
             self.disconFault.set(err != REVLibError.kOk)
 
     def setVoltage(self, outputVoltageVolts):
         self.desVolt = outputVoltageVolts
         if self.configSuccess:
             self.ctrl.setVoltage(outputVoltageVolts)
+            self.controlState = MotorControlStates.VOLTAGE
 
     def getMotorPositionRad(self):
         if(TimedRobot.isSimulation()):
@@ -181,6 +187,16 @@ class WrapperedSparkMax:
         self.actVolt = self.ctrl.getAppliedOutput() * 12
         return self.actVolt
 
-    def setSmartCurrentLimit(self, currentLimitA: int):
-        self.cfg.smartCurrentLimit(round(currentLimitA),0,5700)
+    def getCurrentLimitA(self)->int:
+        return self.currentLimitA
+
+    def getControlState(self)->MotorControlStates:
+        return self.controlState
+
+    def setSmartCurrentLimit(self, currentLimitA: int)->None:
+        self.currentLimitA = round(currentLimitA)
+        self.cfg.smartCurrentLimit(self.currentLimitA,0,5700)
         self._sparkmax_config(retries=4, resetMode=SparkBase.ResetMode.kNoResetSafeParameters, persistMode=SparkBase.PersistMode.kNoPersistParameters, printResults=True, step="Current Limit")
+
+    def getOutputCurrentA(self)->float:
+        return self.ctrl.getOutputCurrent()

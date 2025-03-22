@@ -10,7 +10,7 @@ from utils.robotIdentification import RobotIdentification, RobotTypes
 from wrappers.wrapperedPoseEstPhotonCamera import WrapperedPoseEstPhotonCamera
 from wrappers.wrapperedLimelightCamera import wrapperedLimilightCameraFactory
 from wrappers.wrapperedSparkMax import WrapperedSparkMax
-from wrappers.wrapperedSparFlex import WrapperedSparkFlex
+from wrappers.wrapperedSparkFlex import WrapperedSparkFlex
 
 # Camera Mount Offsets
 # These are relative to the robot origin
