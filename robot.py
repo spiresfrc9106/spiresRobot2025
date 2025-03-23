@@ -138,6 +138,11 @@ class MyRobot(wpilib.TimedRobot):
         self.stt.end()
         self.logger3.logNow(nt._now())
 
+        if self.autoSequencer.getMenuChange():
+            self.dashboard.resetWidgets()
+            self.dashboard = Dashboard()
+            self.autoSequencer.acknowledgeDashboardReset()
+
     #########################################################
     ## Autonomous-Specific init and update
     def autonomousInit(self):
