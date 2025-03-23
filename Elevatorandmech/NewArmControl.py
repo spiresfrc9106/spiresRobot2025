@@ -23,6 +23,7 @@ from utils.units import sign
 from utils.units import wrapAngleDeg, wrapAngleRad
 from wrappers.wrapperedRevThroughBoreEncoder import WrapperedRevThroughBoreEncoder
 from wrappers.wrapperedSparkMax import WrapperedSparkMax
+from wrappers.motorStallDetector import MotorPosStallDetector
 
 class ArmDependentConstants:
     def __init__(self):
@@ -74,29 +75,29 @@ class ArmDependentConstants:
                 "HAS_ARM": True,
                 "ARM_GEARBOX_GEAR_RATIO": 5.0 / 1.0,
                 "ARM_M_CANID": 18,
-                "ARM_M_INVERTED": True,
+                "ARM_M_INVERTED": False,
                 "ARM_M_INITIALIZING_CURRENT_LIMIT_A": 5,
                 "ARM_M_OPERATING_CURRENT_LIMIT_A": 5,
-                "MAX_ARM_POS_DEG": 90,
-                "MIN_ARM_POS_DEG": -90,
+                "MAX_ARM_POS_DEG": 170,
+                "MIN_ARM_POS_DEG": -170,
                 "MAX_ARM_VEL_DEGPS": 90,
                 "MAX_ARM_ACCEL_DEGPS2": 90,
-                "ABS_SENSOR_MOUNT_OFFSET_DEG": -90.0,
-                "ABS_SENSOR_INVERTED": True,
+                "ABS_SENSOR_MOUNT_OFFSET_DEG": -90.0+90.0,
+                "ABS_SENSOR_INVERTED": False,
             },
             RobotTypes.SpiresRoboRioV1: {
                 "HAS_ARM": True,
                 "ARM_GEARBOX_GEAR_RATIO": 5.0 / 1.0,
                 "ARM_M_CANID": 18,
-                "ARM_M_INVERTED": True,
+                "ARM_M_INVERTED": False,
                 "ARM_M_INITIALIZING_CURRENT_LIMIT_A": 5,
                 "ARM_M_OPERATING_CURRENT_LIMIT_A": 5,
-                "MAX_ARM_POS_DEG": 90,
-                "MIN_ARM_POS_DEG": -90,
+                "MAX_ARM_POS_DEG": 170,
+                "MIN_ARM_POS_DEG": -170,
                 "MAX_ARM_VEL_DEGPS": 90,
-                "MAX_ARM_ACCEL_DEGPS2": 90,
+                "MAX_ARM_ACCEL_DEGPS2": 0,
                 "ABS_SENSOR_MOUNT_OFFSET_DEG": -90.0,
-                "ABS_SENSOR_INVERTED": True,
+                "ABS_SENSOR_INVERTED": False,
             },
         }
 
@@ -156,6 +157,11 @@ class ArmControl(metaclass=Singleton):
                                        currentLimitA=int(self.armOperatingCurrentLimitA.get()))
         motorIsInverted = ARM_M_INVERTED
         self.motor.setInverted(motorIsInverted)
+        self.stallDectector = MotorPosStallDetector(
+            name=f"{self.name}/stall",
+            motor=self.motor,
+            stallCurrentLimitA=self.armOperatingCurrentLimitA.get()*0.9,
+            stallTimeLimitS= 0.1)
 
         # Rev Relative Encoder
         self.encoder = WrapperedRevThroughBoreEncoder(port=9, name=f"{self.name}",
@@ -297,6 +303,7 @@ class ArmControl(metaclass=Singleton):
     def update(self) -> None:
         self.encoder.update()
         self.motor.getMotorPositionRad()
+        self.stallDectector.update()
 
         match self.state:
             case ArmStates.UNINITIALIZED:

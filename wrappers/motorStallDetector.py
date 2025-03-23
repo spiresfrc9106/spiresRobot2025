@@ -22,7 +22,7 @@ from wrappers.wrapperedSparkFlex import WrapperedSparkFlex
 from wrappers.wrapperedSparkCommon import MotorControlStates
 
 
-class MotorPosStallMonitor:
+class MotorPosStallDetector:
     def __init__(self, name:str,
                  motor: WrapperedSparkMax|WrapperedSparkFlex,
                  stallCurrentLimitA: int,
@@ -32,6 +32,7 @@ class MotorPosStallMonitor:
         self.stallCurrentLimitA = stallCurrentLimitA
         self.stallTimeLimitS = stallTimeLimitS
         self._stalled = False
+        addLog(f"{name}/stalled", lambda: self._stalled)
 
     def initialize(self)->None:
         self._clearMonitorState()
@@ -63,19 +64,20 @@ class MotorPosStallMonitor:
             if self.currentMotorDirectionSign == 1:
                 if self.currentMotorPosRad > self.lastMotorPosRad:
                     result = True
-                    self.lastMotorPosRad = self.currentMotorPosRad
 
             elif self.currentMotorPosRad == -1:
                 if self.currentMotorPosRad < self.lastMotorPosRad:
                     result = True
-                    self.lastMotorPosRad = self.currentMotorPosRad
             else:
-                self.lastMotorPosRad = self.currentMotorPosRad
+                pass
+        #print(f"_hasMotorMovedTowardsDesPos = {Timer.getFPGATimestamp():.3f} lastMotorRadPos={self.lastMotorPosRad:.1f} dir={self.currentMotorDirectionSign} cur={self.currentMotorPosRad:.1f} res={result})")
         return result
 
     def _isMotorStalled(self):
         result = False
         self.currentMotorDirectionSign = self._calcDirectionSign()
+
+        #print(f"_isMotorStalled = {Timer.getFPGATimestamp():.3f} lastMoveTimeS={self.lastMoveTimeS} lastMotorPosRad={self.lastMotorPosRad} lastDir={self.lastDirectionSign} curDir={self.currentMotorDirectionSign})")
 
         if self.lastMoveTimeS is not None \
             and self.lastMotorPosRad is not None \
@@ -91,6 +93,7 @@ class MotorPosStallMonitor:
 
 
         self.lastDirectionSign = self.currentMotorDirectionSign
+        self.lastMotorPosRad = self.currentMotorPosRad
         return result
 
 
