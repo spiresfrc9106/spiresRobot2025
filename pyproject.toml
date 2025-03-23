@@ -6,7 +6,7 @@
 [tool.robotpy]
 # to see what versions are available: https://pypi.org/pypi/robotpy/json
 # Version of robotpy this project depends on
-robotpy_version = "2025.3.1.1"
+robotpy_version = "2025.3.2.0"
 
 # Which extra RobotPy components should be installed
 # -> equivalent to `pip install robotpy[extra1, ...]
@@ -19,7 +19,7 @@ robotpy_extras = [
     # "pathplannerlib"
     # "phoenix5",
     "phoenix6",
-    # "playingwithfusion"
+    #"playingwithfusion",
     "rev",
     # "romi"
     # "sim"
@@ -30,5 +30,6 @@ requires = [
     "photonlibpy==2025.2.1",
     "debugpy==1.8.11",
     #"phoenix6==25.1.0",
+    "sleipnirgroup-choreolib == 2025.0.1",
     "robotpy-playingwithfusion == 2025.0.0",
 ]
