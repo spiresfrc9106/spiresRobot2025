@@ -5,7 +5,6 @@ from wpilib import TimedRobot
 from utils.signalLogging import addLog
 from utils.units import rev2Rad, rad2Rev, radPerSec2RPM, RPM2RadPerSec
 from utils.faults import Fault
-from wrappers.wrapperedSparkCommon import MotorControlStates
 
 
 ## Wrappered Spark Flex
@@ -34,7 +33,6 @@ class WrapperedSparkFlex:
         self.actPosRad = 0
         self.actVelRadps = 0
         self.actVolt = 0
-        self.controlState = MotorControlStates.UNKNOWN
 
         self.cfg = SparkFlexConfig()
         self.cfg.signals.appliedOutputPeriodMs(200)
@@ -130,7 +128,6 @@ class WrapperedSparkFlex:
                 arbFF,
                 SparkClosedLoopController.ArbFFUnits.kVoltage,
             )
-            self.controlState = MotorControlStates.POSITION
 
             self.disconFault.set(err != REVLibError.kOk)
 
@@ -156,14 +153,12 @@ class WrapperedSparkFlex:
                 arbFF,
                 SparkClosedLoopController.ArbFFUnits.kVoltage,
             )
-            self.controlState = MotorControlStates.VELOCITY
             self.disconFault.set(err != REVLibError.kOk)
 
     def setVoltage(self, outputVoltageVolts):
         self.desVolt = outputVoltageVolts
         if self.configSuccess:
             self.ctrl.setVoltage(outputVoltageVolts)
-            self.controlState = MotorControlStates.VOLTAGE
 
     def getMotorPositionRad(self):
         if(TimedRobot.isSimulation()):
@@ -188,16 +183,10 @@ class WrapperedSparkFlex:
         self.actVolt = self.ctrl.getAppliedOutput() * 12
         return self.actVolt
 
-    def getCurrentLimitA(self)->int:
+    def getCurrentLimitA(self):
         return self.currentLimitA
-
-    def getControlState(self)->MotorControlStates:
-        return self.controlState
 
     def setSmartCurrentLimit(self, currentLimitA: int)->None:
         self.currentLimitA = round(currentLimitA)
         self.cfg.smartCurrentLimit(self.currentLimitA,0,5700)
         self._sparkmax_config(retries=4, resetMode=SparkBase.ResetMode.kNoResetSafeParameters, persistMode=SparkBase.PersistMode.kNoPersistParameters, printResults=True, step="Current Limit")
-
-    def getOutputCurrentA(self)->float:
-        return self.ctrl.getOutputCurrent()
