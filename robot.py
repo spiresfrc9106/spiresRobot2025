@@ -10,6 +10,7 @@ from Elevatorandmech.RobotPoser import PoseDirector
 from testingMotors.motorCtrl import MotorControl, motorDepConstants
 from drivetrain.controlStrategies.autoDrive import AutoDrive
 from drivetrain.controlStrategies.trajectory import Trajectory
+from drivetrain.controlStrategies.trajectoryGuts import TrajectoryGuts
 from drivetrain.drivetrainCommand import DrivetrainCommand
 from drivetrain.drivetrainControl import DrivetrainControl
 from drivetrain.DrivetrainDependentConstants import drivetrainDepConstants
@@ -53,6 +54,7 @@ class MyRobot(wpilib.TimedRobot):
         if drivetrainDepConstants['HAS_DRIVETRAIN']:
             print(f"drivetrainDepConstants['HAS_DRIVETRAIN']={drivetrainDepConstants['HAS_DRIVETRAIN']}")
             self.driveTrain = DrivetrainControl()
+            self.tcTraj = self.driveTrain.tcTraj
 
         self.arm = None
         if armDepConstants['HAS_ARM']:
@@ -156,6 +158,7 @@ class MyRobot(wpilib.TimedRobot):
         if drivetrainDepConstants['HAS_DRIVETRAIN']:
             # Use the autonomous routines starting pose to init the pose estimator
             self.driveTrain.poseEst.setKnownPose(self.autoSequencer.getStartingPose())  #position set.
+            self.driveTrain.tcPoseEst.setKnownPose(self.autoSequencer.getStartingPose())
 
         # Mark we at least started autonomous
         self.autoHasRun = True # pylint: disable=attribute-defined-outside-init
@@ -194,6 +197,7 @@ class MyRobot(wpilib.TimedRobot):
         # clear existing telemetry trajectory
         if drivetrainDepConstants['HAS_DRIVETRAIN']:
             self.driveTrain.poseEst._telemetry.setCurAutoTrajectory(None)
+            self.driveTrain.tcPoseEst._telemetry.setCurAutoTrajectory(None)
 
         # If we're starting teleop but haven't run auto, set a nominal default pose
         # This is needed because initial pose is usually set by the autonomous routine
@@ -220,6 +224,7 @@ class MyRobot(wpilib.TimedRobot):
 
         # Default to No trajectory in Teleop, The PoseDirector does send commands through in teleop
         Trajectory().setCmdFromChoreoAuton(None)
+        self.tcTraj.setCmdFromChoreoAuton(None)
 
     def teleopPeriodic(self):
         # TODO - this is technically one loop delayed, which could induce lag
@@ -273,6 +278,7 @@ class MyRobot(wpilib.TimedRobot):
     def disabledPeriodic(self):
         self.autoSequencer.updateMode()
         Trajectory().trajHDC.updateCals()
+        self.tcTraj.trajHDC.updateCals()
 
 
     def disabledInit(self):

@@ -29,6 +29,7 @@ from humanInterface.operatorInterface import OperatorInterface, ElevArmCmdState,
 from positionSchemes.plunge_v1 import PlungeV1
 from positionSchemes.pickup_v1 import PickupV1
 from positionSchemes.place_L4_v1 import PlaceL4V1
+from positionSchemes.place_L4_v2 import PlaceL4V2
 from positionSchemes.place_L3_v1 import PlaceL3V1
 from positionSchemes.place_L2_v1 import PlaceL2V1
 from positionSchemes.place_L1_v1 import PlaceL1V1
@@ -120,7 +121,7 @@ class PoseDirector(metaclass=Singleton):
                 return PlaceL3V1(self.arm, self.driveTrain, self.elevator, self.oInt)  # todo fix me
             case ElevArmCmdState.L4:
                 self.setDashboardState(6)
-                return PlaceL4V1(self.arm, self.driveTrain, self.elevator, self.oInt)  # todo fix me
+                return PlaceL4V2(self.arm, self.driveTrain, self.elevator, self.oInt)  # todo fix me
             case _:
                 return YavinsPoseClassNoChange(self.arm, self.driveTrain, self.elevator, self.oInt)  # todo fix me
 

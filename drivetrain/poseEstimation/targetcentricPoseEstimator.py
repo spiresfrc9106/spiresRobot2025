@@ -8,7 +8,7 @@ from drivetrain.drivetrainPhysical import (
     kinematics,
     CAMS,
 )
-from drivetrain.poseEstimation.drivetrainPoseTelemetry import DrivetrainPoseTelemetry
+from drivetrain.poseEstimation.targetcentricPoseTelemetry import TargetCentricPoseTelemetry
 from utils.faults import Fault
 from utils.signalLogging import addLog
 from wrappers.wrapperedPoseEstPhotonCamera import WrapperedPoseEstPhotonCamera
@@ -40,7 +40,7 @@ StateTupleType = Tuple[SwerveModuleState,SwerveModuleState,SwerveModuleState,Swe
 #       positionbyFRONT_CAM (Pose2d)
 #
 
-class DrivetrainPoseEstimator:
+class TargetCentricPoseEstimator:
     """Wrapper class for all sensors and logic responsible for estimating where the robot is on the field"""
 
     def __init__(self, initialModulePositions:PosTupleType, gyro):
@@ -60,9 +60,9 @@ class DrivetrainPoseEstimator:
         for camConfig in CAMS:
             self.cams.append(camConfig['CAM'])
             self.posEstLogs.append(YTestForPosition(camConfig['POSE_EST_LOG_NAME']))
-            self.includeInFilter.append(camConfig['WEIGH_IN_FILTER'])
+            self.includeInFilter.append(camConfig['USE_IN_TC_FRONT'])
 
-        self.finalPosEst = YTestForPosition("final_DT")
+        self.finalPosEst = YTestForPosition("final_TC")
 
         self._camTargetsVisible = False
         self._useAprilTags = True
@@ -78,7 +78,7 @@ class DrivetrainPoseEstimator:
         #addLog("PE Vision Targets Seen", lambda: self._camTargetsVisible, "bool")
         #addLog("PE Gyro Angle", self._curRawGyroAngle.degrees, "deg")
 
-        self._telemetry = DrivetrainPoseTelemetry()
+        self._telemetry = TargetCentricPoseTelemetry()
         self.limelightPoseOfTarget = None
 
         # Simulation Only - maintain a rough estimate of pose from velocities
@@ -86,6 +86,8 @@ class DrivetrainPoseEstimator:
         # to produce a reasonable-looking simulated gyroscope.
         self._simPose = Pose2d()
         self.lastCamEstRobotPos = Pose2d()
+
+        self.camDirection = TargetCentricDirection.FRONT
 
 
     def setKnownPose(self, knownPose:Pose2d):
@@ -192,3 +194,13 @@ class DrivetrainPoseEstimator:
     # Local helper to wrap the real hardware angle into a Rotation2d
     def _getGyroAngle(self)->Rotation2d:
         return self._gyro.getGyroAngleRotation2d()
+
+    def setDirection(self, state):
+        prevDirection = self.camDirection
+        self.camDirection = state
+        if state != prevDirection:
+            pass
+
+class TargetCentricDirection:
+    FRONT = 0
+    BACK = 1

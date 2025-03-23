@@ -1,13 +1,16 @@
+import math
+
 import wpilib
 from wpimath.geometry import Pose2d
 from utils.fieldTagLayout import FieldTagLayout
 from drivetrain.drivetrainCommand import DrivetrainCommand
-from drivetrain.controlStrategies.trajectory import Trajectory
+from drivetrain.controlStrategies.trajectoryGuts import TrajectoryGuts
 from Elevatorandmech.ElevatorCommand import ElevatorCommand
 from Elevatorandmech.ArmCommand import ArmCommand
 from wpimath.geometry import Pose2d
 from wpilib import Timer
-from drivetrain.controlStrategies.trajectory import ChoreoTrajectoryState
+from drivetrain.controlStrategies.trajectoryGuts import ChoreoTrajectoryState
+from utils.units import deg2Rad, rad2Deg, in2m, m2in
 
 ### these are intrisic to any pos scheme class
 
@@ -15,18 +18,23 @@ from drivetrain.controlStrategies.trajectory import ChoreoTrajectoryState
 class SetupScheme:
     def __init__(self, arm, base, elev):
         self.startTime = Timer.getFPGATimestamp()
+        self.setupBase = base
         self.changeInTime = 0
         self.waitTimes = {}
         self.schemeProg = 0
         self.localProg = 0
-        self.setDriveTrainBaseCommand(None)
+        self.setDriveTrainBaseCommand(None, base)
         self.armCmd = None
         self.elevCmd = None
         self.basePrimitiveCmd = None
+        self.bestTag = Pose2d()
 
     def nextState(self):
         self.currentState = self.currentState + 1
         self.localProg = 0
+
+    def setBase(self, base):
+        self.setupBase = base
 
     def isSim(self):
         return wpilib.RobotBase.isSimulation()
@@ -41,21 +49,31 @@ class SetupScheme:
             return False
 
     def completedTrajectory(self, base):
-        return abs(base.cmdVelX) < 0.08 and abs(base.cmdVelY) < 0.08 and abs(base.cmdVelT) < 3
+        desPose = self.bestTag
+        curPose = base.tcPoseEst.getCurEstPose()
+        desX = YPose(desPose).x
+        desY = YPose(desPose).y
+        desT = YPose(desPose).t
+        curX = YPose(curPose).x
+        curY = YPose(curPose).y
+        curT = YPose(curPose).t
+        dist_translate = math.sqrt(pow((desX-curX), 2)+pow((desY-curY), 2))
+        dist_rotate = abs(curT-desT)
+        return dist_translate < in2m(1) and dist_rotate < 1
 
 
-    def setDriveTrainBaseCommand(self, pose: Pose2d | None, vxMps: float = 0.0, vyMps: float = 0.0, vtRadps: float = 0.0 ):
-        
+    def setDriveTrainBaseCommand(self, pose: Pose2d | None, base=1, vxMps: float = 0.0, vyMps: float = 0.0, vtRadps: float = 0.0):
+
         if pose is None:
             self.baseCmd = None
-
-            Trajectory().setCmdFromPoser(None)
+            #self.setupBase = base
+            self.setupBase.tcTraj.setCmdFromPoser(None)
         else:
             if True:
                 # save these off in base command for historical reasons as we refactor, might never be used
                 self.baseCmd = (pose,  vxMps, vyMps, vtRadps)
 
-                Trajectory().setCmdFromPoser(
+                self.setupBase.tcTraj.setCmdFromPoser(
                     ChoreoTrajectoryState(
                         timestamp=1,  # TODO: no idea if this should be some sort of other type of time...
                         x=pose.X(),
@@ -68,7 +86,7 @@ class SetupScheme:
                 )
 
     def deactivate(self):
-        self.setDriveTrainBaseCommand(None)
+        self.setDriveTrainBaseCommand(None, self.setupBase)
 
 
 

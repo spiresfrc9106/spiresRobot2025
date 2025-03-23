@@ -10,9 +10,9 @@ class FieldPose(WidgetConfig):
         self.nominalHeight = 15
         self.nominalWidth = 32.7
         self.isVisible = True
-        self.x_pos = sigNameToNT4TopicName("ytest_position_final_x")
-        self.y_pos = sigNameToNT4TopicName("ytest_position_final_y")
-        self.t_pos = sigNameToNT4TopicName("ytest_position_final_t")
+        self.x_pos = sigNameToNT4TopicName("ytest_position_final_DT_x")
+        self.y_pos = sigNameToNT4TopicName("ytest_position_final_DT_y")
+        self.t_pos = sigNameToNT4TopicName("ytest_position_final_DT_t")
 
     def getJSDeclaration(self):
         return f"var widget{self.idx} = new FieldPose('widget{self.idx}', '{self.name}')\n"

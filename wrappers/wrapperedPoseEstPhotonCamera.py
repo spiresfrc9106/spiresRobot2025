@@ -43,6 +43,7 @@ class WrapperedPoseEstPhotonCamera:
 
         self.targetLength = 0
         self.recordedBestCandidate = Pose2d()
+        self.targetTransformation = None
         addLog("ytest_targets_photon_seen", lambda: self.targetLength, "")
 
 
