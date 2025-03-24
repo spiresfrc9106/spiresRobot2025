@@ -23,7 +23,7 @@ class SetupScheme:
         self.waitTimes = {}
         self.schemeProg = 0
         self.localProg = 0
-        self.setDriveTrainBaseCommand(None, base)
+        self.setDriveTrainBaseCommand(None)
         self.armCmd = None
         self.elevCmd = None
         self.basePrimitiveCmd = None
@@ -62,11 +62,10 @@ class SetupScheme:
         return dist_translate < in2m(1) and dist_rotate < 1
 
 
-    def setDriveTrainBaseCommand(self, pose: Pose2d | None, base=1, vxMps: float = 0.0, vyMps: float = 0.0, vtRadps: float = 0.0):
+    def setDriveTrainBaseCommand(self, pose: Pose2d | None, vxMps: float = 0.0, vyMps: float = 0.0, vtRadps: float = 0.0):
 
         if pose is None:
             self.baseCmd = None
-            #self.setupBase = base
             self.setupBase.tcTraj.setCmdFromPoser(None)
         else:
             if True:

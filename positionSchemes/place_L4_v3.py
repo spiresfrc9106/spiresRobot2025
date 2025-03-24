@@ -17,7 +17,7 @@ from drivetrain.DrivetrainDependentConstants import drivetrainDepConstants
 
 # if you can't find something here, it's probably in the _setup file.
 
-class PlaceL4V2(SetupScheme):
+class PlaceL4V3(SetupScheme):
     def __init__(self, arm, base, elev, oInt):
         super().__init__(arm=arm, base=base, elev=elev)
         self.arm = arm
@@ -38,7 +38,7 @@ class PlaceL4V2(SetupScheme):
         self.changeInTime = 0
         self.waitTimes = {}
         self.schemeProg = 0
-        self.setDriveTrainBaseCommand(None, base)
+        self.setDriveTrainBaseCommand(None)
         self.armCmd = None
         self.elevCmd = None
 
@@ -65,7 +65,7 @@ class PlaceL4V2(SetupScheme):
                 # self.armCmd/elevCmd could be called here to prep for the fun thing.
                 self.bestTag = self.placementIntel.decidePlacementPose(0, self.inchesToMeters(21))
                 print(f"place l4 time = {Timer.getFPGATimestamp():.3f}s x={self.bestTag.X():+10.1f}m y={self.bestTag.Y():+10.1f}m t={self.bestTag.rotation().degrees():+10.1f}deg")
-                self.setDriveTrainBaseCommand(pose=self.bestTag, base=self.base)
+                self.setDriveTrainBaseCommand(self.bestTag)
                 # self.armCmd = (90, 0)  # straight up so no bumping.
                 if self.completedAwait("awaitbasecmdsendplz", 0.2):
                     self.nextState()
@@ -80,7 +80,7 @@ class PlaceL4V2(SetupScheme):
                 self.bestTag = self.placementIntel.decidePlacementPose(0, self.inchesToMeters(12))
                 self.elevCmd = (self.elevPlacePos, 0)
                 # self.armCmd = (self.armPlacePos, 0)
-                self.setDriveTrainBaseCommand(pose=self.bestTag, base=self.base)
+                self.setDriveTrainBaseCommand(self.bestTag)
                 if self.completedTrajectory(self.base) or self.oInt.skipNext:
                     self.nextState()
             case 4:
@@ -89,7 +89,7 @@ class PlaceL4V2(SetupScheme):
                     self.nextState()
             case 5:
                 self.bestTag = self.placementIntel.decidePlacementPose(self.pdSideOfReef, self.inchesToMeters(12))
-                self.setDriveTrainBaseCommand(pose=self.bestTag, base=self.base)
+                self.setDriveTrainBaseCommand(self.bestTag)
                 if self.completedTrajectory(self.base) or self.oInt.skipNext:
                     self.nextState()
             case 6: #launch it bruh
@@ -100,7 +100,7 @@ class PlaceL4V2(SetupScheme):
             case 7:
                 self.armCmd = (-15, 0)
                 self.bestTag = self.placementIntel.decidePlacementPose(self.pdSideOfReef, self.inchesToMeters(0))
-                self.setDriveTrainBaseCommand(pose=self.bestTag, base=self.base)
+                self.setDriveTrainBaseCommand(self.bestTag)
                 if self.completedTrajectory(self.base) or self.oInt.skipNext:
                     self.nextState()
             case 8:

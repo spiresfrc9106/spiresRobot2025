@@ -181,6 +181,7 @@ class DrivetrainDependentConstants:
                 "CAMS": COMMON_CAMS,
                 "HAS_DRIVETRAIN": True,
                 "USE_PHOTON_NAV": False,
+                "SPEED_MULTIPLIER": 3,
             },
             RobotTypes.Spires2025: {
                 "WHEEL_MOTOR_WRAPPER": WrapperedSparkFlex,
@@ -200,6 +201,7 @@ class DrivetrainDependentConstants:
                 "CAMS": COMMON_CAMS,
                 "HAS_DRIVETRAIN": True,
                 "USE_PHOTON_NAV": True,
+                "SPEED_MULTIPLIER": 2,
             },
             RobotTypes.Spires2025Sim: {
                 "WHEEL_MOTOR_WRAPPER": WrapperedSparkFlex,
@@ -219,6 +221,7 @@ class DrivetrainDependentConstants:
                 "GYRO": "ADIS16470_IMU",
                 "HAS_DRIVETRAIN": True,
                 "USE_PHOTON_NAV": True,
+                "SPEED_MULTIPLIER": 2,
             },
             RobotTypes.SpiresTestBoard: {
                 "WHEEL_MOTOR_WRAPPER": WrapperedSparkMax,
@@ -238,6 +241,7 @@ class DrivetrainDependentConstants:
                 "CAMS": [],
                 "HAS_DRIVETRAIN": False,
                 "USE_PHOTON_NAV": False,
+                "SPEED_MULTIPLIER": 2,
             },
             RobotTypes.SpiresRoboRioV1: {
                 "WHEEL_MOTOR_WRAPPER": WrapperedSparkMax,
@@ -257,6 +261,7 @@ class DrivetrainDependentConstants:
                 "CAMS": [],
                 "HAS_DRIVETRAIN": False,
                 "USE_PHOTON_NAV": False,
+                "SPEED_MULTIPLIER": 2,
             },
         }
 
