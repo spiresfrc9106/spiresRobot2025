@@ -40,8 +40,8 @@ class ElevatorDependentConstants:
                 "HAS_ELEVATOR": True,
                 "ELEV_FM_CANID": 12,
                 "ELEV_BM_CANID": 16,
-                "ELEV_M_INITIALIZING_CURRENT_LIMIT_A": 20,
-                "ELEV_M_OPERATING_CURRENT_LIMIT_A": 20,
+                "ELEV_M_INITIALIZING_CURRENT_LIMIT_A": 40,
+                "ELEV_M_OPERATING_CURRENT_LIMIT_A": 60,
                 "ELEVATOR_RANGE_IN": 46, #was 47
                 "ELEV_GEARBOX_GEAR_RATIO": 3.0 / 1.0,
                 "ELEV_SPOOL_RADIUS_IN": 1.660 / 2.0,
@@ -141,8 +141,8 @@ class ElevatorControl(metaclass=Singleton):
         self.calMaxVelocityInps = Calibration(name="Elevator Max Vel", default=MAX_ELEV_VEL_INPS, units="inps")
         self.calMaxAccelerationInps2 = Calibration(name="Elevator Max Accel", default=MAX_ELEV_ACCEL_INPS2, units="inps2")
 
-        self.calSearchMaxVelocityInps = Calibration(name="Elevator Search Max Vel", default=4, units="inps")
-        self.calSearchMaxAccelerationInps2 = Calibration(name="Elevator Search Max Accel", default=4, units="inps2")
+        self.calSearchMaxVelocityInps = Calibration(name="Elevator Search Max Vel", default=10, units="inps")
+        self.calSearchMaxAccelerationInps2 = Calibration(name="Elevator Search Max Accel", default=10, units="inps2")
 
         self.calElevInitializingCurrentLimitA = Calibration(name="Elevator INITIALIZING_CURRENT_LIMIT_A", default=ELEV_M_INITIALIZING_CURRENT_LIMIT_A, units="A")
         self.calElevOperatingCurrentLimitA = Calibration(name="Elevator OPERATING_CURRENT_LIMIT_A", default=ELEV_M_OPERATING_CURRENT_LIMIT_A, units="A")
@@ -278,6 +278,7 @@ class ElevatorControl(metaclass=Singleton):
 
     def _updateUninitialized(self) -> None:
         self.startTime = Timer.getFPGATimestamp()
+        self.timeWhenChangeS = Timer.getFPGATimestamp()
         self._changeState(ElevatorStates.INIT_GOING_DOWN)
         self._forceStartAtHeightZeroIn()
         if wpilib.RobotBase.isSimulation():

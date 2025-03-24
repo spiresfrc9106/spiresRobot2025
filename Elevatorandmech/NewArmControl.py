@@ -326,6 +326,7 @@ class ArmControl(metaclass=Singleton):
 
     def _updateUninitialized(self) -> None:
         self.startTime = Timer.getFPGATimestamp()
+        self.timeWhenChangeS = Timer.getFPGATimestamp()
         self._changeState(ArmStates.INIT_GOING_UP)
         self._forceStartAtAngleDeg(0.0)
 
