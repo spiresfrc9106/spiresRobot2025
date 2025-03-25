@@ -55,7 +55,6 @@ class PlaceL4V4(SetupScheme):
         # DEFINE THESE
         self.elevPlacePos = 60
         self.armPlacePos = 60
-        ############TODO in postEst and tcposeEst, add in latencies from LL.
 
     def update(self):
         currentTime = Timer.getFPGATimestamp()
@@ -66,7 +65,7 @@ class PlaceL4V4(SetupScheme):
                 self.bestTag = self.placementIntel.decidePlacementPose(0, self.inchesToMeters(21))
                 print(f"place l4 time = {Timer.getFPGATimestamp():.3f}s x={self.bestTag.X():+10.1f}m y={self.bestTag.Y():+10.1f}m t={self.bestTag.rotation().degrees():+10.1f}deg")
                 self.setDriveTrainBaseCommand(self.bestTag)
-                # self.armCmd = (90, 0)  # straight up so no bumping.
+                self.armCmd = (90, 0)  # straight up so no bumping.
                 if self.completedAwait("awaitBaseCmdRecognition", 0.2):
                     self.nextState()
             case 1:
