@@ -7,11 +7,10 @@
 
 from enum import IntEnum
 import math
-from time import sleep
 
 from wpimath.trajectory import TrapezoidProfile
+import wpilib
 from wpilib import Timer
-from wpilib import TimedRobot
 
 from Elevatorandmech.ArmCommand import ArmCommand
 from Elevatorandmech.RobotPoser import PoseDirector
@@ -20,9 +19,8 @@ from utils.robotIdentification import RobotIdentification, RobotTypes
 from utils.signalLogging import  addLog, getNowLogger
 from utils.singleton import Singleton
 from utils.units import sign
-from utils.units import wrapAngleDeg, wrapAngleRad
-from wrappers.wrapperedRevThroughBoreEncoder import WrapperedRevThroughBoreEncoder
 from wrappers.wrapperedSparkMax import WrapperedSparkMax
+from wrappers.motorStallDetector import MotorPosStallDetector
 
 class ArmDependentConstants:
     def __init__(self):
@@ -33,12 +31,15 @@ class ArmDependentConstants:
                 "ARM_GEARBOX_GEAR_RATIO": 50.0 / 1.0,
                 "ARM_M_CANID": None,
                 "ARM_M_INVERTED": False,
-                "ARM_M_CURRENT_LIMIT_A": 5,
+                "ARM_M_INITIALIZING_CURRENT_LIMIT_A": 5,
+                "ARM_M_OPERATING_CURRENT_LIMIT_A": 5,
+                "ARM_ANGLE_AT_CURRENT_LIMIT_GOING_UP": 100,
                 "MAX_ARM_POS_DEG": 90,
                 "MIN_ARM_POS_DEG": -90,
+                "MAX_SEARCH_ARM_VEL_DEGPS": 4,
+                "MAX_SEARCH_ARM_ACCEL_DEGPS2": 4,
                 "MAX_ARM_VEL_DEGPS": 20,
                 "MAX_ARM_ACCEL_DEGPS2": 4,
-                "ABS_SENSOR_MOUNT_OFFSET_DEG": 0.0,
                 "ABS_SENSOR_INVERTED": True,
             },
             RobotTypes.Spires2025: {
@@ -46,12 +47,15 @@ class ArmDependentConstants:
                 "ARM_GEARBOX_GEAR_RATIO": 50.0 / 1.0,
                 "ARM_M_CANID": 23,
                 "ARM_M_INVERTED": False,
-                "ARM_M_CURRENT_LIMIT_A": 60,
-                "MAX_ARM_POS_DEG": 80,
-                "MIN_ARM_POS_DEG": -92,
+                "ARM_M_INITIALIZING_CURRENT_LIMIT_A": 10, # xyzzy CAUTION we're not using this yet
+                "ARM_M_OPERATING_CURRENT_LIMIT_A": 40,
+                "ARM_ANGLE_AT_CURRENT_LIMIT_GOING_UP": 92,
+                "MAX_ARM_POS_DEG": 90,
+                "MIN_ARM_POS_DEG": -90,
+                "MAX_SEARCH_ARM_VEL_DEGPS": 60,
+                "MAX_SEARCH_ARM_ACCEL_DEGPS2": 60*4,
                 "MAX_ARM_VEL_DEGPS": 720, # Was 180
                 "MAX_ARM_ACCEL_DEGPS2": 720*4, # Was 720
-                "ABS_SENSOR_MOUNT_OFFSET_DEG": -50.0 - 10 - 16,
                 "ABS_SENSOR_INVERTED": False,
             },
             RobotTypes.Spires2025Sim: {
@@ -59,39 +63,48 @@ class ArmDependentConstants:
                 "ARM_GEARBOX_GEAR_RATIO": 50.0 / 1.0,
                 "ARM_M_CANID": 23,
                 "ARM_M_INVERTED": True,
-                "ARM_M_CURRENT_LIMIT_A": 5,
+                "ARM_M_INITIALIZING_CURRENT_LIMIT_A": 5,
+                "ARM_M_OPERATING_CURRENT_LIMIT_A": 5,
+                "ARM_ANGLE_AT_CURRENT_LIMIT_GOING_UP": 100,
                 "MAX_ARM_POS_DEG": 90,
                 "MIN_ARM_POS_DEG": -92,
+                "MAX_SEARCH_ARM_VEL_DEGPS": 60,
+                "MAX_SEARCH_ARM_ACCEL_DEGPS2": 60*4,
                 "MAX_ARM_VEL_DEGPS": 90,
                 "MAX_ARM_ACCEL_DEGPS2": 180,
-                "ABS_SENSOR_MOUNT_OFFSET_DEG": 0.0,
                 "ABS_SENSOR_INVERTED": False,
             },
             RobotTypes.SpiresTestBoard: {
                 "HAS_ARM": True,
                 "ARM_GEARBOX_GEAR_RATIO": 5.0 / 1.0,
                 "ARM_M_CANID": 18,
-                "ARM_M_INVERTED": True,
-                "ARM_M_CURRENT_LIMIT_A": 5,
-                "MAX_ARM_POS_DEG": 90,
-                "MIN_ARM_POS_DEG": -90,
+                "ARM_M_INVERTED": False,
+                "ARM_M_INITIALIZING_CURRENT_LIMIT_A": 5,
+                "ARM_M_OPERATING_CURRENT_LIMIT_A": 5,
+                "ARM_ANGLE_AT_CURRENT_LIMIT_GOING_UP": 170,
+                "MAX_ARM_POS_DEG": 160,
+                "MIN_ARM_POS_DEG": -160,
+                "MAX_SEARCH_ARM_VEL_DEGPS": 4,
+                "MAX_SEARCH_ARM_ACCEL_DEGPS2": 4,
                 "MAX_ARM_VEL_DEGPS": 90,
                 "MAX_ARM_ACCEL_DEGPS2": 90,
-                "ABS_SENSOR_MOUNT_OFFSET_DEG": -90.0,
-                "ABS_SENSOR_INVERTED": True,
+                "ABS_SENSOR_INVERTED": False,
             },
             RobotTypes.SpiresRoboRioV1: {
                 "HAS_ARM": True,
                 "ARM_GEARBOX_GEAR_RATIO": 5.0 / 1.0,
                 "ARM_M_CANID": 18,
-                "ARM_M_INVERTED": True,
-                "ARM_M_CURRENT_LIMIT_A": 5,
-                "MAX_ARM_POS_DEG": 90,
-                "MIN_ARM_POS_DEG": -90,
+                "ARM_M_INVERTED": False,
+                "ARM_M_INITIALIZING_CURRENT_LIMIT_A": 5,
+                "ARM_M_OPERATING_CURRENT_LIMIT_A": 5,
+                "ARM_ANGLE_AT_CURRENT_LIMIT_GOING_UP": 170,
+                "MAX_ARM_POS_DEG": 160,
+                "MIN_ARM_POS_DEG": -160,
+                "MAX_SEARCH_ARM_VEL_DEGPS": 4,
+                "MAX_SEARCH_ARM_ACCEL_DEGPS2": 4,
                 "MAX_ARM_VEL_DEGPS": 90,
-                "MAX_ARM_ACCEL_DEGPS2": 90,
-                "ABS_SENSOR_MOUNT_OFFSET_DEG": -90.0,
-                "ABS_SENSOR_INVERTED": True,
+                "MAX_ARM_ACCEL_DEGPS2": 0,
+                "ABS_SENSOR_INVERTED": False,
             },
         }
 
@@ -103,24 +116,27 @@ armDepConstants = ArmDependentConstants().get()
 
 ARM_M_CANID = armDepConstants['ARM_M_CANID']
 ARM_M_INVERTED = armDepConstants['ARM_M_INVERTED']
-ARM_M_CURRENT_LIMIT_A = armDepConstants['ARM_M_CURRENT_LIMIT_A']
+ARM_M_INITIALIZING_CURRENT_LIMIT_A = armDepConstants['ARM_M_INITIALIZING_CURRENT_LIMIT_A'] # xyzzy CAUTION we're not using this yet
+ARM_M_OPERATING_CURRENT_LIMIT_A = armDepConstants['ARM_M_OPERATING_CURRENT_LIMIT_A']
 ARM_GEARBOX_GEAR_RATIO = armDepConstants['ARM_GEARBOX_GEAR_RATIO']
-ABS_SENSOR_MOUNT_OFFSET_DEG = armDepConstants['ABS_SENSOR_MOUNT_OFFSET_DEG']
 ABS_SENSOR_INVERTED = armDepConstants['ABS_SENSOR_INVERTED']
 
-
-#TODO Perhaps use the absolute encoder offset
-
+ARM_ANGLE_AT_CURRENT_LIMIT_GOING_UP = armDepConstants['ARM_ANGLE_AT_CURRENT_LIMIT_GOING_UP']
 MAX_ARM_POS_DEG = armDepConstants['MAX_ARM_POS_DEG']
 MIN_ARM_POS_DEG = armDepConstants['MIN_ARM_POS_DEG']
+MAX_SEARCH_ARM_VEL_DEGPS = armDepConstants['MAX_SEARCH_ARM_VEL_DEGPS']
+MAX_SEARCH_ARM_ACCEL_DEGPS2 = armDepConstants['MAX_SEARCH_ARM_ACCEL_DEGPS2']
 MAX_ARM_VEL_DEGPS = armDepConstants['MAX_ARM_VEL_DEGPS']
 MAX_ARM_ACCEL_DEGPS2 = armDepConstants['MAX_ARM_ACCEL_DEGPS2']
 
 class ArmStates(IntEnum):
     UNINITIALIZED = 0
+    INIT_GOING_UP = 1
     OPERATING = 2
+    NO_CMD = -1
 
 TIME_STEP_S = 0.02
+
 
 class ArmControl(metaclass=Singleton):
     def __init__(self):
@@ -136,28 +152,41 @@ class ArmControl(metaclass=Singleton):
 
         self.poseDirector = PoseDirector()
 
-        self.manAdjMaxVoltage = Calibration(name=f"{self.name} Manual Adj Max Voltage", default=1.0, units="V")
-
-        # Arm Motors
-        self.motor = WrapperedSparkMax(ARM_M_CANID, f"{self.name}/motor", brakeMode=True,
-                                       currentLimitA=int(ARM_M_CURRENT_LIMIT_A))
-        motorIsInverted = ARM_M_INVERTED
-        self.motor.setInverted(motorIsInverted)
-
-        # Rev Relative Encoder
-        self.encoder = WrapperedRevThroughBoreEncoder(port=9, name=f"{self.name}",
-                                                      mountOffsetRad=math.radians(ABS_SENSOR_MOUNT_OFFSET_DEG),
-                                                      dirInverted=ABS_SENSOR_INVERTED)
 
         # FF and proportional gain constants
         self.kV = Calibration(name="Arm kV", default=0.02, units="V/rps")
         self.kS = Calibration(name="Arm kS", default=0.1, units="V")
         self.kG = Calibration(name="Arm kG", default=0.25, units="V")
         self.kP = Calibration(name="Arm kP", default=0.4, units="V/rad error")  # Per 0.001 seconds
-        self.maxPosDeg = Calibration(name="Arm Max Vel", default=MAX_ARM_POS_DEG, units="deg")
-        self.minPosDeg = Calibration(name="Arm Max Vel", default=MIN_ARM_POS_DEG, units="deg")
-        self.maxVelocityDegps = Calibration(name="Arm Max Vel", default=MAX_ARM_VEL_DEGPS, units="degps")
-        self.maxAccelerationDegps2 = Calibration(name="Arm Max Accel", default=MAX_ARM_ACCEL_DEGPS2, units="degps2")
+        self.calMaxPosDeg = Calibration(name="Arm Max Vel", default=MAX_ARM_POS_DEG, units="deg")
+        self.calMinPosDeg = Calibration(name="Arm Max Vel", default=MIN_ARM_POS_DEG, units="deg")
+        self.calMaxVelocityDegps = Calibration(name="Arm Max Vel", default=MAX_ARM_VEL_DEGPS, units="degps")
+        self.calMaxAccelerationDegps2 = Calibration(name="Arm Max Accel", default=MAX_ARM_ACCEL_DEGPS2, units="degps2")
+
+        self.calSearchMaxVelocityDegps = Calibration(name="Arm Search Max Vel", default=MAX_SEARCH_ARM_VEL_DEGPS, units="degps")
+        self.calSearchMaxAccelerationDegps2 = Calibration(name="Arm Search Max Accel", default=MAX_SEARCH_ARM_ACCEL_DEGPS2, units="degps2")
+
+        self.calArmInitializingCurrentLimitA = Calibration(name="Arm INITIALIZING_CURRENT_LIMIT_A", default=ARM_M_INITIALIZING_CURRENT_LIMIT_A, units="A")
+        self.calArmOperatingCurrentLimitA = Calibration(name="Arm OPERATING_CURRENT_LIMIT_A", default=ARM_M_OPERATING_CURRENT_LIMIT_A, units="A")
+
+        self.calArmAngleAtCurrentLimitGoingUpDeg = Calibration(name="Arm AngleAtCurrentLimitGoingUpDeg", default=ARM_ANGLE_AT_CURRENT_LIMIT_GOING_UP, units="deg")
+
+        self.stateNowLogger = getNowLogger(f"{self.name}/stateNow", int)
+        self.stateNowLogger.logNow(ArmStates.UNINITIALIZED)
+        self.poserCmdPosLogger = getNowLogger(f"{self.name}/cmd_pos_deg", "deg")
+        self.poserCmdPosLogger.logNow(360)
+        self.poserCmdVelLogger = getNowLogger(f"{self.name}/cmd_vel_degps", "degps")
+        self.poserCmdVelLogger.logNow(0)
+
+        # See: https://docs.wpilib.org/en/stable/docs/software/advanced-controls/controllers/trapezoidal-profiles.html
+        self.desTrapPState = TrapezoidProfile.State(90,0) # Angle 90 deg, Velocity 0 deg per s
+
+        # Arm Motors
+        self.motor = WrapperedSparkMax(ARM_M_CANID, f"{self.name}/motor", brakeMode=True, currentLimitA=self.calArmInitializingCurrentLimitA.get())
+        motorIsInverted = ARM_M_INVERTED
+        self.motor.setInverted(motorIsInverted)
+
+        self.stallDectector = MotorPosStallDetector(f"{self.name}/stall", self.motor, stallCurrentLimitA=self.motor.currentLimitA, stallTimeLimitS=0.2)
 
         self._initialized = False
 
@@ -173,18 +202,26 @@ class ArmControl(metaclass=Singleton):
 
 
     def initialize(self):
+        changed = self.calMaxPosDeg.isChanged() or \
+                  self.calMaxPosDeg.isChanged() or \
+                  self.kP.isChanged() or \
+                  self.calMaxVelocityDegps.isChanged() or \
+                  self.calMaxAccelerationDegps2.isChanged() or \
+                  self.calSearchMaxVelocityDegps.isChanged() or \
+                  self.calSearchMaxAccelerationDegps2.isChanged() or \
+                  self.calArmInitializingCurrentLimitA.isChanged() or \
+                  self.calArmOperatingCurrentLimitA.isChanged() or \
+                  self.calArmAngleAtCurrentLimitGoingUpDeg.isChanged()
 
-        if not self._initialized:
+        if changed or not self._initialized:
             # Set P gain on motor
             self.motor.setPID(self.kP.get(), 0.0, 0.0)
             # when we re-initialize tell motor to stay where it is at.
             self.motor.setVoltage(0)
 
             # units for trapezoidal will be degrees per second (velocity) and degrees per second squared (acceleration)
-            self.trapProfiler = TrapezoidProfile(TrapezoidProfile.Constraints(self.maxVelocityDegps.get(), self.maxAccelerationDegps2.get()))
+            self.trapProfiler = TrapezoidProfile(TrapezoidProfile.Constraints(self.calSearchMaxVelocityDegps.get(), self.calSearchMaxAccelerationDegps2.get()))
             self._setActCurDesTrapPStates(0,0)
-
-            self.stopped = False
 
             # Try to set a small current limit and decide when we're on the bottom using this, and turn
             # off the motor when it doesn't need to spin anymore.  then up the current limit as needed
@@ -197,19 +234,18 @@ class ArmControl(metaclass=Singleton):
             # to make sure the relative sensors inside the encoders accurately reflect
             # the actual position of the mechanism
             self.relEncOffsetRad = 0.0
+
             # Create a motion profile with the given maximum velocity and maximum
             # acceleration constraints for the next setpoint.
 
-            self.relEncOffsetAngleDeg = 0.0
-            self.motorPosCmdRad = 0.0
+            self.previousUpdateTimeS = None
 
-            addLog(f"{self.name}/motor_pos_cmd_deg", lambda: math.degrees(self.motorPosCmdRad), "deg")
-            addLog(f"{self.name}/abs_encoder_act_pos_deg", lambda: self.getAbsAngleDeg(), "deg")
-            addLog(f"{self.name}/rel_encoder_offset_deg", lambda: self.relEncOffsetAngleDeg, "deg")
-            addLog(f"{self.name}/state", lambda: self.state, "int")
-            self.stateNowLogger = getNowLogger(f"{self.name}/stateNow", int)
-            self.stateNowLogger.logNow(self.state)
-            addLog(f"{self.name}/stopped", lambda: self.stopped, "bool")
+            self.timeWhenChangeS = 0
+
+            self._largestAngleDeg = -180.0
+
+            addLog(f"{self.name}/_largestAngleDeg", lambda: self._largestAngleDeg, "deg")
+            addLog(f"{self.name}/state", lambda: self.state.value, "int")
             addLog(f"{self.name}/act_pos_deg", lambda: self.actTrapPState.position, "deg")
             addLog(f"{self.name}/act_vel_degps", lambda: self.actTrapPState.velocity, "degps")
             self.actAccLogger = getNowLogger(f"{self.name}/act acceleration", "degps2")
@@ -220,9 +256,6 @@ class ArmControl(metaclass=Singleton):
             addLog(f"{self.name}/des_vel_degps", lambda: self.desTrapPState.velocity, "degps")
 
             addLog("RParm/pos", lambda: self.curTrapPState.position, "deg")
-
-            self.poserCmdPosLogger = getNowLogger(f"{self.name}/cmd_pos_deg", "deg")
-            self.poserCmdVelLogger = getNowLogger(f"{self.name}/cmd_vel_degps", "degps")
 
             self._changeState(ArmStates.UNINITIALIZED)
 
@@ -243,10 +276,13 @@ class ArmControl(metaclass=Singleton):
         return  math.degrees(MotorRad * (1.0/ARM_GEARBOX_GEAR_RATIO))
 
     def _motorRadToAngleWithOffsetDeg(self, MotorRad: float) -> float:
-        return  self._noOffsetMotorRadToAngleDeg(MotorRad) + self.relEncOffsetAngleDeg
+        return  self._noOffsetMotorRadToAngleDeg(MotorRad+self.relEncOffsetRad)
+
+    def _angleDegToMotorRadNoOffset(self, armAngleDeg: float) -> float:
+        return math.radians(armAngleDeg * ARM_GEARBOX_GEAR_RATIO )
 
     def _angleDegToMotorRad(self, armAngleDeg: float) -> float:
-        return math.radians((armAngleDeg - self.relEncOffsetAngleDeg) * ARM_GEARBOX_GEAR_RATIO )
+        return self._angleDegToMotorRadNoOffset(armAngleDeg) - self.relEncOffsetRad
     
     def _angleVelDegpsToMotorVelRadps(self, armAngleDeg: float) -> float:
         return armAngleDeg * ARM_GEARBOX_GEAR_RATIO
@@ -260,97 +296,64 @@ class ArmControl(metaclass=Singleton):
     def _getVelocityDegps(self) -> float:
         return self._noOffsetMotorRadToAngleDeg(self.motor.getMotorVelocityRadPerSec())
 
-    #return the angle of the arm as measured by the absolute sensor in angles
-    def getAbsAngleDeg(self) -> float:
-        angleAbsSenDeg = math.degrees(self.encoder.getAngleRad())
-        #return angleAbsSenDeg - ABS_SENSOR_MOUNT_OFFSET_DEG
-        return angleAbsSenDeg
-
-    def getRelToAbsoluteSensorOffsetDeg(self) -> float:
-        relAngleWithNoOffsetDeg = self._getRelAngleWithNoOffsetDeg()
-        absAngleDeg = self.getAbsAngleDeg()
-
-        relEncOffsetAngleDeg = absAngleDeg - relAngleWithNoOffsetDeg
-
-        #if self.count % 1000 == 0:
-        #    print(f"count={self.count} {relEncOffsetAngleDeg:+10.1f}=absAngleDeg({absAngleDeg:+10.1f} - relAngleWithNoOffsetDeg({relAngleWithNoOffsetDeg:+10.1f})\n... motorPositionRad={self.motor.getMotorPositionRad():+10.1f}->{self._noOffsetMotorRadToAngleDeg(self.motor.getMotorPositionRad()):+10.1f}")
-
-        return relEncOffsetAngleDeg
-
     def update(self) -> None:
-        self.encoder.update()
+        self.motor.getMotorPositionRad()
+        self.stallDectector.update()
 
         match self.state:
             case ArmStates.UNINITIALIZED:
                 self._updateUninitialized()
+            case ArmStates.INIT_GOING_UP:
+                self._updateInitGoingUp()
             case ArmStates.OPERATING:
                 self._updateOperating()
+            case ArmStates.NO_CMD:
+                pass
             case _:
                 pass
 
         self.count = self.count + 1
 
     def _updateUninitialized(self) -> None:
-        self.encoder.update()
+        self.startTime = Timer.getFPGATimestamp()
+        self.timeWhenChangeS = Timer.getFPGATimestamp()
+        self._changeState(ArmStates.INIT_GOING_UP)
+        self._forceStartAtAngleDeg(0.0)
 
-        self.trapProfiler = TrapezoidProfile(TrapezoidProfile.Constraints(self.maxVelocityDegps.get(), self.maxAccelerationDegps2.get()))
-        self.lastStoppedTimeS = 0
-        self.relEncOffsetAngleDeg = self.getRelToAbsoluteSensorOffsetDeg()
+        if wpilib.RobotBase.isSimulation():
+            self.desTrapPState = TrapezoidProfile.State(self._getRelAngleWithOffsetDeg(),0)
+        else:
+            self.desTrapPState = TrapezoidProfile.State(self._getRelAngleWithOffsetDeg()+720,0)
+        self.curTrapPState = TrapezoidProfile.State(self._getRelAngleWithOffsetDeg(), 0)
+        self._largestAngleDeg = self._getRelAngleWithOffsetDeg()
+        self.motor.setSmartCurrentLimit(self.calArmInitializingCurrentLimitA.get())
+        self._setMotorPosAndFF()
 
-        self._setActCurDesTrapPStatesToWhereTheArmIsNow()
+    def _updateInitGoingUp(self) -> None:
+        positionDeg = self._getRelAngleWithOffsetDeg()
 
-        # when we re-initialize tell motor to stay where it is at.
-        self.motor.setVoltage(0)
-        vFF  = 0
-
-        self.motor.setPosCmd(self.motor.getMotorPositionRad(), vFF)
-
-        self._changeState(ArmStates.OPERATING)
-
-    def _perhapsWeHaveANewRangeCheckedDesiredState(self, armCommand: ArmCommand)->TrapezoidProfile.State:
-
-        newDesPosDeg = armCommand.angleDeg
-        newDesVelocityDegps = armCommand.velocityDegps
-
-        result = self.desTrapPState
-
-        if (self.state == ArmStates.OPERATING) and (self.desTrapPState.position != newDesPosDeg or self.desTrapPState.velocity != newDesVelocityDegps):
-
-            newDesVelocityDegps = min(newDesVelocityDegps, self.maxVelocityDegps.get())
-            newDesVelocityDegps = max(newDesVelocityDegps, -self.maxVelocityDegps.get())
-
-            if newDesPosDeg is not None:
-                # limit the height goal so that it is less than max height
-                # limit the height goal so that is more than 0
-                newDesPosDeg = min(newDesPosDeg, self.maxPosDeg.get())
-                newDesPosDeg = max(newDesPosDeg, self.minPosDeg.get())
-
-                # do these checks relative to the curTrapPState
-                # if height goal is to go up, make sure that velocity goal is 0 or +
-                if newDesPosDeg > self.curTrapPState.position:
-                    newDesVelocityDegps = max(0, newDesVelocityDegps)
-
-                # if height goals is to go down, make sure that the velocity goal is 0 or -
-                elif newDesPosDeg < self.curTrapPState.position:
-                    newDesVelocityDegps = min(0, newDesVelocityDegps)
-                # if height goals is to stay at current height goal
-                else:
-                    newDesVelocityDegps = 0
-            elif newDesVelocityDegps == 0.0:
-                newDesPosDeg = self.curTrapPState.position
-            elif newDesVelocityDegps > 0.0:
-                newDesPosDeg = self.maxPosDeg.get()
-            elif newDesVelocityDegps < 0.0:
-                newDesPosDeg = self.minPosDeg.get()
+        if positionDeg > self._largestAngleDeg:
+            self._largestAngleDeg = positionDeg
+            self.timeWhenChangeS = Timer.getFPGATimestamp()
+            self._setMotorPosAndFF()
+            # change the time we last moved in seconds
+        else:
+            # because we didn't go any lower, maybe we have been at the lowest height for a second
+            nowS = Timer.getFPGATimestamp()
+            if nowS - 1 >= self.timeWhenChangeS:
+                self._forceStartAtAngleDeg(self.calArmAngleAtCurrentLimitGoingUpDeg.get())
+                self.trapProfiler = TrapezoidProfile(
+                    TrapezoidProfile.Constraints(self.calMaxVelocityDegps.get(),
+                                                 self.calMaxAccelerationDegps2.get()))
+                self.desTrapPState = TrapezoidProfile.State(self._getRelAngleWithOffsetDeg(), 0)
+                self.curTrapPState = TrapezoidProfile.State(self._getRelAngleWithOffsetDeg(), 0)
+                self.motor.setSmartCurrentLimit(self.calArmOperatingCurrentLimitA.get())
+                self.stallDectector.stallCurrentLimitA = self.motor.currentLimitA
+                self._changeState(ArmStates.OPERATING)
             else:
-                newDesPosDeg = newDesPosDeg
+                self._setMotorPosAndFF()
 
-            result = self.trapProfiler.State(newDesPosDeg, newDesVelocityDegps)
-
-        return result
-
-
-    def _setMotorPosAndFF(self) -> None:
+    def _setMotorPosAndFF(self, enablePosMove=True) -> None:
         oldVelocityDegps = self.curTrapPState.velocity
 
         # This method is called both when initializing the object in the uninitialized state and when operating
@@ -387,11 +390,54 @@ class ArmControl(metaclass=Singleton):
 
         vFF = 0
 
-        self.motor.setPosCmd(motorPosCmdRad, vFF)
+        if enablePosMove:
+            self.motor.setPosCmd(motorPosCmdRad, vFF)
+        else:
+            self.motor.setVoltage(0)
 
+    def _perhapsWeHaveANewRangeCheckedDesiredState(self, armCommand: ArmCommand)->TrapezoidProfile.State:
+
+        newDesPosDeg = armCommand.angleDeg
+        newDesVelocityDegps = armCommand.velocityDegps
+
+        result = self.desTrapPState
+
+        if (self.state == ArmStates.OPERATING) and (self.desTrapPState.position != newDesPosDeg or self.desTrapPState.velocity != newDesVelocityDegps):
+
+            newDesVelocityDegps = min(newDesVelocityDegps, self.calMaxVelocityDegps.get())
+            newDesVelocityDegps = max(newDesVelocityDegps, -self.calMaxVelocityDegps.get())
+
+            if newDesPosDeg is not None:
+                # limit the height goal so that it is less than max height
+                # limit the height goal so that is more than 0
+                newDesPosDeg = min(newDesPosDeg, self.calMaxPosDeg.get())
+                newDesPosDeg = max(newDesPosDeg, self.calMinPosDeg.get())
+
+                # do these checks relative to the curTrapPState
+                # if height goal is to go up, make sure that velocity goal is 0 or +
+                if newDesPosDeg > self.curTrapPState.position:
+                    newDesVelocityDegps = max(0, newDesVelocityDegps)
+
+                # if height goals is to go down, make sure that the velocity goal is 0 or -
+                elif newDesPosDeg < self.curTrapPState.position:
+                    newDesVelocityDegps = min(0, newDesVelocityDegps)
+                # if height goals is to stay at current height goal
+                else:
+                    newDesVelocityDegps = 0
+            elif newDesVelocityDegps == 0.0:
+                newDesPosDeg = self.curTrapPState.position
+            elif newDesVelocityDegps > 0.0:
+                newDesPosDeg = self.calMaxPosDeg.get()
+            elif newDesVelocityDegps < 0.0:
+                newDesPosDeg = self.calMinPosDeg.get()
+            else:
+                newDesPosDeg = newDesPosDeg
+
+            result = self.trapProfiler.State(newDesPosDeg, newDesVelocityDegps)
+
+        return result
 
     def _updateOperating(self) -> None:
-        self.encoder.update()
         self.currentUpdateTimeS = Timer.getFPGATimestamp()
         self.actualVelDegps = self._getVelocityDegps()
         if self.previousUpdateTimeS is not None:
@@ -422,30 +468,15 @@ class ArmControl(metaclass=Singleton):
         if self.kP.isChanged():
             self.motor.setPID(self.kP.get(), 0.0, 0.0)
 
-        # this doesn't happen right now
-        if self.stopped:
-            # Handle stopped by just holding mechanism in place with gravity offset, no closed loop.
-            # TODO - do we need a more gentle stop here?
-            manAdjVoltage = self.manAdjMaxVoltage.get() * self.manualAdjCmd
-
-            self.motor.setVoltage(self.kG.get() + manAdjVoltage)
-            self.curTrapPState = TrapezoidProfile.State(self.actTrapPState.position, 0)
-        else:
-            # this case does happen
-            self._setMotorPosAndFF()
+        self._setMotorPosAndFF(enablePosMove=True)
 
         self.previousVelDegps = self.actualVelDegps
         self.previousUpdateTimeS = self.currentUpdateTimeS
 
-    # todo make an new API function:
-    #def setPosVelocityGoal(self, posGoalDeg:float, velocityGoalDegps:float) -> None:
-    #    self._perhapsWeHaveANewRangeCheckedDesiredState(newDesPosDeg=posGoalDeg, newDesVelocityDegs=velocityGoalDegps)
 
-    def setManualAdjCmd(self, cmd:float) -> None:
-        self.manualAdjCmd = cmd
 
-    def _forceStartAtAngleZeroDeg(self) -> None:
-        self.relEncOffsetRad = self.motor.getMotorPositionRad()
+    def _forceStartAtAngleDeg(self, angleDeg:float) -> None:
+        self.relEncOffsetRad = self._angleDegToMotorRadNoOffset(angleDeg) - self.motor.getMotorPositionRad()
 
     def _changeState(self, newState: ArmStates) -> None:
         print(f"time = {Timer.getFPGATimestamp():.3f}s changing from arm state {self.state} to {newState}")
@@ -464,3 +495,5 @@ class ArmControl(metaclass=Singleton):
 
     def getVelocity(self):
         return self.getCurProfileVelocityDegps()
+
+

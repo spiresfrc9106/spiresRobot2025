@@ -35,12 +35,11 @@ class AutoSequencer(metaclass=Singleton):
         #self.mainModeList.addMode(DriveOut())
         self.mainModeList.addMode(Square())
 
-        self.mainModeList.addMode(RedRightDriveOut())
-        self.mainModeList.addMode(RedLeftDriveOut())
-        self.mainModeList.addMode(RedCenterDriveOut())
-        self.mainModeList.addMode(BlueLeftDriveOut())
-        self.mainModeList.addMode(BlueCenterDriveOut())
-        self.mainModeList.addMode(BlueRightDriveOut())
+        self.currentTeam = onRed() #i was doing something with this
+        if onRed():
+            self.addRedAllianceModes()
+        else:
+            self.addBlueAllianceModes()
 
 
         self.topLevelCmdGroup = SequentialCommandGroup()
@@ -49,6 +48,8 @@ class AutoSequencer(metaclass=Singleton):
         # Alliance changes require us to re-plan autonomous
         # This variable is used to help track when alliance changes
         self._prevOnRed = onRed()
+
+        self.changedMenu = False
 
         self.updateMode(force=True)  # Ensure we load the auto sequencer at least once.
 
@@ -62,9 +63,30 @@ class AutoSequencer(metaclass=Singleton):
     def addMode(self, newMode):
         self.mainModeList.addMode(newMode)
 
+    def addRedAllianceModes(self):
+        self.mainModeList.addMode(RedRightDriveOut())
+        self.mainModeList.addMode(RedLeftDriveOut())
+        self.mainModeList.addMode(RedCenterDriveOut())
+
+    def addBlueAllianceModes(self):
+        self.mainModeList.addMode(BlueLeftDriveOut())
+        self.mainModeList.addMode(BlueCenterDriveOut())
+        self.mainModeList.addMode(BlueRightDriveOut())
+
+    def updateMainModeListAlliance(self):
+        if self._allianceChanged():
+            self.mainModeList.deleteOppositeColorModes()
+            self.changedMenu = True
+            if onRed():
+                self.addRedAllianceModes()
+            else:
+                self.addBlueAllianceModes()
     # Call this periodically while disabled to keep the dashboard updated
     # and, when things change, re-init modes
     def updateMode(self, force=False):
+
+        self.updateMainModeListAlliance()
+
         mainChanged = self.mainModeList.updateMode()
         delayChanged = self.delayModeList.updateMode()
         if mainChanged or delayChanged or force or self._allianceChanged():
@@ -84,6 +106,12 @@ class AutoSequencer(metaclass=Singleton):
         self.updateMode() # Last-shot update before starting autonomous
         print("[Auto] Starting Sequencer")
         self.topLevelCmdGroup.initialize()
+
+    def acknowledgeDashboardReset(self):
+        self.changedMenu = False
+
+    def getMenuChange(self):
+        return self.changedMenu
 
     def update(self):
         self.topLevelCmdGroup.execute()
