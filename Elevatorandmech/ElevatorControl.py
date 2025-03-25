@@ -225,7 +225,7 @@ class ElevatorControl(metaclass=Singleton):
             addLog(f"{self.name}/des_pos_in", lambda: self.desTrapPState.position, "in")
             addLog(f"{self.name}/des_vel_inps", lambda: self.desTrapPState.velocity, "inps")
 
-            addLog("RPelev/pos", lambda: self.curTrapPState.position, "in")
+            addLog("RPelev/pos", lambda: self.actTrapPState.position, "in")
 
             self._changeState(ElevatorStates.UNINITIALIZED)
 

@@ -255,7 +255,7 @@ class ArmControl(metaclass=Singleton):
             addLog(f"{self.name}/des_pos_deg", lambda: self.desTrapPState.position, "deg")
             addLog(f"{self.name}/des_vel_degps", lambda: self.desTrapPState.velocity, "degps")
 
-            addLog("RParm/pos", lambda: self.curTrapPState.position, "deg")
+            addLog("RParm/pos", lambda: self.actTrapPState.position, "deg")
 
             self._changeState(ArmStates.UNINITIALIZED)
 

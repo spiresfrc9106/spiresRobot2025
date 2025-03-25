@@ -87,10 +87,10 @@ class PlaceL4V5(SetupScheme):
                 armCmdOIntNorm = self.oInt.armPosYCmd * 30
                 xCmdDIntNorm = self.dInt.getVelXCmd() * MAX_FWD_REV_SPEED_MPS
                 yCmdDIntNorm = self.dInt.getVelYCmd() * MAX_FWD_REV_SPEED_MPS
-                elevCmdOIntNew = elevCmdOIntNorm*0.02
-                armCmdOIntNew = armCmdOIntNorm*0.02
-                xCmdDIntNew = xCmdDIntNorm*0.02
-                yCmdDIntNew = yCmdDIntNorm*0.02
+                elevCmdOIntNew = elevCmdOIntNorm*0.5
+                armCmdOIntNew = armCmdOIntNorm*0.5
+                xCmdDIntNew = xCmdDIntNorm*0.25
+                yCmdDIntNew = yCmdDIntNorm*0.25
                 self.setArmCommand(None, armCmdOIntNew)
                 self.setElevatorCommand(None, elevCmdOIntNew)
                 self.basePrimitiveCmd = (xCmdDIntNew, yCmdDIntNew, 0)
@@ -98,10 +98,9 @@ class PlaceL4V5(SetupScheme):
                     self.nextState()
             case 4:
                 self.basePrimitiveCmd = None
-                self.setArmCommand(50, -15)
-                self.bestTag = self.placementIntel.decidePlacementPose(self.pdSideOfReef, self.inchesToMeters(20))
-                self.setDriveTrainBaseCommand(self.bestTag)
-                armGoalReached = math.isclose(self.arm.getPosition(), self.armPlacePos, abs_tol=5)
+                self.setArmCommand(47, -15)
+                self.armPlacePos = 47
+                armGoalReached = math.isclose(self.arm.getPosition(), self.armPlacePos, abs_tol=3)
                 if armGoalReached or self.oInt.skipNext:
                     self.nextState()
             case 5:
