@@ -59,27 +59,22 @@ class PlaceL4V5(SetupScheme):
         currentTime = Timer.getFPGATimestamp()
         time = currentTime - self.startTime
         match self.currentState:
-            case 0:  # initializing
-                # self.armCmd/elevCmd could be called here to prep for the fun thing.
+            case 0:
                 self.bestTag = self.placementIntel.decidePlacementPose(0, self.inchesToMeters(21))
                 print(f"place l4 time = {Timer.getFPGATimestamp():.3f}s x={self.bestTag.x:+10.1f}m y={self.bestTag.y:+10.1f}m t={self.bestTag.rotation().degrees():+10.1f}deg")
                 self.setDriveTrainBaseCommand(self.bestTag)
-                # CAN WE DO BETTER?  YES OF COURSE WE CAN.
-                self.armCmd = (90, 0)  # straight up so no bumping.
-                if self.completedAwait("awaitBaseCmd1", 0.2):
-                    self.nextState()
-            case 1:
+                self.setArmCommand(90, 0)
                 self.updateProgressTrajectory()
                 if self.completedTrajectory(self.base, 4, 3) or self.oInt.skipNext:
                     self.nextState()
-            case 2:
+            case 1:
                 self.bestTag = self.placementIntel.decidePlacementPose(self.pdSideOfReef, self.inchesToMeters(7))
-                self.elevCmd = (self.elevPlacePos, 0)
-                self.armCmd = (self.armPlacePos, 0)
+                self.setElevatorCommand(self.elevPlacePos, 0)
+                self.setArmCommand(self.armPlacePos, 0)
                 self.setDriveTrainBaseCommand(self.bestTag)
                 if self.completedAwait("awaitForCmd2", 0.2):
                     self.nextState()
-            case 3:
+            case 2:
                 elevGoalReached = math.isclose(self.elev.getPosition(), self.elevPlacePos, abs_tol=0.5)
                 armGoalReached = math.isclose(self.arm.getPosition(), self.armPlacePos, abs_tol=2.5)  # is abs_tol good?
                 baseGoalReached = self.completedTrajectory(self.base)
@@ -87,36 +82,36 @@ class PlaceL4V5(SetupScheme):
                     self.nextState()
                 else:
                     self.localProg = sum([elevGoalReached, armGoalReached, baseGoalReached])/3
-            case 4:
-                elevCmdOIntNorm = self.oInt.elevatorPosYCmd * 10
-                armCmdOIntNorm = self.oInt.armPosYCmd * 30
-                xCmdDIntNorm = self.dInt.getVelXCmd() * MAX_FWD_REV_SPEED_MPS
-                yCmdDIntNorm = self.dInt.getVelYCmd() * MAX_FWD_REV_SPEED_MPS
-                elevCmdOIntNew = elevCmdOIntNorm*0.02
-                armCmdOIntNew = armCmdOIntNorm*0.02
-                xCmdDIntNew = xCmdDIntNorm*0.02
-                yCmdDIntNew = yCmdDIntNorm*0.02
-                self.armCmd = (None, armCmdOIntNew)
-                self.elevCmd = (None, elevCmdOIntNew)
-                self.basePrimitiveCmd = (xCmdDIntNew, yCmdDIntNew, 0)
+            case 3:
+                # elevCmdOIntNorm = self.oInt.elevatorPosYCmd * 10
+                # armCmdOIntNorm = self.oInt.armPosYCmd * 30
+                # xCmdDIntNorm = self.dInt.getVelXCmd() * MAX_FWD_REV_SPEED_MPS
+                # yCmdDIntNorm = self.dInt.getVelYCmd() * MAX_FWD_REV_SPEED_MPS
+                # elevCmdOIntNew = elevCmdOIntNorm*0.02
+                # armCmdOIntNew = armCmdOIntNorm*0.02
+                # xCmdDIntNew = xCmdDIntNorm*0.02
+                # yCmdDIntNew = yCmdDIntNorm*0.02
+                # self.setArmCommand(None, armCmdOIntNew)
+                # self.setElevatorCommand(None, elevCmdOIntNew)
+                # self.basePrimitiveCmd = (xCmdDIntNew, yCmdDIntNew, 0)
                 if self.oInt.launchPlacement:
                     self.nextState()
-            case 5:
+            case 4:
                 self.basePrimitiveCmd = None
-                self.armCmd = (50, -15)
+                self.setArmCommand(50, -15)
                 armGoalReached = math.isclose(self.arm.getPosition(), self.armPlacePos, abs_tol=0.75)
                 if armGoalReached or self.oInt.skipNext:
                     self.nextState()
-            case 6:
-                self.armCmd = (-15, 0)
+            case 5:
+                self.setArmCommand(-15, 0)
                 self.bestTag = self.placementIntel.decidePlacementPose(self.pdSideOfReef, self.inchesToMeters(10))
                 self.setDriveTrainBaseCommand(self.bestTag)
                 if self.completedTrajectory(self.base) or self.oInt.skipNext:
                     self.nextState()
-            case 7:
+            case 6:
                 pass
             case _:
                 pass
 
-        state_max = 7
+        state_max = 6
         self.schemeProg = min((self.currentState+(self.localProg*0.9)) / state_max, 1)

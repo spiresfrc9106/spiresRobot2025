@@ -84,6 +84,29 @@ class SetupScheme:
         dist_rotate = abs(curT-desT)
         return dist_translate < in2m(max_in) and dist_rotate < max_deg
 
+    def setArmCommand(self, x_deg: float | None, v_degps: float | None):
+        if x_deg is not None:
+            if v_degps is not None:
+                self.armCmd = (x_deg, v_degps)
+            else:
+                self.armCmd = (x_deg, 0)
+        else:
+            if v_degps is not None:
+                self.armCmd = (x_deg, v_degps)
+            else:
+                self.armCmd = None
+
+    def setElevatorCommand(self, x_in: float | None, v_inps: float | None):
+        if x_in is not None:
+            if v_inps is not None:
+                self.armCmd = (x_in, v_inps)
+            else:
+                self.armCmd = (x_in, 0)
+        else:
+            if v_inps is not None:
+                self.armCmd = (x_in, v_inps)
+            else:
+                self.armCmd = None
 
     def setDriveTrainBaseCommand(self, pose: Pose2d | None, vxMps: float = 0.0, vyMps: float = 0.0, vtRadps: float = 0.0):
 
@@ -162,7 +185,7 @@ class ElevConsts:
         ## INCHES
         self.posLow = 1
         self.posLowMid = 1.5  # this is the location that the robot should be right before hitting coral
-        self.posMedium = 45  # middle of elevator, default location.
+        self.posMedium = 55 #45  # middle of elevator, default location.
         self.posHigh = 3
         ## INCHES/S
         self.velLow = 1
