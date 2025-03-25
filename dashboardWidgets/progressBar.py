@@ -19,4 +19,4 @@ class ProgressBar(WidgetConfig):
         self.isVisible = True
 
     def getJSDeclaration(self):
-        return f"var widget{self.idx} = new LineGauge('widget{self.idx}', '{self.name}',{self.minRange},{self.maxRange},{self.minAcceptable}, {self.maxAcceptable})\n"
+        return f"var widget{self.idx} = new ProgressBar('widget{self.idx}', '{self.name}',{self.minRange},{self.maxRange},{self.minAcceptable}, {self.maxAcceptable})\n"

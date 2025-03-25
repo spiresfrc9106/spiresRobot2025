@@ -57,7 +57,7 @@ export class ProgressBar {
         if(this.hasData){
             displayValueStr = Math.round(this.curVal).toString();
         }
-        var text = ""; //this.name + ":   " + displayValueStr;
+        var text = "Progress: "+displayValueStr+"";
         this.ctx.fillText(text, this.titleTextAnchorX, this.titleTextAnchorY);
 
         this.drawGauge();
@@ -126,17 +126,37 @@ export class ProgressBar {
         adjVal = Math.min(adjVal, this.max_range);
         adjVal = Math.max(adjVal, this.min_range);
         var cX = this.valToXPos(adjVal);
+        var cX_min = this.valToXPos(0);
         var cY = this.lineStartY + this.lineHeight/2.0;
 
-        //Draw diamond
         this.ctx.beginPath();
         this.ctx.lineWidth = "4";
         this.ctx.strokeStyle = "#BBBBBB";
-        this.ctx.moveTo(cX, cY - this.markerRadius); //top
-        this.ctx.lineTo(cX - this.markerRadius, cY); //left
-        this.ctx.lineTo(cX, cY + this.markerRadius); //bottom
-        this.ctx.lineTo(cX + this.markerRadius, cY); //right
-        this.ctx.lineTo(cX, cY - this.markerRadius); //top
+        this.ctx.rect(this.lineStartX, this.lineStartY, Math.min(cX, this.lineWidth), this.lineHeight);
+        this.ctx.stroke();
+
+
+
+        //Draw diamond
+//        this.ctx.beginPath();
+//        this.ctx.lineWidth = "4";
+//        this.ctx.strokeStyle = "#BBBBBB";
+
+//        old og
+//        this.ctx.moveTo(cX, cY - this.markerRadius); //top
+//        this.ctx.lineTo(cX - this.markerRadius, cY); //left
+//        this.ctx.lineTo(cX, cY + this.markerRadius); //bottom
+//        this.ctx.lineTo(cX + this.markerRadius, cY); //right
+//        this.ctx.lineTo(cX, cY - this.markerRadius); //top
+
+//        tried
+//        this.ctx.moveTo(cX, cY - this.markerRadius); //top
+//        this.ctx.lineTo(cX_min, cY - this.markerRadius); //left
+//        this.ctx.lineTo(cX_min, cY + this.markerRadius); //left
+//        this.ctx.lineTo(cX, cY + this.markerRadius); //bottom
+//        this.ctx.lineTo(cX + this.markerRadius, cY); //right
+//        this.ctx.lineTo(cX, cY - this.markerRadius); //top
+
         this.ctx.fill();
         this.ctx.stroke();
     

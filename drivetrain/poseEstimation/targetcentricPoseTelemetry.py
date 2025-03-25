@@ -12,7 +12,7 @@ from utils.signalLogging import addLog
 from ntcore import NetworkTableInstance
 
 
-class DrivetrainPoseTelemetry:
+class TargetCentricPoseTelemetry:
     """
     Helper class to wrapper sending all drivetrain Pose related information
     to dashboards
@@ -20,7 +20,7 @@ class DrivetrainPoseTelemetry:
 
     def __init__(self):
         self.field = wpilib.Field2d()
-        wpilib.SmartDashboard.putData("DT Pose 2D", self.field)
+        wpilib.SmartDashboard.putData("TC Pose 2D", self.field)
         self.curTraj = Trajectory()
         self.curTrajWaypoints = []
         self.fixedObstacles = []
@@ -41,10 +41,6 @@ class DrivetrainPoseTelemetry:
             self.camPublishers.append(camConfig['PUBLISHER'])
             self.robotToCams.append(camConfig['ROBOT_TO_CAM'])
             camName = camConfig['POSE_EST_LOG_NAME']
-
-            # self.interestingTracker.append(NetworkTableInstance.getDefault()
-            # .getStructTopic("/pos-interesting-output-" + camName, Pose3d)
-            # .publish())
             icount += 1
 
         self.camPublishersAndRobotToCams = zip(self.camPublishers, self.robotToCams)

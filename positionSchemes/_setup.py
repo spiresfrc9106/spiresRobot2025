@@ -1,13 +1,16 @@
+import math
+
 import wpilib
 from wpimath.geometry import Pose2d
 from utils.fieldTagLayout import FieldTagLayout
 from drivetrain.drivetrainCommand import DrivetrainCommand
-from drivetrain.controlStrategies.trajectory import Trajectory
+from drivetrain.controlStrategies.trajectoryGuts import TrajectoryGuts
 from Elevatorandmech.ElevatorCommand import ElevatorCommand
 from Elevatorandmech.ArmCommand import ArmCommand
 from wpimath.geometry import Pose2d
 from wpilib import Timer
-from drivetrain.controlStrategies.trajectory import ChoreoTrajectoryState
+from drivetrain.controlStrategies.trajectoryGuts import ChoreoTrajectoryState
+from utils.units import deg2Rad, rad2Deg, in2m, m2in
 
 ### these are intrisic to any pos scheme class
 
@@ -15,6 +18,7 @@ from drivetrain.controlStrategies.trajectory import ChoreoTrajectoryState
 class SetupScheme:
     def __init__(self, arm, base, elev):
         self.startTime = Timer.getFPGATimestamp()
+        self.setupBase = base
         self.changeInTime = 0
         self.waitTimes = {}
         self.schemeProg = 0
@@ -23,10 +27,16 @@ class SetupScheme:
         self.armCmd = None
         self.elevCmd = None
         self.basePrimitiveCmd = None
+        self.bestTag = Pose2d()
+        self.initMax = 100
+        self.initLoc = 0
 
     def nextState(self):
         self.currentState = self.currentState + 1
         self.localProg = 0
+
+    def setBase(self, base):
+        self.setupBase = base
 
     def isSim(self):
         return wpilib.RobotBase.isSimulation()
@@ -40,22 +50,52 @@ class SetupScheme:
         else:
             return False
 
-    def completedTrajectory(self, base):
-        return abs(base.cmdVelX) < 0.08 and abs(base.cmdVelY) < 0.08 and abs(base.cmdVelT) < 3
+    def updateProgressTrajectory(self):
+        if self.initLoc != self.bestTag:
+            self.initMax = self.getFullDistanceSubjective()
+        self.initLoc = self.bestTag
+        current = self.getFullDistanceSubjective()
+        progress = (self.initMax-current)/self.initMax
+        self.localProg = max(progress, self.localProg)
+
+    def getFullDistanceSubjective(self):
+        desPose = self.bestTag
+        curPose = self.setupBase.tcPoseEst.getCurEstPose()
+        desX = YPose(desPose).x
+        desY = YPose(desPose).y
+        desT = YPose(desPose).t
+        curX = YPose(curPose).x
+        curY = YPose(curPose).y
+        curT = YPose(curPose).t
+        dist_translate = math.sqrt(pow((desX-curX), 2)+pow((desY-curY), 2))
+        dist_rotate = abs(curT-desT)
+        return dist_translate+dist_rotate
+
+    def completedTrajectory(self, base, max_in=1, max_deg=1):
+        desPose = self.bestTag
+        curPose = base.tcPoseEst.getCurEstPose()
+        desX = YPose(desPose).x
+        desY = YPose(desPose).y
+        desT = YPose(desPose).t
+        curX = YPose(curPose).x
+        curY = YPose(curPose).y
+        curT = YPose(curPose).t
+        dist_translate = math.sqrt(pow((desX-curX), 2)+pow((desY-curY), 2))
+        dist_rotate = abs(curT-desT)
+        return dist_translate < in2m(max_in) and dist_rotate < max_deg
 
 
-    def setDriveTrainBaseCommand(self, pose: Pose2d | None, vxMps: float = 0.0, vyMps: float = 0.0, vtRadps: float = 0.0 ):
-        
+    def setDriveTrainBaseCommand(self, pose: Pose2d | None, vxMps: float = 0.0, vyMps: float = 0.0, vtRadps: float = 0.0):
+
         if pose is None:
             self.baseCmd = None
-
-            Trajectory().setCmdFromPoser(None)
+            self.setupBase.tcTraj.setCmdFromPoser(None)
         else:
             if True:
                 # save these off in base command for historical reasons as we refactor, might never be used
                 self.baseCmd = (pose,  vxMps, vyMps, vtRadps)
 
-                Trajectory().setCmdFromPoser(
+                self.setupBase.tcTraj.setCmdFromPoser(
                     ChoreoTrajectoryState(
                         timestamp=1,  # TODO: no idea if this should be some sort of other type of time...
                         x=pose.X(),
@@ -68,7 +108,7 @@ class SetupScheme:
                 )
 
     def deactivate(self):
-        self.setDriveTrainBaseCommand(None)
+        self.setDriveTrainBaseCommand(None, self.setupBase)
 
 
 

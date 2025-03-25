@@ -94,7 +94,7 @@ else:
 MAX_DT_LINEAR_SPEED_MPS = MAX_DT_MOTOR_SPEED_RPS / WHEEL_GEAR_RATIO * in2m(WHEEL_RADIUS_IN)
 # Fudged max expected performance
 
-speed_multiple_at_comp = 2
+speed_multiple_at_comp = drivetrainDepConstants['SPEED_MULTIPLIER']
 
 MAX_FWD_REV_SPEED_MPS = MAX_DT_LINEAR_SPEED_MPS * 0.98 * speed_multiple_at_comp  # fudge factor due to gearbox losses
 MAX_STRAFE_SPEED_MPS = MAX_DT_LINEAR_SPEED_MPS * 0.98 * speed_multiple_at_comp  # fudge factor due to gearbox losses
@@ -104,7 +104,7 @@ MAX_ROTATE_SPEED_RAD_PER_SEC = deg2Rad(
 # Accelerations - also a total guess
 MAX_TRANSLATE_ACCEL_MPS2 = (
     #MAX_FWD_REV_SPEED_MPS / 0.50
-    MAX_FWD_REV_SPEED_MPS/ 0.10
+    MAX_FWD_REV_SPEED_MPS / 0.10
 )  # 0-full time of 0.5 second - this is a guestimate xyzzy - investigate making this smaller
 MAX_ROTATE_ACCEL_RAD_PER_SEC_2 = (
     MAX_ROTATE_SPEED_RAD_PER_SEC / 0.25

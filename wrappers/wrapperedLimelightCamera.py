@@ -22,13 +22,13 @@ class LimelightCameraPoseObservation:
 
 
 class WrapperedPoseEstLimelight:
-    def __init__(self, camName:str, robotToCam:Translation3d):
+    def __init__(self, camName:str, robotToCam:Translation3d, pipeline_mode):
         setVersionCheckEnabled(False)
 
         print(f"WrapperedPoseEstLimelight camName {type(camName)} = {camName}")
 
         try:
-            self.cam = Limelight(robotToCam, camName)
+            self.cam = Limelight(robotToCam, camName, pipeline_mode)
         except Exception as e:
             # Handle any exception
             print(f"An error occurred: {e}")
@@ -55,9 +55,12 @@ class WrapperedPoseEstLimelight:
         self.yStdDev = 0
         self.tStdDev = 0
 
-
+        self.targetTransformation = None
+        self.targetInView = None
         self.targetLength = 0
+        self.latency = 0
         addLog("ytest_targets_limelight_seen", lambda: self.targetLength, "")
+        addLog(f"ytest_{camName}total_latency", lambda: self.latency, '')
 
     def update(self, prevEstPose:Pose2d):
         self.cam.update()
@@ -72,7 +75,8 @@ class WrapperedPoseEstLimelight:
         #res = self.cam.getLatestResult()
         # broken in photonvision 2.4.2. Hack with the non-broken latency calcualtion
         # TODO: in 2025, fix this to actually use the real latency
-        latency = 0.05  # a total guess
+        self.latency = self.cam.get_latency_total()
+        latency = self.latency # a total guess
         obsTime = wpilib.Timer.getFPGATimestamp() - latency
 
         # Update our disconnected fault since we have something from the camera
@@ -89,11 +93,15 @@ class WrapperedPoseEstLimelight:
             self.CamPublisher.set(bestCandidate)
             secondCandidate = self._toPose2d(botpose=self.cam.botposemeta2)
             self.MetaTag2CamPublisher.set(secondCandidate)
+            self.targetTransformation = self.getTargetPoseEstFormatted()
+            self.targetInView = self.getTargetIDInView()  # TODO: PLEASE FIX THIS.  we need to coordinate tag id+pos,
+            # TODO: so we can give the tag ids and their positions to the pose schemes and schemes decide to use what
         else:
             # Publish a 0 pose in networktables when we don't have an observation to
             # make it easier to understand what is happening in advantage scope.
             self.CamPublisher.set(Pose2d())
             self.MetaTag2CamPublisher.set(Pose2d())
+            self.targetTransformation = None
         self.targetLength = self.cam.get_april_length()
 
     def _adjust(self, pos):
@@ -102,8 +110,17 @@ class WrapperedPoseEstLimelight:
     def _toPose2d(self, botpose:list): #init: +9.0, +4.5
         #CAUSES WILD OSCILATION BETWEEN 180 and -180 or wtv:
         # return Pose3d(Translation3d(botpose[0], botpose[1], botpose[2]),Rotation3d(botpose[3], botpose[4], math.radians(botpose[5])),).toPose2d()
-
         return Pose2d(botpose[0], botpose[1], Rotation2d(math.radians(botpose[5]))) # initially: self._adjust(Pose3d())
+
+    def getTargetIDInView(self):
+        return self.cam.tid
+
+    def getTargetPoseEstFormatted(self):
+        if self.cam is not None:
+            tagPosition:tuple = (self.cam.targetPoseByRobot[2], self.cam.targetPoseByRobot[0])
+            return tagPosition
+        else:
+            return None
 
     def getPoseEstFormatted(self):
         if self.cam is not None:
@@ -143,10 +160,10 @@ class WrapperedPoseEstLimelight:
             return max(y, 1.0) #Theta of one radian is about 60 degrees
 
 
-def wrapperedLimilightCameraFactory(camName:str, robotToCam):
+def wrapperedLimilightCameraFactory(camName:str, robotToCam, pipeline_mode):
     if wpilib.RobotBase.isSimulation():
         print(f"In simulation substituting PhotonCamera for LimeLight Camera {camName}")
         wrapperedCam = WrapperedPoseEstPhotonCamera(camName, robotToCam)
     else:
-        wrapperedCam = WrapperedPoseEstLimelight(camName, robotToCam)
+        wrapperedCam = WrapperedPoseEstLimelight(camName, robotToCam, pipeline_mode)
     return wrapperedCam
