@@ -18,6 +18,7 @@ from humanInterface.driverInterface import DriverInterface
 from humanInterface.operatorInterface import OperatorInterface
 from humanInterface.ledControl import LEDControl
 from navigation.forceGenerators import PointObstacle
+from ultrasound.ultrasound import Ultrasound
 from utils.segmentTimeTracker import SegmentTimeTracker
 from utils.signalLogging import logUpdate, getNowLogger
 from utils.calibration import CalibrationWrangler
@@ -27,6 +28,8 @@ from utils.rioMonitor import RIOMonitor
 from utils.robotIdentification import RobotIdentification
 from utils.singleton import destroyAllSingletonInstances
 from utils.powerMonitor import PowerMonitor
+from utils.allianceTransformUtils import onRed
+from utils.units import deg2Rad
 
 from webserver.webserver import Webserver
 from AutoSequencerV2.autoSequencer import AutoSequencer
@@ -57,6 +60,8 @@ class MyRobot(wpilib.TimedRobot):
         self.arm = None
         if armDepConstants['HAS_ARM']:
             self.arm = ArmControl()
+
+        self.ultrasound = Ultrasound()
 
         self.elev = None
         if elevDepConstants['HAS_ELEVATOR']:
@@ -128,6 +133,9 @@ class MyRobot(wpilib.TimedRobot):
         self.stt.mark("Telemetry")
         self.logger2.logNow(nt._now())
 
+        self.ultrasound.update()
+        self.stt.mark("Ultrasound")
+
         self.ledCtrl.setAutoDrive(self.autodrive.isRunning())
         self.ledCtrl.setStuck(self.autodrive.rfp.isStuck())
         self.ledCtrl.update()
@@ -137,6 +145,11 @@ class MyRobot(wpilib.TimedRobot):
         self.count += 1
         self.stt.end()
         self.logger3.logNow(nt._now())
+
+        if self.autoSequencer.getMenuChange():
+            self.dashboard.resetWidgets()
+            self.dashboard = Dashboard()
+            self.autoSequencer.acknowledgeDashboardReset()
 
     #########################################################
     ## Autonomous-Specific init and update
@@ -200,12 +213,14 @@ class MyRobot(wpilib.TimedRobot):
             # that if auto hasn't run, we set our default poss to the default, or selected autonoumous pose?
             # -Thanks Coach Mike
             if not self.autoHasRun:
-                self.driveTrain.poseEst.setKnownPose(
-                    Pose2d(1.0, 1.0, Rotation2d(0.0))
-                )
-                self.driveTrain.tcPoseEst.setKnownPose(
-                    Pose2d(1.0, 1.0, Rotation2d(0.0))
-                )
+                if onRed():
+                    self.driveTrain.poseEst.setKnownPose(
+                        Pose2d(10.4279, 3.722, Rotation2d(0))
+                    )
+                else:
+                    self.driveTrain.poseEst.setKnownPose(
+                        Pose2d(7.1411, 3.722, Rotation2d(deg2Rad(180)))
+                    )
 
         if armDepConstants['HAS_ARM']:
             self.arm.initialize()

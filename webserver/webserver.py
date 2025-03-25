@@ -62,3 +62,6 @@ class Webserver(metaclass=Singleton):
     def addDashboardWidget(self, widget):
         widget.idx = len(dashboardWidgetList)
         dashboardWidgetList.append(widget)
+
+    def clearDashboardWidget(self):
+        dashboardWidgetList.clear()
