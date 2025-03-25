@@ -75,38 +75,40 @@ class PlaceL4V5(SetupScheme):
                 if self.completedAwait("awaitForCmd2", 0.2):
                     self.nextState()
             case 2:
-                elevGoalReached = math.isclose(self.elev.getPosition(), self.elevPlacePos, abs_tol=0.5)
+                elevGoalReached = math.isclose(self.elev.getPosition(), self.elevPlacePos, abs_tol=1) #og 0.5
                 armGoalReached = math.isclose(self.arm.getPosition(), self.armPlacePos, abs_tol=2.5)  # is abs_tol good?
-                baseGoalReached = self.completedTrajectory(self.base)
+                baseGoalReached = self.completedTrajectory(self.base, 1.5, 3)
                 if (elevGoalReached and armGoalReached and baseGoalReached) or self.oInt.skipNext:
                     self.nextState()
                 else:
                     self.localProg = sum([elevGoalReached, armGoalReached, baseGoalReached])/3
             case 3:
-                # elevCmdOIntNorm = self.oInt.elevatorPosYCmd * 10
-                # armCmdOIntNorm = self.oInt.armPosYCmd * 30
-                # xCmdDIntNorm = self.dInt.getVelXCmd() * MAX_FWD_REV_SPEED_MPS
-                # yCmdDIntNorm = self.dInt.getVelYCmd() * MAX_FWD_REV_SPEED_MPS
-                # elevCmdOIntNew = elevCmdOIntNorm*0.02
-                # armCmdOIntNew = armCmdOIntNorm*0.02
-                # xCmdDIntNew = xCmdDIntNorm*0.02
-                # yCmdDIntNew = yCmdDIntNorm*0.02
-                # self.setArmCommand(None, armCmdOIntNew)
-                # self.setElevatorCommand(None, elevCmdOIntNew)
-                # self.basePrimitiveCmd = (xCmdDIntNew, yCmdDIntNew, 0)
+                elevCmdOIntNorm = self.oInt.elevatorPosYCmd * 10
+                armCmdOIntNorm = self.oInt.armPosYCmd * 30
+                xCmdDIntNorm = self.dInt.getVelXCmd() * MAX_FWD_REV_SPEED_MPS
+                yCmdDIntNorm = self.dInt.getVelYCmd() * MAX_FWD_REV_SPEED_MPS
+                elevCmdOIntNew = elevCmdOIntNorm*0.02
+                armCmdOIntNew = armCmdOIntNorm*0.02
+                xCmdDIntNew = xCmdDIntNorm*0.02
+                yCmdDIntNew = yCmdDIntNorm*0.02
+                self.setArmCommand(None, armCmdOIntNew)
+                self.setElevatorCommand(None, elevCmdOIntNew)
+                self.basePrimitiveCmd = (xCmdDIntNew, yCmdDIntNew, 0)
                 if self.oInt.launchPlacement:
                     self.nextState()
             case 4:
                 self.basePrimitiveCmd = None
                 self.setArmCommand(50, -15)
-                armGoalReached = math.isclose(self.arm.getPosition(), self.armPlacePos, abs_tol=0.75)
+                self.bestTag = self.placementIntel.decidePlacementPose(self.pdSideOfReef, self.inchesToMeters(20))
+                self.setDriveTrainBaseCommand(self.bestTag)
+                armGoalReached = math.isclose(self.arm.getPosition(), self.armPlacePos, abs_tol=5)
                 if armGoalReached or self.oInt.skipNext:
                     self.nextState()
             case 5:
                 self.setArmCommand(-15, 0)
-                self.bestTag = self.placementIntel.decidePlacementPose(self.pdSideOfReef, self.inchesToMeters(10))
+                self.bestTag = self.placementIntel.decidePlacementPose(self.pdSideOfReef, self.inchesToMeters(20))
                 self.setDriveTrainBaseCommand(self.bestTag)
-                if self.completedTrajectory(self.base) or self.oInt.skipNext:
+                if self.completedTrajectory(self.base, 2, 4) or self.oInt.skipNext:
                     self.nextState()
             case 6:
                 pass
