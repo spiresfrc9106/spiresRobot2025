@@ -2,7 +2,7 @@ import { CircularGauge } from './circularGauge.js'
 import { Icon } from './icon.js'
 import { Camera } from './camera.js'
 import { LineGauge } from './lineGauge.js'
-import { ProgressBar } from './progressBar.js'
+import { ProgressBar } from './progressBar.js?v=${VERSION_FRESH}'
 import { Text } from './text.js'
 import { AutoChooser } from './autoChooser.js'
 import { SwerveState } from './swerveState.js'
@@ -63,6 +63,7 @@ ${WIDGETS_CALLBACK}
 
 
 window.connectedForState = false
+window.attemptingReconnect = false
 
 
 window.widID = {
@@ -80,7 +81,34 @@ if (state=="1" || state=="2" || state=="3" || state=="4" || state=="5" || state=
 window.connectedForState = true
 }
 
+if (window.attemptingReconnect == true) {
+
+yavinSetWidgetAppearance(window.widID.field, 2, 5, 0.9, 0)
+yavinSetWidgetAppearance(window.widID.state, 30, 40, 1, 1)
+yavinSetWidgetAppearance(window.widID.errors, 0, 10, 1, 0)
+yavinSetWidgetAppearance(window.widID.auton1, 35, 5, 1, 0)
+yavinSetWidgetAppearance(window.widID.auton2, 35, 20, 1, 0)
+yavinSetWidgetAppearance(window.widID.left, 92, 5, 1, 0)
+yavinSetWidgetAppearance(window.widID.right, 92, 19, 1, 0)
+yavinSetWidgetAppearance(window.widID.arm, 79, 5, 0.5, 0)
+yavinSetWidgetAppearance(window.widID.elev, 79, 27, 0.5, 0)
+yavinSetWidgetAppearance(window.widID.chain, 0, 10, 1, 0)
+yavinSetWidgetAppearance(window.widID.progress, 0, 10, 1, 0)
+yavinSetWidgetAppearance(window.widID.camFL, 0, 10, 1, 0)
+yavinSetWidgetAppearance(window.widID.camFR, 0, 10, 1, 0)
+yavinSetWidgetAppearance(window.widID.camBR, 0, 10, 1, 0)
+
+if (state != '****') {
+clearInterval(window.quickOutputOfThis);
+window.location.reload();
+}
+}
+
 if (window.connectedForState) {
+if (state == '****') {
+window.attemptingReconnect = true;
+return false;
+}
 var state = Number(state)
 
 yavinShowExtraWidgets(14,1)
@@ -267,7 +295,7 @@ window.widScale[id] = scale;
 }
 
 
-var quickOutputOfThis = setInterval(checkForStateChange,10)
-console.log("interval id: "+quickOutputOfThis)
+window.quickOutputOfThis = setInterval(checkForStateChange,10)
+console.log("interval id: "+window.quickOutputOfThis)
 
 

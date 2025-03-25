@@ -58,7 +58,9 @@ class WrapperedPoseEstLimelight:
         self.targetTransformation = None
         self.targetInView = None
         self.targetLength = 0
+        self.latency = 0
         addLog("ytest_targets_limelight_seen", lambda: self.targetLength, "")
+        addLog(f"ytest_{camName}total_latency", lambda: self.latency, '')
 
     def update(self, prevEstPose:Pose2d):
         self.cam.update()
@@ -73,7 +75,8 @@ class WrapperedPoseEstLimelight:
         #res = self.cam.getLatestResult()
         # broken in photonvision 2.4.2. Hack with the non-broken latency calcualtion
         # TODO: in 2025, fix this to actually use the real latency
-        latency = 0.05  # a total guess
+        self.latency = self.cam.get_latency_total()
+        latency = self.latency # a total guess
         obsTime = wpilib.Timer.getFPGATimestamp() - latency
 
         # Update our disconnected fault since we have something from the camera

@@ -17,7 +17,7 @@ from drivetrain.DrivetrainDependentConstants import drivetrainDepConstants
 
 # if you can't find something here, it's probably in the _setup file.
 
-class PlaceL4V3(SetupScheme):
+class PlaceL4V4(SetupScheme):
     def __init__(self, arm, base, elev, oInt):
         super().__init__(arm=arm, base=base, elev=elev)
         self.arm = arm

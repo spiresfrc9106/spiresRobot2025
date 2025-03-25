@@ -341,6 +341,10 @@ class Limelight:
         temporary_check = self.table.getNumberArray('rawfiducials', [])
         return len(temporary_check)/7
 
+    def get_latency_total(self):
+        latency = self.table.getEntry('tl').getDouble(0) + self.table.getEntry('cl').getDouble(0)
+        return latency / 1000
+
     def april_tag_exists(self) -> bool:
         """
         Checks if an AprilTag exists within the limelight's field of view.

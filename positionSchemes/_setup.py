@@ -28,6 +28,8 @@ class SetupScheme:
         self.elevCmd = None
         self.basePrimitiveCmd = None
         self.bestTag = Pose2d()
+        self.initMax = 100
+        self.initLoc = 0
 
     def nextState(self):
         self.currentState = self.currentState + 1
@@ -48,7 +50,28 @@ class SetupScheme:
         else:
             return False
 
-    def completedTrajectory(self, base):
+    def updateProgressTrajectory(self):
+        if self.initLoc != self.bestTag:
+            self.initMax = self.getFullDistanceSubjective()
+        self.initLoc = self.bestTag
+        current = self.getFullDistanceSubjective()
+        progress = (self.initMax-current)/self.initMax
+        self.localProg = max(progress, self.localProg)
+
+    def getFullDistanceSubjective(self):
+        desPose = self.bestTag
+        curPose = self.setupBase.tcPoseEst.getCurEstPose()
+        desX = YPose(desPose).x
+        desY = YPose(desPose).y
+        desT = YPose(desPose).t
+        curX = YPose(curPose).x
+        curY = YPose(curPose).y
+        curT = YPose(curPose).t
+        dist_translate = math.sqrt(pow((desX-curX), 2)+pow((desY-curY), 2))
+        dist_rotate = abs(curT-desT)
+        return dist_translate+dist_rotate
+
+    def completedTrajectory(self, base, max_in=1, max_deg=1):
         desPose = self.bestTag
         curPose = base.tcPoseEst.getCurEstPose()
         desX = YPose(desPose).x
@@ -59,7 +82,7 @@ class SetupScheme:
         curT = YPose(curPose).t
         dist_translate = math.sqrt(pow((desX-curX), 2)+pow((desY-curY), 2))
         dist_rotate = abs(curT-desT)
-        return dist_translate < in2m(1) and dist_rotate < 1
+        return dist_translate < in2m(max_in) and dist_rotate < max_deg
 
 
     def setDriveTrainBaseCommand(self, pose: Pose2d | None, vxMps: float = 0.0, vyMps: float = 0.0, vtRadps: float = 0.0):
