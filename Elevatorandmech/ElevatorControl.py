@@ -349,9 +349,9 @@ class ElevatorControl(metaclass=Singleton):
         vFF = 0
 
         if enablePosMove:
-            self.motor.setPosCmd(motorPosCmdRad, vFF)
+            self.fMotor.setPosCmd(motorPosCmdRad, vFF)
         else:
-            self.motor.setVoltage(0)
+            self.fMotor.setVoltage(0)
 
     def _perhapsWeHaveANewRangeCheckedDesiredState(self, elevatorCommand: ElevatorCommand )->TrapezoidProfile.State:
 
