@@ -246,10 +246,10 @@ class ElevatorControl(metaclass=Singleton):
         return  motorRad * (1/ELEV_GEARBOX_GEAR_RATIO) * ELEV_SPOOL_RADIUS_IN + self.minHeightIn
 
     def _motorRadToHeightIn(self, motorRad: float) -> float:
-        return  self._offsetFreeRMotorRadToHeightIn(motorRad-self.relEncOffsetRad)
+        return  self._offsetFreeRMotorRadToHeightIn(motorRad+self.relEncOffsetRad)
 
     def _heightInToMotorRad(self, elevHeightIn: float) -> float:
-        return ( (elevHeightIn - self.minHeightIn) / ELEV_SPOOL_RADIUS_IN) * ELEV_GEARBOX_GEAR_RATIO + self.relEncOffsetRad
+        return ( (elevHeightIn - self.minHeightIn) / ELEV_SPOOL_RADIUS_IN) * ELEV_GEARBOX_GEAR_RATIO - self.relEncOffsetRad
     
     def _heightVelInpsToMotorVelRadps(self, elevVelInps: float) -> float:
         return (elevVelInps / ELEV_SPOOL_RADIUS_IN) * ELEV_GEARBOX_GEAR_RATIO
@@ -305,13 +305,13 @@ class ElevatorControl(metaclass=Singleton):
                 self.trapProfiler = TrapezoidProfile(
                     TrapezoidProfile.Constraints(self.calMaxVelocityInps.get(),
                                                  self.calMaxAccelerationInps2.get()))
-                self.desTrapPState = TrapezoidProfile.State(positionIn, 0)
-                self.curTrapPState = TrapezoidProfile.State(positionIn, 0)
+                self.desTrapPState = TrapezoidProfile.State(self.getHeightIn(), 0)
+                self.curTrapPState = TrapezoidProfile.State(self.getHeightIn(), 0)
                 self._changeState(ElevatorStates.OPERATING)
             else:
                 self._setMotorPosAndFF()
 
-    def _setMotorPosAndFF(self) -> None:
+    def _setMotorPosAndFF(self, enablePosMove=True) -> None:
         oldVelocityInps = self.curTrapPState.velocity
 
         # This method is called both when initializing the object in the uninitialized state and when operating
@@ -348,7 +348,10 @@ class ElevatorControl(metaclass=Singleton):
 
         vFF = 0
 
-        self.fMotor.setPosCmd(motorPosCmdRad, vFF)
+        if enablePosMove:
+            self.motor.setPosCmd(motorPosCmdRad, vFF)
+        else:
+            self.motor.setVoltage(0)
 
     def _perhapsWeHaveANewRangeCheckedDesiredState(self, elevatorCommand: ElevatorCommand )->TrapezoidProfile.State:
 
@@ -432,7 +435,7 @@ class ElevatorControl(metaclass=Singleton):
 
 
     def _forceStartAtHeightZeroIn(self) -> None:
-        self.relEncOffsetRad = self.fMotor.getMotorPositionRad()
+        self.relEncOffsetRad = 0.0 - self.fMotor.getMotorPositionRad()
 
     def _changeState(self, newState: ElevatorStates) -> None:
         print(f"time = {Timer.getFPGATimestamp():.3f}s changing from elevator state {self.state} to {newState.name}({newState})")

@@ -19,7 +19,6 @@ from utils.robotIdentification import RobotIdentification, RobotTypes
 from utils.signalLogging import  addLog, getNowLogger
 from utils.singleton import Singleton
 from utils.units import sign
-from wrappers.wrapperedRevThroughBoreEncoder import WrapperedRevThroughBoreEncoder
 from wrappers.wrapperedSparkMax import WrapperedSparkMax
 from wrappers.motorStallDetector import MotorPosStallDetector
 
@@ -37,9 +36,10 @@ class ArmDependentConstants:
                 "ARM_ANGLE_AT_CURRENT_LIMIT_GOING_UP": 100,
                 "MAX_ARM_POS_DEG": 90,
                 "MIN_ARM_POS_DEG": -90,
+                "MAX_SEARCH_ARM_VEL_DEGPS": 4,
+                "MAX_SEARCH_ARM_ACCEL_DEGPS2": 4,
                 "MAX_ARM_VEL_DEGPS": 20,
                 "MAX_ARM_ACCEL_DEGPS2": 4,
-                "ABS_SENSOR_MOUNT_OFFSET_DEG": 0.0,
                 "ABS_SENSOR_INVERTED": True,
             },
             RobotTypes.Spires2025: {
@@ -48,13 +48,14 @@ class ArmDependentConstants:
                 "ARM_M_CANID": 23,
                 "ARM_M_INVERTED": False,
                 "ARM_M_INITIALIZING_CURRENT_LIMIT_A": 10, # xyzzy CAUTION we're not using this yet
-                "ARM_M_OPERATING_CURRENT_LIMIT_A": 20,
-                "ARM_ANGLE_AT_CURRENT_LIMIT_GOING_UP": 100,
-                "MAX_ARM_POS_DEG": 92,
-                "MIN_ARM_POS_DEG": -92,
+                "ARM_M_OPERATING_CURRENT_LIMIT_A": 40,
+                "ARM_ANGLE_AT_CURRENT_LIMIT_GOING_UP": 92,
+                "MAX_ARM_POS_DEG": 90,
+                "MIN_ARM_POS_DEG": -90,
+                "MAX_SEARCH_ARM_VEL_DEGPS": 60,
+                "MAX_SEARCH_ARM_ACCEL_DEGPS2": 60*4,
                 "MAX_ARM_VEL_DEGPS": 720, # Was 180
                 "MAX_ARM_ACCEL_DEGPS2": 720*4, # Was 720
-                "ABS_SENSOR_MOUNT_OFFSET_DEG": -50.0-20.0, # - 10, # Change this when the arm absolute encoder is installed
                 "ABS_SENSOR_INVERTED": False,
             },
             RobotTypes.Spires2025Sim: {
@@ -67,9 +68,10 @@ class ArmDependentConstants:
                 "ARM_ANGLE_AT_CURRENT_LIMIT_GOING_UP": 100,
                 "MAX_ARM_POS_DEG": 90,
                 "MIN_ARM_POS_DEG": -92,
+                "MAX_SEARCH_ARM_VEL_DEGPS": 60,
+                "MAX_SEARCH_ARM_ACCEL_DEGPS2": 60*4,
                 "MAX_ARM_VEL_DEGPS": 90,
                 "MAX_ARM_ACCEL_DEGPS2": 180,
-                "ABS_SENSOR_MOUNT_OFFSET_DEG": 0.0,
                 "ABS_SENSOR_INVERTED": False,
             },
             RobotTypes.SpiresTestBoard: {
@@ -82,9 +84,10 @@ class ArmDependentConstants:
                 "ARM_ANGLE_AT_CURRENT_LIMIT_GOING_UP": 170,
                 "MAX_ARM_POS_DEG": 160,
                 "MIN_ARM_POS_DEG": -160,
+                "MAX_SEARCH_ARM_VEL_DEGPS": 4,
+                "MAX_SEARCH_ARM_ACCEL_DEGPS2": 4,
                 "MAX_ARM_VEL_DEGPS": 90,
                 "MAX_ARM_ACCEL_DEGPS2": 90,
-                "ABS_SENSOR_MOUNT_OFFSET_DEG": -90.0+90.0,
                 "ABS_SENSOR_INVERTED": False,
             },
             RobotTypes.SpiresRoboRioV1: {
@@ -97,9 +100,10 @@ class ArmDependentConstants:
                 "ARM_ANGLE_AT_CURRENT_LIMIT_GOING_UP": 170,
                 "MAX_ARM_POS_DEG": 160,
                 "MIN_ARM_POS_DEG": -160,
+                "MAX_SEARCH_ARM_VEL_DEGPS": 4,
+                "MAX_SEARCH_ARM_ACCEL_DEGPS2": 4,
                 "MAX_ARM_VEL_DEGPS": 90,
                 "MAX_ARM_ACCEL_DEGPS2": 0,
-                "ABS_SENSOR_MOUNT_OFFSET_DEG": -90.0,
                 "ABS_SENSOR_INVERTED": False,
             },
         }
@@ -115,14 +119,13 @@ ARM_M_INVERTED = armDepConstants['ARM_M_INVERTED']
 ARM_M_INITIALIZING_CURRENT_LIMIT_A = armDepConstants['ARM_M_INITIALIZING_CURRENT_LIMIT_A'] # xyzzy CAUTION we're not using this yet
 ARM_M_OPERATING_CURRENT_LIMIT_A = armDepConstants['ARM_M_OPERATING_CURRENT_LIMIT_A']
 ARM_GEARBOX_GEAR_RATIO = armDepConstants['ARM_GEARBOX_GEAR_RATIO']
-ABS_SENSOR_MOUNT_OFFSET_DEG = armDepConstants['ABS_SENSOR_MOUNT_OFFSET_DEG']
 ABS_SENSOR_INVERTED = armDepConstants['ABS_SENSOR_INVERTED']
-
-
 
 ARM_ANGLE_AT_CURRENT_LIMIT_GOING_UP = armDepConstants['ARM_ANGLE_AT_CURRENT_LIMIT_GOING_UP']
 MAX_ARM_POS_DEG = armDepConstants['MAX_ARM_POS_DEG']
 MIN_ARM_POS_DEG = armDepConstants['MIN_ARM_POS_DEG']
+MAX_SEARCH_ARM_VEL_DEGPS = armDepConstants['MAX_SEARCH_ARM_VEL_DEGPS']
+MAX_SEARCH_ARM_ACCEL_DEGPS2 = armDepConstants['MAX_SEARCH_ARM_ACCEL_DEGPS2']
 MAX_ARM_VEL_DEGPS = armDepConstants['MAX_ARM_VEL_DEGPS']
 MAX_ARM_ACCEL_DEGPS2 = armDepConstants['MAX_ARM_ACCEL_DEGPS2']
 
@@ -160,8 +163,8 @@ class ArmControl(metaclass=Singleton):
         self.calMaxVelocityDegps = Calibration(name="Arm Max Vel", default=MAX_ARM_VEL_DEGPS, units="degps")
         self.calMaxAccelerationDegps2 = Calibration(name="Arm Max Accel", default=MAX_ARM_ACCEL_DEGPS2, units="degps2")
 
-        self.calSearchMaxVelocityDegps = Calibration(name="Arm Search Max Vel", default=4, units="degps")
-        self.calSearchMaxAccelerationDegps2 = Calibration(name="Arm Search Max Accel", default=4, units="degps2")
+        self.calSearchMaxVelocityDegps = Calibration(name="Arm Search Max Vel", default=MAX_SEARCH_ARM_VEL_DEGPS, units="degps")
+        self.calSearchMaxAccelerationDegps2 = Calibration(name="Arm Search Max Accel", default=MAX_SEARCH_ARM_ACCEL_DEGPS2, units="degps2")
 
         self.calArmInitializingCurrentLimitA = Calibration(name="Arm INITIALIZING_CURRENT_LIMIT_A", default=ARM_M_INITIALIZING_CURRENT_LIMIT_A, units="A")
         self.calArmOperatingCurrentLimitA = Calibration(name="Arm OPERATING_CURRENT_LIMIT_A", default=ARM_M_OPERATING_CURRENT_LIMIT_A, units="A")
@@ -184,11 +187,6 @@ class ArmControl(metaclass=Singleton):
         self.motor.setInverted(motorIsInverted)
 
         self.stallDectector = MotorPosStallDetector(f"{self.name}/stall", self.motor, stallCurrentLimitA=self.motor.currentLimitA, stallTimeLimitS=0.2)
-
-        # Rev Absolute Encoder
-        self.encoder = WrapperedRevThroughBoreEncoder(port=9, name=f"{self.name}",
-                                                      mountOffsetRad=math.radians(ABS_SENSOR_MOUNT_OFFSET_DEG),
-                                                      dirInverted=ABS_SENSOR_INVERTED)
 
         self._initialized = False
 
@@ -246,7 +244,6 @@ class ArmControl(metaclass=Singleton):
 
             self._largestAngleDeg = -180.0
 
-            addLog(f"{self.name}/abs_encoder_act_pos_deg", lambda: self.getAbsAngleDeg(), "deg")
             addLog(f"{self.name}/_largestAngleDeg", lambda: self._largestAngleDeg, "deg")
             addLog(f"{self.name}/state", lambda: self.state.value, "int")
             addLog(f"{self.name}/act_pos_deg", lambda: self.actTrapPState.position, "deg")
@@ -299,14 +296,7 @@ class ArmControl(metaclass=Singleton):
     def _getVelocityDegps(self) -> float:
         return self._noOffsetMotorRadToAngleDeg(self.motor.getMotorVelocityRadPerSec())
 
-    #return the angle of the arm as measured by the absolute sensor in angles
-    def getAbsAngleDeg(self) -> float:
-        angleAbsSenDeg = math.degrees(self.encoder.getAngleRad())
-        #return angleAbsSenDeg - ABS_SENSOR_MOUNT_OFFSET_DEG
-        return angleAbsSenDeg
-
     def update(self) -> None:
-        self.encoder.update()
         self.motor.getMotorPositionRad()
         self.stallDectector.update()
 
@@ -355,16 +345,15 @@ class ArmControl(metaclass=Singleton):
                 self.trapProfiler = TrapezoidProfile(
                     TrapezoidProfile.Constraints(self.calMaxVelocityDegps.get(),
                                                  self.calMaxAccelerationDegps2.get()))
-                self.desTrapPState = TrapezoidProfile.State(positionDeg, 0)
-                self.curTrapPState = TrapezoidProfile.State(positionDeg, 0)
+                self.desTrapPState = TrapezoidProfile.State(self._getRelAngleWithOffsetDeg(), 0)
+                self.curTrapPState = TrapezoidProfile.State(self._getRelAngleWithOffsetDeg(), 0)
                 self.motor.setSmartCurrentLimit(self.calArmOperatingCurrentLimitA.get())
                 self.stallDectector.stallCurrentLimitA = self.motor.currentLimitA
                 self._changeState(ArmStates.OPERATING)
             else:
                 self._setMotorPosAndFF()
 
-
-    def _setMotorPosAndFF(self) -> None:
+    def _setMotorPosAndFF(self, enablePosMove=True) -> None:
         oldVelocityDegps = self.curTrapPState.velocity
 
         # This method is called both when initializing the object in the uninitialized state and when operating
@@ -401,7 +390,10 @@ class ArmControl(metaclass=Singleton):
 
         vFF = 0
 
-        self.motor.setPosCmd(motorPosCmdRad, vFF)
+        if enablePosMove:
+            self.motor.setPosCmd(motorPosCmdRad, vFF)
+        else:
+            self.motor.setVoltage(0)
 
     def _perhapsWeHaveANewRangeCheckedDesiredState(self, armCommand: ArmCommand)->TrapezoidProfile.State:
 
@@ -476,7 +468,7 @@ class ArmControl(metaclass=Singleton):
         if self.kP.isChanged():
             self.motor.setPID(self.kP.get(), 0.0, 0.0)
 
-        self._setMotorPosAndFF()
+        self._setMotorPosAndFF(enablePosMove=True)
 
         self.previousVelDegps = self.actualVelDegps
         self.previousUpdateTimeS = self.currentUpdateTimeS
@@ -484,9 +476,7 @@ class ArmControl(metaclass=Singleton):
 
 
     def _forceStartAtAngleDeg(self, angleDeg:float) -> None:
-        # CAUTION, When the absolute encoder is re-installed don't change here.
-        # change this ABS_SENSOR_MOUNT_OFFSET_DEG instead.
-        self.relEncOffsetRad = self.motor.getMotorPositionRad()+self._angleDegToMotorRadNoOffset(angleDeg)
+        self.relEncOffsetRad = self._angleDegToMotorRadNoOffset(angleDeg) - self.motor.getMotorPositionRad()
 
     def _changeState(self, newState: ArmStates) -> None:
         print(f"time = {Timer.getFPGATimestamp():.3f}s changing from arm state {self.state} to {newState}")
