@@ -81,7 +81,7 @@ class PlaceL4V5(SetupScheme):
                     self.nextState()
             case 3:
                 elevGoalReached = math.isclose(self.elev.getPosition(), self.elevPlacePos, abs_tol=0.5)
-                armGoalReached = math.isclose(self.arm.getPosition(), self.armPlacePos, abs_tol=2.5)  # is abs_tol# good?
+                armGoalReached = math.isclose(self.arm.getPosition(), self.armPlacePos, abs_tol=2.5)  # is abs_tol good?
                 baseGoalReached = self.completedTrajectory(self.base)
                 if (elevGoalReached and armGoalReached and baseGoalReached) or self.oInt.skipNext:
                     self.nextState()
@@ -119,5 +119,4 @@ class PlaceL4V5(SetupScheme):
                 pass
 
         state_max = 7
-        # when calculating the scheme prog, we can also add in local progress to show something as we go thru state.
-        self.schemeProg = min((self.currentState+self.localProg) / (state_max), 1)
+        self.schemeProg = min((self.currentState+(self.localProg*0.9)) / state_max, 1)

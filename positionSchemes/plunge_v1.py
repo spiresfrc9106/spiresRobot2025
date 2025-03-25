@@ -46,11 +46,16 @@ class PlungeV1(SetupScheme):
         addLog("yvn_current_plunge_state", lambda: self.currentState, "")
         addLog("yvn_plunge_runs", lambda: self.totalRuns, "")  # test purposes, not needed at all.
 
-        self.elevHeightOfPen = 30.6875
-        self.elevHeightOfCoralTouch = 33.6875
-        self.elevSafestPlungeHeight = self.elevHeightOfPen*0.5+self.elevHeightOfCoralTouch*0.5-2-1
-        # change this number to actual!!!!!!
-        # !!!!!!!!!!!!!!!!!! and change the elev const.
+        # DOWN HEIGHT
+        self.elevSafestPlungeHeight_in = 32.1875 - 2 - 1
+        
+        # UP HEIGHT
+        self.elevBestMediumHeight_in = self.elevConst.posMedium
+        
+        # RESET HEIGHT
+        self.axisToCenterOfCoral_in = 22.5
+        # pivot is 8 inches from the edge/center of the robot
+        self.elevSafestResetHeight_in = self.elevSafestPlungeHeight_in + self.axisToCenterOfCoral_in
 
     def update(self):
         currentTime = Timer.getFPGATimestamp()
@@ -58,9 +63,8 @@ class PlungeV1(SetupScheme):
         self.setDriveTrainBaseCommand(None)  # because this never changes, we're not going to bother with it.
         match self.currentState:
             case 0:  # initializing
-                # this is in case the elev was at the bottom and someone pressed plunge
-                if self.elev.getPosition() < self.elevSafestPlungeHeight + 9:
-                    self.elevCmd = (self.elevSafestPlungeHeight + 10, 0)
+                if self.elev.getPosition() < self.elevSafestPlungeHeight_in + 9:
+                    self.elevCmd = (self.elevSafestPlungeHeight_in + 10, 0)
                 else:
                     self.nextState()
             case 1:
@@ -70,18 +74,18 @@ class PlungeV1(SetupScheme):
                     self.nextState()
             case 2:  #
                 self.armCmd = (-90, 0)
-                self.elevCmd = (self.elevSafestPlungeHeight, 0)
-                if math.isclose(self.elev.getPosition(), self.elevSafestPlungeHeight, abs_tol=0.5):
+                self.elevCmd = (self.elevSafestPlungeHeight_in, 0)
+                if math.isclose(self.elev.getPosition(), self.elevSafestPlungeHeight_in, abs_tol=0.5):
                     self.nextState()
             case 3:
                 if self.completedAwait("bottomWait", 0.5):
                     self.nextState()
             case 4:
-                self.elevCmd = (self.elevConst.posMedium, 0)
+                self.elevCmd = (self.elevBestMediumHeight_in, 0)
                 if self.completedAwait("waterfallElevUp", 0.1):
                     self.nextState()
             case 5:
-                if self.elev.getPosition() > self.elevConst.posMedium-1:
+                if self.elev.getPosition() > self.elevBestMediumHeight_in-1:
                     self.armCmd = (90, 0)
                 if math.isclose(self.arm.getPosition(), 90, abs_tol=2):
                     self.nextState()
@@ -91,6 +95,4 @@ class PlungeV1(SetupScheme):
                 pass
 
         state_max = 6
-
-        # when calculating the scheme prog, we can also add in local progress to show something as we go through state.
-        self.schemeProg = min((self.currentState + 1) / (state_max + 1), 1)
+        self.schemeProg = min((self.currentState+(self.localProg*0.9)) / state_max, 1)

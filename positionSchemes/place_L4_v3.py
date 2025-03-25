@@ -85,5 +85,4 @@ class PlaceL4V3(SetupScheme):
                 pass
 
         state_max = 3
-        # when calculating the scheme prog, we can also add in local progress to show something as we go thru state.
         self.schemeProg = min((self.currentState+(self.localProg*0.9)) / state_max, 1)

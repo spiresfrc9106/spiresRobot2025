@@ -42,7 +42,7 @@ class ElevatorDependentConstants:
                 "ELEV_BM_CANID": 16,
                 "ELEV_M_INITIALIZING_CURRENT_LIMIT_A": 40,
                 "ELEV_M_OPERATING_CURRENT_LIMIT_A": 60,
-                "ELEVATOR_RANGE_IN": 47, #was 46 was 47
+                "ELEVATOR_RANGE_IN": 46,  # reverted to 46 from 47 bc we tightened rope
                 "ELEV_GEARBOX_GEAR_RATIO": 3.0 / 1.0,
                 "ELEV_SPOOL_RADIUS_IN": 1.660 / 2.0,
                 "MAX_ELEV_VEL_INPS": 60.0,
