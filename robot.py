@@ -17,6 +17,7 @@ from humanInterface.driverInterface import DriverInterface
 from humanInterface.operatorInterface import OperatorInterface
 from humanInterface.ledControl import LEDControl
 from navigation.forceGenerators import PointObstacle
+from ultrasound.ultrasound import Ultrasound
 from utils.segmentTimeTracker import SegmentTimeTracker
 from utils.signalLogging import logUpdate, getNowLogger
 from utils.calibration import CalibrationWrangler
@@ -57,6 +58,8 @@ class MyRobot(wpilib.TimedRobot):
         self.arm = None
         if armDepConstants['HAS_ARM']:
             self.arm = ArmControl()
+
+        self.ultrasound = Ultrasound()
 
         self.elev = None
         if elevDepConstants['HAS_ELEVATOR']:
@@ -127,6 +130,9 @@ class MyRobot(wpilib.TimedRobot):
             self.driveTrain.poseEst._telemetry.setCurObstacles(self.autodrive.rfp.getObstacleStrengths())
         self.stt.mark("Telemetry")
         self.logger2.logNow(nt._now())
+
+        self.ultrasound.update()
+        self.stt.mark("Ultrasound")
 
         self.ledCtrl.setAutoDrive(self.autodrive.isRunning())
         self.ledCtrl.setStuck(self.autodrive.rfp.isStuck())
