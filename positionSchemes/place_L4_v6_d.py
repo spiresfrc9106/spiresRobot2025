@@ -13,18 +13,15 @@ from humanInterface.operatorInterface import OperatorInterface, ReefLeftOrRight
 from humanInterface.driverInterface import DriverInterface
 from drivetrain.drivetrainPhysical import MAX_FWD_REV_SPEED_MPS,MAX_STRAFE_SPEED_MPS
 from wpimath.geometry import Pose2d
-from drivetrain.DrivetrainDependentConstants import drivetrainDepConstants
 
 # if you can't find something here, it's probably in the _setup file.
 
-class PlaceL4V3(SetupScheme):
+class PlaceL4V6D(SetupScheme):
     def __init__(self, arm, base, elev, oInt):
         super().__init__(arm=arm, base=base, elev=elev)
         self.arm = arm
         self.base = base
         self.elev = elev
-        self.oInt: OperatorInterface = oInt
-        self.dInt = DriverInterface()
         self.pdReefSideState = self.oInt.dPadState
         self.pdSideOfReef = -1
         if self.pdReefSideState == ReefLeftOrRight.RIGHT:
@@ -52,35 +49,31 @@ class PlaceL4V3(SetupScheme):
         addLog("yvn_current_placeL4_state", lambda: self.currentState, "")
         addLog("yvn_placeL4_runs", lambda: self.totalRuns, "")
         self.placementIntel = PlacementIntelligence(self.base)
-        # DEFINE THESE
-        self.elevPlacePos = 60
-        self.armPlacePos = 60
 
     def update(self):
         currentTime = Timer.getFPGATimestamp()
         time = currentTime - self.startTime
         match self.currentState:
-            case 0:  # initializing
-                # self.armCmd/elevCmd could be called here to prep for the fun thing.
-                self.bestTag = self.placementIntel.decidePlacementPose(0, self.inchesToMeters(21))
-                print(f"place l4 time = {Timer.getFPGATimestamp():.3f}s x={self.bestTag.X():+10.1f}m y={self.bestTag.Y():+10.1f}m t={self.bestTag.rotation().degrees():+10.1f}deg")
+            case 0:
+                self.bestTag = self.placementIntel.decidePlacementPose(0, self.inchesToMeters(20))
+                print(f"place l4 time = {Timer.getFPGATimestamp():.3f}s x={self.bestTag.x:+10.1f}m y={self.bestTag.y:+10.1f}m t={self.bestTag.rotation().degrees():+10.1f}deg")
                 self.setDriveTrainBaseCommand(self.bestTag)
-                # self.armCmd = (90, 0)  # straight up so no bumping.
-                if self.completedAwait("awaitBaseCmdRecognition", 0.2):
+                self.updateProgressTrajectory()
+                if self.completedTrajectory(self.base, 6, 5) or self.oInt.skipNext:
                     self.nextState()
             case 1:
-                self.updateProgressTrajectory()
-                if self.completedTrajectory(self.base, 4, 3) or self.oInt.skipNext:
+                self.bestTag = self.placementIntel.decidePlacementPose(self.pdSideOfReef, self.inchesToMeters(7))
+                self.setDriveTrainBaseCommand(self.bestTag)
+                if self.completedAwait("awaitForCmd1", 0.2):
                     self.nextState()
             case 2:
-                self.armCmd = (-15, 0)
-                self.bestTag = self.placementIntel.decidePlacementPose(self.pdSideOfReef, self.inchesToMeters(0))
-                self.setDriveTrainBaseCommand(self.bestTag)
-                self.updateProgressTrajectory()
-                if self.completedTrajectory(self.base) or self.oInt.skipNext:
+                baseGoalReached = self.completedTrajectory(self.base, 0.75, 3)
+                if baseGoalReached or self.oInt.skipNext:
                     self.nextState()
+                else:
+                    pass
             case 3:
-                self.setDriveTrainBaseCommand(None)
+                pass
             case _:
                 pass
 

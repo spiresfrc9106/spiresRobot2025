@@ -57,7 +57,7 @@ export class ProgressBar {
         if(this.hasData){
             displayValueStr = Math.round(this.curVal).toString();
         }
-        var text = "Progress: "+displayValueStr+"";
+        var text = "Progress: "; //+displayValueStr+"";
         this.ctx.fillText(text, this.titleTextAnchorX, this.titleTextAnchorY);
 
         this.drawGauge();

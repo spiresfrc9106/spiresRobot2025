@@ -19,7 +19,7 @@ class PlacementIntelligence():
         self.botLenY = in2m(drivetrainDepConstants['WIDTH']) # 0.6604
         self.indivBumperWidth = in2m(3.375) # 0.08575
         self.currentTarget = 0
-        self.shiftToNode_m = in2m(6.50)  # the distance from center to the right side of note of the center of robot front
+        self.shiftToNode_m = in2m(6.50)  # the distance from center to the right side of note of the center of robot's f
 
         addLog("yvn_current_placeL4_tag", lambda: self.currentTarget, "")
 
@@ -47,7 +47,7 @@ class PlacementIntelligence():
         best_tag = min(tagLocations, key=tagLocations.get)
         return best_tag
 
-    ###### FOR PLACEMENT
+    # FOR PLACEMENT
     def adjustLocationRobotRelative(self, og_pose: Pose2d, fb_shift, lr_shift):
         # fun very important math with yav dawg!
         # fb + is towards the april tag
@@ -146,8 +146,8 @@ class PickupIntelligence:
         self.poseEst = self.base.poseEst
         self.curPoseEst = self.poseEst.getCurEstPose()
         # all in meters
-        self.botLenX = in2m(drivetrainDepConstants['LENGTH']) # 0.8382
-        self.botLenY = in2m(drivetrainDepConstants['WIDTH']) # 0.6604
+        self.botLenX = in2m(drivetrainDepConstants['LENGTH'])  # 0.8382
+        self.botLenY = in2m(drivetrainDepConstants['WIDTH'])  # 0.6604
         self.indivBumperWidth = in2m(3.375)
 
     def decidePickupPose(self, extra_forward_m=0, manualSetTarget=0):

@@ -28,9 +28,7 @@ from Elevatorandmech.replaceWithYavinsPosesClass import YavinsPoseClassNoChange,
 from humanInterface.operatorInterface import OperatorInterface, ElevArmCmdState, ReefLeftOrRight
 from positionSchemes.plunge_v1 import PlungeV1
 from positionSchemes.pickup_v1 import PickupV1
-from positionSchemes.place_L4_v1 import PlaceL4V1
-from positionSchemes.place_L4_v2 import PlaceL4V2
-from positionSchemes.place_L4_v3 import PlaceL4V3
+from positionSchemes.place_L4_v6_o import PlaceL4V6O
 from positionSchemes.place_L4_v5 import PlaceL4V5
 from positionSchemes.place_L3_v1 import PlaceL3V1
 from positionSchemes.place_L2_v1 import PlaceL2V1
