@@ -44,8 +44,8 @@ class OperatorInterface(metaclass=Singleton):
 
 
         # Drivetrain motion commands
-        self.elevatorPosYCmd = 0
-        self.armPosYCmd = 0
+        self.elevatorVelYCmd = 0
+        self.armVelYCmd = 0
 
         # Driver motion rate limiters - enforce smoother driving
         #self.velXSlewRateLimiter = SlewRateLimiter(rateLimit=MAX_TRANSLATE_ACCEL_MPS2)
@@ -54,10 +54,9 @@ class OperatorInterface(metaclass=Singleton):
         self.skipNext = False
 
         # Logging
-        addLog("OI/Elevator Pos Cmd", lambda: self.elevatorPosYCmd, "frac")
-        addLog("OI/Elevator Pos In", lambda: self.getDesElevatorPosIn(), "in")
-        addLog("OI/Arm Pos Cmd", lambda: self.armPosYCmd, "frac")
-        addLog("OI/armPosYCmd", lambda: self.armPosYCmd, "frac")
+        addLog("OI/elevatorVelCmd", lambda: self.elevatorVelYCmd, "frac")
+        addLog("OI/elevator Pos In", lambda: self.getDesElevatorPosIn(), "in")
+        addLog("OI/armVelCmd", lambda: self.armVelYCmd, "frac")
         addLog("OI/elevArmCmdState", lambda: self.elevArmCmdState, "int")
         addLog("OI/ReefLeftOrRight", lambda: self.dPadState, "int")
 
@@ -85,19 +84,23 @@ class OperatorInterface(metaclass=Singleton):
             rightYJoyRaw = self.ctrl.getRightY() * -1 # TODO xyzzy talk to Benjamin about a better name for this
 
             # deadband
-            vYJoyWithDeadband = applyDeadband(leftYJoyRaw, 0.15)
-            vYJoy2WithDeadband = applyDeadband(rightYJoyRaw, 0.15) # TODO xyzzy talk to Benjamin about a better name for this
+            vElevJoyWithDeadband = applyDeadband(leftYJoyRaw, 0.05)
+            vArmJoyWithDeadband = applyDeadband(rightYJoyRaw, 0.05) # TODO xyzzy talk to Benjamin about a better name for this
 
-            self.elevatorPosYCmd = vYJoyWithDeadband
-            self.armPosYCmd = vYJoy2WithDeadband
+            slowMult = 1.0 if (self.ctrl.getRightBumper()) else 0.1
+            
+            self.elevatorVelYCmd = vElevJoyWithDeadband * slowMult
+            self.armVelYCmd = vArmJoyWithDeadband * slowMult
+
+            #print(f"elevatorVelYCmd={self.elevatorVelYCmd}")
+            
             self.skipNext = self.ctrl.getBackButtonPressed()
 
             updateReefSide = True
             self.launchPlacement = self.ctrl.getLeftBumperPressed()
 
-            if self.ctrl.getRightBumperPressed():
-                self.elevArmCmdState = ElevArmCmdState.VEL_CONTROL  # xyzzy redundant because this is also the default
-            elif self.ctrl.getLeftBumperPressed():
+
+            if self.ctrl.getLeftBumperPressed():
                 pass #self.elevArmCmdState = ElevArmCmdState.POS_CONTROL
             elif self.ctrl.getRightTriggerAxis() > .5:
                 self.elevArmCmdState = ElevArmCmdState.PLUNGE
@@ -122,8 +125,8 @@ class OperatorInterface(metaclass=Singleton):
                 self.updateDPadLeftOrRight()
         else:
             # If the joystick is unplugged, pick safe-state commands and raise a fault
-            self.elevatorPosYCmd = 0.0
-            self.armPosYCmd = 0.0
+            self.elevatorVelYCmd = 0.0
+            self.armVelYCmd = 0.0
 
     def updateDPadLeftOrRight(self):
         if self.ctrl.isConnected():
@@ -137,10 +140,10 @@ class OperatorInterface(metaclass=Singleton):
 
     def getDesElevatorPosIn(self)->float:
         elevatorRangeIn = 5.0
-        return (elevatorRangeIn/2.0) * (1.0 + self.elevatorPosYCmd)
+        return (elevatorRangeIn/2.0) * (1.0 + self.elevatorVelYCmd)
 
     def getDesArmAngleDeg(self)->float:
-        return 90.0 * self.armPosYCmd
+        return 90.0 * self.armVelYCmd
 
     def getElevArmCmdState(self)->ElevArmCmdState:
         return self.elevArmCmdState

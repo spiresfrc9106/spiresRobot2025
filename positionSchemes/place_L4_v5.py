@@ -83,8 +83,8 @@ class PlaceL4V5(SetupScheme):
                 else:
                     self.localProg = sum([elevGoalReached, armGoalReached, baseGoalReached])/3
             case 3:
-                elevCmdOIntNorm = self.oInt.elevatorPosYCmd * 10
-                armCmdOIntNorm = self.oInt.armPosYCmd * 30
+                elevCmdOIntNorm = self.oInt.elevatorVelYCmd * 10
+                armCmdOIntNorm = self.oInt.armVelYCmd * 30
                 xCmdDIntNorm = self.dInt.getVelXCmd() * MAX_FWD_REV_SPEED_MPS
                 yCmdDIntNorm = self.dInt.getVelYCmd() * MAX_FWD_REV_SPEED_MPS
                 elevCmdOIntNew = elevCmdOIntNorm*0.5
