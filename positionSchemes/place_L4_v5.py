@@ -60,12 +60,12 @@ class PlaceL4V5(SetupScheme):
         time = currentTime - self.startTime
         match self.currentState:
             case 0:
-                self.bestTag = self.placementIntel.decidePlacementPose(0, self.inchesToMeters(21))
+                self.bestTag = self.placementIntel.decidePlacementPose(0, self.inchesToMeters(20))
                 print(f"place l4 time = {Timer.getFPGATimestamp():.3f}s x={self.bestTag.x:+10.1f}m y={self.bestTag.y:+10.1f}m t={self.bestTag.rotation().degrees():+10.1f}deg")
                 self.setDriveTrainBaseCommand(self.bestTag)
                 self.setArmCommand(90, 0)
                 self.updateProgressTrajectory()
-                if self.completedTrajectory(self.base, 4, 3) or self.oInt.skipNext:
+                if self.completedTrajectory(self.base, 6, 5) or self.oInt.skipNext:
                     self.nextState()
             case 1:
                 self.bestTag = self.placementIntel.decidePlacementPose(self.pdSideOfReef, self.inchesToMeters(7))
@@ -77,7 +77,7 @@ class PlaceL4V5(SetupScheme):
             case 2:
                 elevGoalReached = math.isclose(self.elev.getPosition(), self.elevPlacePos, abs_tol=1) #og 0.5
                 armGoalReached = math.isclose(self.arm.getPosition(), self.armPlacePos, abs_tol=2.5)  # is abs_tol good?
-                baseGoalReached = self.completedTrajectory(self.base, 1.5, 3)
+                baseGoalReached = self.completedTrajectory(self.base, 0.75, 3)
                 if (elevGoalReached and armGoalReached and baseGoalReached) or self.oInt.skipNext:
                     self.nextState()
                 else:
