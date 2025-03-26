@@ -200,6 +200,8 @@ class ArmControl(metaclass=Singleton):
         curArmPosDeg = self._getRelAngleWithOffsetDeg()
         self._setActCurDesTrapPStates(curArmPosDeg, 0.0)
 
+    def forceReInit(self):
+        self._initialized = False
 
     def initialize(self):
         changed = self.calMaxPosDeg.isChanged() or \
