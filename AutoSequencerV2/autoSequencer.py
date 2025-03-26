@@ -76,14 +76,16 @@ class AutoSequencer(metaclass=Singleton):
     def updateMainModeListAlliance(self):
         if self._allianceChanged():
             self.mainModeList.deleteOppositeColorModes()
-            self.changedMenu = True
             if onRed():
                 self.addRedAllianceModes()
             else:
                 self.addBlueAllianceModes()
+            self.changedMenu = True
+
     # Call this periodically while disabled to keep the dashboard updated
     # and, when things change, re-init modes
     def updateMode(self, force=False):
+
 
         self.updateMainModeListAlliance()
 
