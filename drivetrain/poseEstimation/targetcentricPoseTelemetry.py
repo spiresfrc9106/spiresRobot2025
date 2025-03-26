@@ -119,7 +119,7 @@ class TargetCentricPoseTelemetry:
             # For visual appearance and avoiding sending too much over NT,
             # make sure we only send a sampled subset of the positions
             sampTime = 0
-            while sampTime < trajIn.getTotalTime():
+            while sampTime < trajIn.get_total_time():
                 stateList.append(
                     self._choreoToWPIState(transform(trajIn.sample(sampTime)))
                 )
@@ -137,7 +137,7 @@ class TargetCentricPoseTelemetry:
     def _choreoToWPIState(self, inVal):
         return Trajectory.State(
             acceleration=0,
-            pose=inVal.getPose(),
+            pose=inVal.get_pose(),
             t=inVal.timestamp,
             velocity=math.hypot(inVal.velocityX, inVal.velocityY),
         )

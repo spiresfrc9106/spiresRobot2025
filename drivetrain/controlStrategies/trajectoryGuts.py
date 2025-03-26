@@ -1,11 +1,11 @@
+from wpilib import Timer
 from wpimath.geometry import Pose2d
 from drivetrain.drivetrainCommand import DrivetrainCommand
 from drivetrain.controlStrategies.holonomicDriveController import (
     HolonomicDriveController,
 )
-from jormungandr.choreo import ChoreoTrajectoryState
+from choreo.trajectory import SwerveSample
 from utils.signalLogging import getNowLogger
-from utils.singleton import Singleton
 
 
 class TrajectoryGuts:
@@ -20,13 +20,13 @@ class TrajectoryGuts:
     def setName(self, name):
         self._name = name
 
-    def _activeLogger(self, cmd: ChoreoTrajectoryState | None):
+    def _activeLogger(self, cmd: SwerveSample | None):
         active = 0
         if cmd is not None:
             active = 1
         self.curTrajCmdActiveLogger.logNow(active)
 
-    def setCmdFromChoreoAuton(self, cmd: ChoreoTrajectoryState | None):
+    def setCmdFromChoreoAuton(self, cmd: SwerveSample | None):
         """Send commands to the robot for motion as a part of following a trajectory from auton
 
         Args:
@@ -34,8 +34,9 @@ class TrajectoryGuts:
         """
         self._activeLogger(cmd)
         self.curTrajCmdFromChoreaAuton = cmd
+        print(f"setCmdFromChoreoAuton time = {Timer.getFPGATimestamp():.3f}s cmd={cmd}")
 
-    def setCmdFromPoser(self, cmd: ChoreoTrajectoryState | None):
+    def setCmdFromPoser(self, cmd: SwerveSample | None):
         """Send commands to the robot for motion as a part of following a trajectory from poser
 
         Args:

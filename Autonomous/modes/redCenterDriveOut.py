@@ -19,4 +19,4 @@ class RedCenterDriveOut(Mode):
 
     def getInitialDrivetrainPose(self):
         # Use the path command to specify the starting pose, using getInitialPose()
-        return self.pathCmd.path.getInitialPose()
+        return self.pathCmd.path.get_initial_pose()
