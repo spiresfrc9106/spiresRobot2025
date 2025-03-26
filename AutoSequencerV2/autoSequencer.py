@@ -33,9 +33,10 @@ class AutoSequencer(metaclass=Singleton):
         self.mainModeList.addMode(DoNothingMode())
         #right now, DriveOut is all commented out, so we don't need to add it to the list. 
         #self.mainModeList.addMode(DriveOut())
-        self.mainModeList.addMode(Square())
 
-        self.currentTeam = onRed() #i was doing something with this
+        #for testing
+        #self.mainModeList.addMode(Square())
+
         if onRed():
             self.addRedAllianceModes()
         else:
@@ -64,9 +65,9 @@ class AutoSequencer(metaclass=Singleton):
         self.mainModeList.addMode(newMode)
 
     def addRedAllianceModes(self):
-        self.mainModeList.addMode(RedRightDriveOut())
         self.mainModeList.addMode(RedLeftDriveOut())
         self.mainModeList.addMode(RedCenterDriveOut())
+        self.mainModeList.addMode(RedRightDriveOut())
 
     def addBlueAllianceModes(self):
         self.mainModeList.addMode(BlueLeftDriveOut())

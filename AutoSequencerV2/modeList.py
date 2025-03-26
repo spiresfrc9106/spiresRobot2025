@@ -26,18 +26,15 @@ class ModeList:
 
     def deleteOppositeColorModes(self):
         # todo Noah Change this set-in-stone loop to make it more flexible with Main Mode List changes, deleting modes based on the Name rather than starting at index 2
-        for i in range(2, len(self.modes)):
+        for i in range(1, len(self.modes)):
             del self.modes[-1]
 
-        #self.curModeIdx = 0
+        self.curModeIdx = 0
 
 
     def updateMode(self, force=False):
         prevModeIdx = self.curModeIdx
-        print(f"Current Mode: {self.curModeIdx}")
         tmp = self.desModeIdxPublisher.getAtomic()
-        print(f"TMP: {tmp.value}")
-        print()
         if tmp.time > 0 or force:
             self.curModeIdx = tmp.value
             self.curModeIdxPublisher.set(self.curModeIdx)
