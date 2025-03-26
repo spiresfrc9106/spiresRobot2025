@@ -170,9 +170,11 @@ class MyRobot(wpilib.TimedRobot):
         self.autoHasRun = True # pylint: disable=attribute-defined-outside-init
 
         if armDepConstants['HAS_ARM']:
+            self.arm.forceReInit()
             self.arm.initialize()
 
         if elevDepConstants['HAS_ELEVATOR']:
+            self.elev.forceReInit()
             self.elev.initialize()
 
     def autonomousPeriodic(self):

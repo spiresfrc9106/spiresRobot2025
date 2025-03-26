@@ -1,4 +1,4 @@
-from wpimath.geometry import Pose2d
+
 from drivetrain.drivetrainCommand import DrivetrainCommand
 from Elevatorandmech.ElevatorCommand import ElevatorCommand
 from Elevatorandmech.ArmCommand import ArmCommand
@@ -84,8 +84,9 @@ class YavinsPoseClassVelocityControl():
 
     # Every frame the update will be called, and then later, the updates for the Drivetrain, Elevator, and Arm will be called and they will all "get" their commands.
     def update(self):
-        self.elevatorVelocityInps = self.oInt.elevatorPosYCmd * 10
-        self.armVelocityDegps = self.oInt.armPosYCmd * 30
+        self.elevatorVelocityInps = self.oInt.elevatorVelYCmd * 60 #was 10
+        #print(f"elevatorVelocityInps={self.elevatorVelocityInps}")
+        self.armVelocityDegps = self.oInt.armVelYCmd * 720  # was 10
 
 
     ##### FIX THESE!!!!!! RIGHT NOW THEY AREN'T IMMUNE TO NONE!!!!

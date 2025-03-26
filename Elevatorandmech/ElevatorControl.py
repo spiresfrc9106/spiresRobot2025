@@ -1,9 +1,4 @@
-# Notes from Coach Mike, This code is from: https://github.com/RobotCasserole1736/RobotCasserole2025/tree/Traian_Elevator
-
-# It is definitely buggy and untested, but it gives us a great framework on how to control an elevator.
-
 from enum import IntEnum
-import math
 from wpimath.trajectory import TrapezoidProfile
 import wpilib
 from wpilib import Timer
@@ -34,7 +29,9 @@ class ElevatorDependentConstants:
                 "ELEV_SPOOL_RADIUS_IN": None,
                 "MAX_ELEV_VEL_INPS": None,
                 "MAX_ELEV_ACCEL_INPS2": None,
-                "ELEVATOR_HEIGHT_OFFSET": None,
+                "ELEV_HEIGHT_OFFSET": None,
+                "ELEV_HEIGHT_WHEN_STILTS_FORM_NEW_BOTTOM_IN": None,
+                "ELEV_HEIGHT_STILTS_NEW_BOTTOM_IN": None,
             },
             RobotTypes.Spires2025: {
                 "HAS_ELEVATOR": True,
@@ -47,7 +44,9 @@ class ElevatorDependentConstants:
                 "ELEV_SPOOL_RADIUS_IN": 1.660 / 2.0,
                 "MAX_ELEV_VEL_INPS": 60.0,
                 "MAX_ELEV_ACCEL_INPS2": 120.0,
-                "ELEVATOR_HEIGHT_OFFSET": 15.25,
+                "ELEV_HEIGHT_OFFSET": 15.25,
+                "ELEV_HEIGHT_WHEN_STILTS_FORM_NEW_BOTTOM_IN": 46.6125,
+                "ELEV_HEIGHT_STILTS_ADD_TO_BOTTOM_IN": 9.6125,
             },
             RobotTypes.Spires2025Sim: {
                 "HAS_ELEVATOR": True,
@@ -60,7 +59,9 @@ class ElevatorDependentConstants:
                 "ELEV_SPOOL_RADIUS_IN": 1.660 / 2.0,
                 "MAX_ELEV_VEL_INPS": 20.0,
                 "MAX_ELEV_ACCEL_INPS2": 20.0,
-                "ELEVATOR_HEIGHT_OFFSET": 15.25,
+                "ELEV_HEIGHT_OFFSET": 15.25,
+                "ELEV_HEIGHT_WHEN_STILTS_FORM_NEW_BOTTOM_IN": 46.6125,
+                "ELEV_HEIGHT_STILTS_ADD_TO_BOTTOM_IN": 9.6125,
             },
             RobotTypes.SpiresTestBoard: {
                 "HAS_ELEVATOR": True,
@@ -73,7 +74,9 @@ class ElevatorDependentConstants:
                 "ELEV_SPOOL_RADIUS_IN": 1.92 / 2.0,
                 "MAX_ELEV_VEL_INPS": 25,
                 "MAX_ELEV_ACCEL_INPS2": 250,
-                "ELEVATOR_HEIGHT_OFFSET": 0,
+                "ELEV_HEIGHT_OFFSET": 0,
+                "ELEV_HEIGHT_WHEN_STILTS_FORM_NEW_BOTTOM_IN": None,
+                "ELEV_HEIGHT_STILTS_NEW_BOTTOM_IN": None,
             },
             RobotTypes.SpiresRoboRioV1: {
                 "HAS_ELEVATOR": False,
@@ -86,7 +89,9 @@ class ElevatorDependentConstants:
                 "ELEV_SPOOL_RADIUS_IN": None,
                 "MAX_ELEV_VEL_INPS": None,
                 "MAX_ELEV_ACCEL_INPS2": None,
-                "ELEVATOR_HEIGHT_OFFSET": None,
+                "ELEV_HEIGHT_OFFSET": None,
+                "ELEV_HEIGHT_WHEN_STILTS_FORM_NEW_BOTTOM_IN": None,
+                "ELEV_HEIGHT_STILTS_NEW_BOTTOM_IN": None,
             },
         }
 
@@ -98,7 +103,7 @@ elevDepConstants = ElevatorDependentConstants().get()
 ELEV_FM_CANID = elevDepConstants['ELEV_FM_CANID']
 ELEV_BM_CANID = elevDepConstants['ELEV_BM_CANID']
 
-ELEV_M_INITIALIZING_CURRENT_LIMIT_A = elevDepConstants['ELEV_M_INITIALIZING_CURRENT_LIMIT_A'] # xyzzy CAUTION we're not using this yet
+ELEV_M_INITIALIZING_CURRENT_LIMIT_A = elevDepConstants['ELEV_M_INITIALIZING_CURRENT_LIMIT_A']
 ELEV_M_OPERATING_CURRENT_LIMIT_A = elevDepConstants['ELEV_M_OPERATING_CURRENT_LIMIT_A']
 ELEV_GEARBOX_GEAR_RATIO = elevDepConstants['ELEV_GEARBOX_GEAR_RATIO']
 ELEV_SPOOL_RADIUS_IN = elevDepConstants['ELEV_SPOOL_RADIUS_IN']
@@ -108,7 +113,11 @@ MAX_ELEV_ACCEL_INPS2 = elevDepConstants['MAX_ELEV_ACCEL_INPS2']
 
 ELEVATOR_RANGE_IN = elevDepConstants['ELEVATOR_RANGE_IN']
 
-ELEV_HEIGHT_ABOVE_GROUND_IN = elevDepConstants['ELEVATOR_HEIGHT_OFFSET']
+ELEV_HEIGHT_ABOVE_GROUND_IN = elevDepConstants['ELEV_HEIGHT_OFFSET']
+
+ELEV_HEIGHT_WHEN_STILTS_FORM_NEW_BOTTOM_IN = elevDepConstants['ELEV_HEIGHT_WHEN_STILTS_FORM_NEW_BOTTOM_IN']
+ELEV_HEIGHT_STILTS_ADD_TO_BOTTOM_IN = elevDepConstants['ELEV_HEIGHT_STILTS_ADD_TO_BOTTOM_IN']
+
 
 class ElevatorStates(IntEnum):
     UNINITIALIZED = 0
@@ -172,6 +181,9 @@ class ElevatorControl(metaclass=Singleton):
 
         self._initialized = False
 
+    def forceReInit(self):
+        self._initialized = False
+
 
     def initialize(self):
         changed = self.calElevMinHeightIn.isChanged() or \
@@ -190,8 +202,10 @@ class ElevatorControl(metaclass=Singleton):
             # when we re-initialize tell motor to stay where it is at.
             self.fMotor.setVoltage(0)
 
-            self.minHeightIn = self.calElevMinHeightIn.get()
-            self.maxHeightIn = self.minHeightIn + self.calElevRangeIn.get()
+            self.origElevMinHeightIn = self.calElevMinHeightIn.get()
+
+            self.minHeightIn = self.origElevMinHeightIn
+            self.maxHeightIn = self.origElevMinHeightIn  + self.calElevRangeIn.get()
 
             self.trapProfiler = TrapezoidProfile(TrapezoidProfile.Constraints(self.calSearchMaxVelocityInps.get(), self.calSearchMaxAccelerationInps2.get()))
             self.actTrapPState = self.trapProfiler.State()
@@ -243,13 +257,13 @@ class ElevatorControl(metaclass=Singleton):
         self.fMotor.setVoltage(0)
 
     def _offsetFreeRMotorRadToHeightIn(self, motorRad: float) -> float:
-        return  motorRad * (1/ELEV_GEARBOX_GEAR_RATIO) * ELEV_SPOOL_RADIUS_IN + self.minHeightIn
+        return  motorRad * (1/ELEV_GEARBOX_GEAR_RATIO) * ELEV_SPOOL_RADIUS_IN + self.origElevMinHeightIn
 
     def _motorRadToHeightIn(self, motorRad: float) -> float:
         return  self._offsetFreeRMotorRadToHeightIn(motorRad+self.relEncOffsetRad)
 
     def _heightInToMotorRad(self, elevHeightIn: float) -> float:
-        return ( (elevHeightIn - self.minHeightIn) / ELEV_SPOOL_RADIUS_IN) * ELEV_GEARBOX_GEAR_RATIO - self.relEncOffsetRad
+        return ( (elevHeightIn - self.origElevMinHeightIn) / ELEV_SPOOL_RADIUS_IN) * ELEV_GEARBOX_GEAR_RATIO - self.relEncOffsetRad
     
     def _heightVelInpsToMotorVelRadps(self, elevVelInps: float) -> float:
         return (elevVelInps / ELEV_SPOOL_RADIUS_IN) * ELEV_GEARBOX_GEAR_RATIO
@@ -419,6 +433,9 @@ class ElevatorControl(metaclass=Singleton):
             self.poserCmdPosLogger.logNow(elevatorCommand.heightIn)
         self.poserCmdVelLogger.logNow(elevatorCommand.velocityInps)
 
+
+        if self.actTrapPState.position > ELEV_HEIGHT_WHEN_STILTS_FORM_NEW_BOTTOM_IN:
+            self.minHeightIn = self.origElevMinHeightIn + ELEV_HEIGHT_STILTS_ADD_TO_BOTTOM_IN
 
         self.desTrapPState = self._perhapsWeHaveANewRangeCheckedDesiredState(elevatorCommand)
 
