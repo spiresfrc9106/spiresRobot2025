@@ -74,7 +74,6 @@ class WrapperedPoseEstLimelight:
 
         #res = self.cam.getLatestResult()
         # broken in photonvision 2.4.2. Hack with the non-broken latency calcualtion
-        # TODO: in 2025, fix this to actually use the real latency
         self.latency = self.cam.get_latency_total()
         latency = self.latency # a total guess
         obsTime = wpilib.Timer.getFPGATimestamp() - latency

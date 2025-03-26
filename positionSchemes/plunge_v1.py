@@ -47,7 +47,7 @@ class PlungeV1(SetupScheme):
         addLog("yvn_plunge_runs", lambda: self.totalRuns, "")  # test purposes, not needed at all.
 
         # DOWN HEIGHT
-        self.elevSafestPlungeHeight_in = 40.91 - 1 #added -1 #32.1875 - 2 - 1
+        self.elevSafestPlungeHeight_in = (43.47 + 41) / 2  # or 41.5? # 40.91 - 1 #added -1 #32.1875 - 2 - 1
         
         # UP HEIGHT
         self.elevBestMediumHeight_in = self.elevConst.posMedium
