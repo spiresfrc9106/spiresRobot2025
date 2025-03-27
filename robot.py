@@ -69,12 +69,7 @@ class MyRobot(wpilib.TimedRobot):
         if elevDepConstants['HAS_ELEVATOR']:
             self.elev= ElevatorControl()
 
-        self.poseDirectorCommon = PoseDirectorCommon
-        self.poseDirectorCommon.initialize(self.dInt, self.oInt, self.driveTrain, self.arm, self.elev)
-        self.poseDirectorDriver = PoseDirectorDriver()
-        self.poseDirectorDriver.initialize()
-        self.poseDirectorOperator = PoseDirectorOperator()
-        self.poseDirectorOperator.initialize()
+
 
 
         self.autodrive = AutoDrive()
@@ -84,6 +79,13 @@ class MyRobot(wpilib.TimedRobot):
         self.dInt = DriverInterface()
         self.oInt = OperatorInterface()
         self.ledCtrl = LEDControl()
+
+        self.poseDirectorCommon = PoseDirectorCommon()
+        self.poseDirectorCommon.initialize(self.dInt, self.oInt, self.driveTrain, self.arm, self.elev)
+        self.poseDirectorDriver = PoseDirectorDriver()
+        self.poseDirectorDriver.initialize()
+        self.poseDirectorOperator = PoseDirectorOperator()
+        self.poseDirectorOperator.initialize()
 
         self.autoSequencer = AutoSequencer()
 

@@ -3,12 +3,13 @@ from Elevatorandmech.replaceWithYavinsPosesClass import YavinsPoseClassNoChangeD
 from Elevatorandmech.RobotPoserCommon import PoseDirectorCommon
 from humanInterface.operatorInterface import OperatorInterface, ElevArmCmdState, ReefLeftOrRight
 from humanInterface.driverInterface import DriverInterface
-from positionSchemes.plunge_v1_d import PlungeV1D
-from positionSchemes.pickup_v1_d import PickupV1D
-from positionSchemes.place_L4_v5_d import PlaceL4V5D
-from positionSchemes.place_L3_v1_d import PlaceL3V1D
-from positionSchemes.place_L2_v1_d import PlaceL2V1D
-from positionSchemes.place_L1_v1_d import PlaceL1V1D
+from positionSchemes.plunge_v1 import PlungeV1
+from positionSchemes.pickup_v1 import PickupV1
+from positionSchemes.place_L4_v6_d import PlaceL4V6D
+from positionSchemes.place_L4_v5 import PlaceL4V5
+from positionSchemes.place_L3_v1 import PlaceL3V1
+from positionSchemes.place_L2_v1 import PlaceL2V1
+from positionSchemes.place_L1_v1 import PlaceL1V1
 from utils.signalLogging import addLog
 from utils.singleton import Singleton
 
@@ -29,7 +30,7 @@ class PoseDirectorDriver(metaclass=Singleton):
         self.common.controllerStateDriver = ElevArmCmdState.UNINITIALIZED
         self.common.prevControllerStateDriver = self.common.controllerStateDriver
         self.common.currentPositionSchemeDriver = YavinsPoseClassNoChangeDriver(self.common.driveTrain, self.common.dInt)
-        self.getDriveTrainCommand = lambda curCommand : self.currentPositionSchemeDriver.getDriveTrainCommand(curCommand)
+        self.getDriveTrainCommand = lambda curCommand : self.common.currentPositionSchemeDriver.getDriveTrainCommand(curCommand)
         self.schemeProg = 0
         self.dashboardState = 1 # State 1, put the autonomous menu back up on the webserver dashboard
         addLog("RPD/schemeProg", lambda: self.schemeProg, "") # don't delete this.
@@ -47,9 +48,9 @@ class PoseDirectorDriver(metaclass=Singleton):
             self.getDriveTrainCommand = lambda curCommand : self.currentPositionSchemeDriver.getDriveTrainCommand(curCommand)
 
             # self.progress = self.currentPositionSchemeDriver.schemeProg *100
-        self.currentPositionSchemeDriver.update()
-        if hasattr(self.currentPositionSchemeDriver, "schemeProg"):
-            self.schemeProg=round(self.currentPositionSchemeDriver.schemeProg*100)
+        self.common.currentPositionSchemeDriver.update()
+        if hasattr(self.common.currentPositionSchemeDriver, "schemeProg"):
+            self.schemeProg=round(self.common.currentPositionSchemeDriver.schemeProg*100)
             # xyzzy, todo ask Yavin, shouldn't we set a dashboard state here?
         else:
             self.setDashboardState(3)
@@ -78,19 +79,19 @@ class PoseDirectorDriver(metaclass=Singleton):
                 return None
             case ElevArmCmdState.RECEIVE_CORAL:
                 self.setDashboardState(4)
-                return PickupV1D(self.common.driveTrain, self.common.dInt) 
+                return PickupV1(self.common.driveTrain, self.common.dInt)
             case ElevArmCmdState.L1:
                 self.setDashboardState(6)
-                return PlaceL1V1D(self.common.driveTrain, self.common.dInt)  
+                return PlaceL1V1(self.common.driveTrain, self.common.dInt)
             case ElevArmCmdState.L2:
                 self.setDashboardState(6)
-                return PlaceL2V1D(self.common.driveTrain, self.common.dInt)  
+                return PlaceL2V1(self.common.driveTrain, self.common.dInt)
             case ElevArmCmdState.L3:
                 self.setDashboardState(6)
-                return PlaceL3V1D(self.common.driveTrain, self.common.dInt)  
+                return PlaceL3V1(self.common.driveTrain, self.common.dInt)
             case ElevArmCmdState.L4:
                 self.setDashboardState(6)
-                return PlaceL4V5D(self.common.driveTrain, self.common.dInt)  
+                return PlaceL4V6D(self.common.driveTrain, self.common.dInt)
             case _:
                 return YavinsPoseClassNoChangeDriver(self.common.driveTrain, self.oInt)  
 

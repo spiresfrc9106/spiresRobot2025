@@ -25,8 +25,8 @@ class PoseDirectorCommon(metaclass=Singleton):
         self.elevator = elevator
         self.controllerStateDriver = ElevArmCmdState.UNINITIALIZED
         self.prevControllerStateDriver = self.controllerStateDriver
-        self.currentPositionSchemeDriver = YavinsPoseClassNoChangeDriver(self.driveTrain, self.oInt)
+        self.currentPositionSchemeDriver = YavinsPoseClassNoChangeDriver(self.driveTrain, self.dInt)
 
         self.controllerStateOperator = ElevArmCmdState.UNINITIALIZED
         self.prevControllerStateOperator = self.controllerStateDriver
-        self.currentPositionSchemeOperator = YavinsPoseClassNoChangeOperator(self.arm, self.elevator, self.dInt)
+        self.currentPositionSchemeOperator = YavinsPoseClassNoChangeOperator(self.arm, self.driveTrain, self.elevator, self.oInt)

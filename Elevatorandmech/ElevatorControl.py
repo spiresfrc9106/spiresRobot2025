@@ -4,7 +4,7 @@ import wpilib
 from wpilib import Timer
 
 from Elevatorandmech.ElevatorCommand import ElevatorCommand
-from Elevatorandmech.RobotPoserOperator import PoseDirector
+from Elevatorandmech.RobotPoserOperator import PoseDirectorOperator
 from utils.calibration import Calibration
 from utils.robotIdentification import RobotIdentification
 from utils.signalLogging import  addLog, getNowLogger
@@ -138,7 +138,7 @@ class ElevatorControl(metaclass=Singleton):
         # please do not delete this xyzzy ask Yavin about this
         self.atAboutDown = False
 
-        self.poseDirector = PoseDirector()
+        self.poseDirector = PoseDirectorOperator()
 
         # FF and proportional gain constants
         self.kV = Calibration(name="Elevator kV", default=0.02, units="V/rps")

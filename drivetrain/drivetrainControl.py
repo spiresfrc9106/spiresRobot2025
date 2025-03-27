@@ -40,7 +40,7 @@ from utils.constants import (DT_FL_WHEEL_CANID,
                              DT_BL_AZMTH_ENC_PORT,
                              DT_BR_AZMTH_ENC_PORT)
 from wrappers.wrapperedGyro import wrapperedGyro
-from Elevatorandmech.RobotPoserOperator import PoseDirector
+from Elevatorandmech.RobotPoserDriver import PoseDirectorDriver
 from utils.signalLogging import addLog
 
 class DrivetrainControl(metaclass=Singleton):
@@ -90,7 +90,7 @@ class DrivetrainControl(metaclass=Singleton):
         self.tcPoseEst = TargetCentricPoseEstimator(self.getModulePositions(), self.gyro)
 
         self._updateAllCals()
-        self.poser = PoseDirector()
+        self.poser = PoseDirectorDriver()
         self.cmdVelX = 0
         self.cmdVelY = 0
         self.cmdVelT = 0

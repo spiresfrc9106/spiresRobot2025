@@ -197,3 +197,9 @@ class DriverInterface(metaclass=Singleton):
 
     def getRobotRelative(self):
         return self.robotRelative
+
+    def getElevArmCmdState(self)->ElevArmCmdState:
+        return self.elevArmCmdState
+
+    def getReefLeftOrRight(self)->ReefLeftOrRight:
+        return self.dPadState

@@ -1,15 +1,15 @@
 
 
-from Elevatorandmech.replaceWithYavinsPosesClass import YavinsPoseClassNoChangeDriver, YavinsPoseClassVelocityControlOperator
+from Elevatorandmech.replaceWithYavinsPosesClass import YavinsPoseClassNoChangeOperator, YavinsPoseClassVelocityControlOperator
 from Elevatorandmech.RobotPoserCommon import PoseDirectorCommon
 from humanInterface.operatorInterface import OperatorInterface, ElevArmCmdState, ReefLeftOrRight
 from humanInterface.driverInterface import DriverInterface
 from positionSchemes.plunge_v1 import PlungeV1
 from positionSchemes.pickup_v1 import PickupV1
-from positionSchemes.place_L4_v5_o import PlaceL4V5O
-from positionSchemes.place_L3_v1_o import PlaceL3V1O
-from positionSchemes.place_L2_v1_o import PlaceL2V1O
-from positionSchemes.place_L1_v1_o import PlaceL1V1O
+from positionSchemes.place_L4_v6_o import PlaceL4V6O
+from positionSchemes.place_L3_v1 import PlaceL3V1
+from positionSchemes.place_L2_v1 import PlaceL2V1
+from positionSchemes.place_L1_v1 import PlaceL1V1
 from utils.signalLogging import addLog
 from utils.singleton import Singleton
 
@@ -30,7 +30,7 @@ class PoseDirectorOperator(metaclass=Singleton):
 
         self.common.controllerStatOperator = ElevArmCmdState.UNINITIALIZED
         self.common.prevControllerStateOperator = self.common.controllerStatOperator
-        self.common.currentPositionSchemeOperator = YavinsPoseClassNoChangeDriver(self.common.arm, self.common.elevator, self.common.oInt)
+        self.common.currentPositionSchemeOperator = YavinsPoseClassNoChangeOperator(self.common.arm, self.common.driveTrain, self.common.elevator, self.common.oInt)
         self.getElevatorCommand = lambda curCommand :  self.common.currentPositionSchemeOperator.getElevatorCommand(curCommand)
         self.getArmCommand = lambda curCommand : self.common.currentPositionSchemeOperator.getArmCommand(curCommand)
         self.schemeProg = 0
@@ -60,9 +60,7 @@ class PoseDirectorOperator(metaclass=Singleton):
             self.setDashboardState(2)
 
     def _isControllerStateChanging(self)->bool:
-        nextState = self.oInt.getElevArmCmdState()
-        if nextState==ElevArmCmdState.VEL_CONTROL or nextState == ElevArmCmdState.POS_CONTROL:
-            self.defaultJoystickMovement = nextState
+        nextState = self.common.oInt.getElevArmCmdState()
         changed = False
         if nextState != self.common.controllerStatOperator:
             print(
@@ -75,31 +73,30 @@ class PoseDirectorOperator(metaclass=Singleton):
     def pickTheNewScheme(self)->None:
         match self.common.controllerStatOperator:
             case ElevArmCmdState.UNINITIALIZED:
-                return YavinsPoseClassNoChangeOperator(self.common.arm, self.common.elevator, self.common.oInt)
+                return YavinsPoseClassNoChangeOperator(self.common.arm, self.common.driveTrain, self.common.elevator, self.common.oInt)
             case ElevArmCmdState.VEL_CONTROL:
-                return YavinsPoseClassVelocityControl(self.common.arm, self.common.elevator, self.common.oInt) # todo fix me
-            case ElevArmCmdState.POS_CONTROL:
-                return YavinsPoseClassPositionControl(self.common.arm, self.common.elevator, self.common.oInt)
+                return YavinsPoseClassVelocityControlOperator(self.common.arm, self.common.driveTrain, self.common.elevator, self.common.oInt) # todo fix me
+
             case ElevArmCmdState.PLUNGE:
                 self.setDashboardState(5)
-                return PlungeV1O(self.common.arm, self.common.elevator, self.common.oInt) # todo fix me
+                return PlungeV1(self.common.arm, self.common.driveTrain, self.common.elevator, self.common.oInt) # todo fix me
             case ElevArmCmdState.RECEIVE_CORAL:
                 self.setDashboardState(4)
-                return PickupV1O(self.common.arm, self.common.elevator, self.common.oInt) # todo fix me
+                return PickupV1(self.common.arm, self.common.driveTrain, self.common.elevator, self.common.oInt) # todo fix me
             case ElevArmCmdState.L1:
                 self.setDashboardState(6)
-                return PlaceL1V1O(self.common.arm, self.common.elevator, self.common.oInt)  # todo fix me
+                return PlaceL1V1(self.common.arm, self.common.driveTrain, self.common.elevator, self.common.oInt)  # todo fix me
             case ElevArmCmdState.L2:
                 self.setDashboardState(6)
-                return PlaceL2V1O(self.common.arm, self.common.elevator, self.common.oInt)  # todo fix me
+                return PlaceL2V1(self.common.arm, self.common.driveTrain, self.common.elevator, self.common.oInt)  # todo fix me
             case ElevArmCmdState.L3:
                 self.setDashboardState(6)
-                return PlaceL3V1O(self.common.arm, self.common.elevator, self.common.oInt)  # todo fix me
+                return PlaceL3V1(self.common.arm, self.common.driveTrain, self.common.elevator, self.common.oInt)  # todo fix me
             case ElevArmCmdState.L4:
                 self.setDashboardState(6)
-                return PlaceL4V5O(self.common.arm, self.common.elevator, self.common.oInt)  # todo fix me
+                return PlaceL4V6O(self.common.arm, self.common.driveTrain, self.common.elevator, self.common.oInt)  # todo fix me
             case _:
-                return YavinsPoseClassNoChangeOperator(self.common.arm, self.common.elevator, self.common.oInt)  # todo fix me
+                return YavinsPoseClassNoChangeOperator(self.common.arm, self.common.driveTrain, self.common.elevator, self.common.oInt)  # todo fix me
 
 
 

@@ -28,7 +28,7 @@ class YavinsPoseClassNoChangeDriver():
 
 
 class YavinsPoseClassNoChangeOperator():
-    def __init__(self, arm, elevator, oInt):
+    def __init__(self, arm, driveTrain, elevator, oInt):
         self.arm = arm
         self.elevator = elevator
         self.oInt = oInt
@@ -73,7 +73,7 @@ class YavinsPoseClassVelocityControlDriver():
 
 class YavinsPoseClassVelocityControlOperator():
 
-    def __init__(self, arm, elevator, oInt):
+    def __init__(self, arm, driveTrain, elevator, oInt):
         self.arm = arm
         self.elevator = elevator
         self.elevatorVelocityInps = 0

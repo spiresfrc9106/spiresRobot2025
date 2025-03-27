@@ -13,7 +13,7 @@ import wpilib
 from wpilib import Timer
 
 from Elevatorandmech.ArmCommand import ArmCommand
-from Elevatorandmech.RobotPoserOperator import PoseDirector
+from Elevatorandmech.RobotPoserOperator import PoseDirectorOperator
 from utils.calibration import Calibration
 from utils.robotIdentification import RobotIdentification, RobotTypes
 from utils.signalLogging import  addLog, getNowLogger
@@ -150,7 +150,7 @@ class ArmControl(metaclass=Singleton):
         # please do not delete this xyzzy ask Yavin about this
         self.atAboutDown = False
 
-        self.poseDirector = PoseDirector()
+        self.poseDirector = PoseDirectorOperator()
 
 
         # FF and proportional gain constants
