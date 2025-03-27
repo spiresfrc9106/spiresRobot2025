@@ -76,7 +76,7 @@ class AutoSequencer(metaclass=Singleton):
 
     def updateMainModeListAlliance(self):
         if self._allianceChanged():
-            # self.mainModeList.deleteOppositeColorModes()
+            self.mainModeList.setCurModeToDefault()
             # if onRed():
             #     self.addRedAllianceModes()
             # else:
