@@ -60,10 +60,22 @@ function mainRenderLoop(){
 ${WIDGETS_CALLBACK}
 
 
+function randomNoahYavinFunction() {
+var all = document.getElementsByClassName("textWidgetBase");
+for (var i = 0; i < all.length; i++) {
+    console.log(all[i].innerHTML)
+    if (all[i].innerHTML.includes("Nothing")) {
+        all[i].getElementsByClassName("dropdown-option")[0].click();
+        console.log(all[i].getElementsByClassName("dropdown-option")[0].innerText)
+        return false;
+    }
+}
+}
 
 
-window.connectedForState = false
-window.attemptingReconnect = false
+window.connectedForState = false;
+window.attemptingReconnect = false;
+window.changedTheMenu = false;
 
 
 window.widID = {
@@ -109,6 +121,12 @@ if (state == '****') {
 window.attemptingReconnect = true;
 return false;
 }
+
+if (window.changedTheMenu == false) {
+randomNoahYavinFunction();
+window.changedTheMenu = true;
+}
+
 var state = Number(state)
 
 yavinShowExtraWidgets(14,1)
