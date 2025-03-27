@@ -4,12 +4,11 @@ from wpilib import XboxController
 from drivetrain.drivetrainCommand import DrivetrainCommand
 from drivetrain.drivetrainPhysical import MAX_FWD_REV_SPEED_MPS,MAX_STRAFE_SPEED_MPS, \
 MAX_ROTATE_SPEED_RAD_PER_SEC, MAX_TRANSLATE_ACCEL_MPS2,MAX_ROTATE_ACCEL_RAD_PER_SEC_2
+from humanInterface.operatorInterface import ElevArmCmdState, ReefLeftOrRight
 from utils.allianceTransformUtils import onRed
 from utils.faults import Fault
 from utils.signalLogging import addLog
 from utils.singleton import Singleton
-
-HAS_DRIVETRAIN = False # xyzzy TODO talk to Yavin about this
 
 class DriverInterface(metaclass=Singleton):
     """Class to gather input from the driver of the robot"""
@@ -49,9 +48,6 @@ class DriverInterface(metaclass=Singleton):
         self.allXMeasures = []
         self.allYMeasures = []
         self.allTMeasures = []
-        if HAS_DRIVETRAIN:
-            pass
-        self.sd_record = 0
 
         addLog("ytest_speed_strafe_level", lambda: self.processedStrafe, "")
         addLog("ytest_speed_rotate_level", lambda: self.processedRotate, "")
@@ -75,7 +71,7 @@ class DriverInterface(metaclass=Singleton):
             vRotJoyRaw = self.ctrl.getRightX() * -1
 
 
-            self.robotRelative = self.ctrl.getLeftBumper()
+            self.robotRelative = self.ctrl.getRightTriggerAxis() > .5
 
             if not self.robotRelative:
                 # Correct for alliance
@@ -112,22 +108,34 @@ class DriverInterface(metaclass=Singleton):
             self.autoDriveToPickup = False
             self.createDebugObstacle = False
 
-            self.motorTestCmd = self.ctrl.getLeftTriggerAxis() - self.ctrl.getRightTriggerAxis()
+            self.motorTestCmd = 0
 
             self.connectedFault.setNoFault()
 
-            what = 0
-            if self.ctrl.getXButton():
-                what = 4
-            if self.ctrl.getAButton():
-                what = 3
-            if self.ctrl.getYButton():
-                what = 2
-            if self.ctrl.getBButton():
-                what = 1
+            self.skipNext = self.ctrl.getBackButtonPressed()
 
+            updateReefSide = True
+            self.launchPlacement = self.ctrl.getLeftBumperPressed()
 
-            self.sd_record = 0
+            if self.ctrl.getLeftTriggerAxis() > .5:
+                self.elevArmCmdState = ElevArmCmdState.RECEIVE_CORAL
+            elif self.ctrl.getAButton():
+                updateReefSide = False
+                self.elevArmCmdState = ElevArmCmdState.L1
+            elif self.ctrl.getXButton():
+                updateReefSide = False
+                self.elevArmCmdState = ElevArmCmdState.L2
+            elif self.ctrl.getBButton():
+                updateReefSide = False
+                self.elevArmCmdState = ElevArmCmdState.L3
+            elif self.ctrl.getYButton():
+                updateReefSide = False
+                self.elevArmCmdState = ElevArmCmdState.L4
+            else:
+                self.elevArmCmdState = ElevArmCmdState.VEL_CONTROL
+
+            if updateReefSide:
+                self.updateDPadLeftOrRight()
 
         else:
             # If the joystick is unplugged, pick safe-state commands and raise a fault
@@ -139,7 +147,15 @@ class DriverInterface(metaclass=Singleton):
             self.autoDriveToPickup = False
             self.createDebugObstacle = False
             self.connectedFault.setFaulted()
+            self.elevArmCmdState = ElevArmCmdState.UNINITIALIZED
 
+    def updateDPadLeftOrRight(self):
+        if self.ctrl.isConnected():
+            pov_deg = self.ctrl.getPOV()
+            if pov_deg >= 45 and pov_deg <=135:
+                self.dPadState = ReefLeftOrRight.RIGHT
+            elif pov_deg >= 225 and pov_deg <= 315:
+                self.dPadState = ReefLeftOrRight.LEFT
 
 
     def getMotorTestPowerRpm(self):

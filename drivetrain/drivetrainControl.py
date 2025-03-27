@@ -40,7 +40,7 @@ from utils.constants import (DT_FL_WHEEL_CANID,
                              DT_BL_AZMTH_ENC_PORT,
                              DT_BR_AZMTH_ENC_PORT)
 from wrappers.wrapperedGyro import wrapperedGyro
-from Elevatorandmech.RobotPoser import PoseDirector
+from Elevatorandmech.RobotPoserOperator import PoseDirector
 from utils.signalLogging import addLog
 
 class DrivetrainControl(metaclass=Singleton):

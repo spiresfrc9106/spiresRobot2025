@@ -18,7 +18,6 @@ class ReefLeftOrRight(IntEnum):
     RIGHT = 1
 class ElevArmCmdState(IntEnum):
     VEL_CONTROL = 0
-    POS_CONTROL = 1
     PLUNGE = 2
     RECEIVE_CORAL = 3
     L1 = 4
@@ -96,45 +95,29 @@ class OperatorInterface(metaclass=Singleton):
             
             self.skipNext = self.ctrl.getBackButtonPressed()
 
-            updateReefSide = True
             self.launchPlacement = self.ctrl.getLeftBumperPressed()
 
-
-            if self.ctrl.getLeftBumperPressed():
-                pass #self.elevArmCmdState = ElevArmCmdState.POS_CONTROL
-            elif self.ctrl.getRightTriggerAxis() > .5:
+            if self.ctrl.getRightTriggerAxis() > .5:
                 self.elevArmCmdState = ElevArmCmdState.PLUNGE
             elif self.ctrl.getLeftTriggerAxis() > .5:
                 self.elevArmCmdState = ElevArmCmdState.RECEIVE_CORAL
             elif self.ctrl.getAButton():
-                updateReefSide = False
                 self.elevArmCmdState = ElevArmCmdState.L1
             elif self.ctrl.getXButton():
-                updateReefSide = False
                 self.elevArmCmdState = ElevArmCmdState.L2
             elif self.ctrl.getBButton():
-                updateReefSide = False
                 self.elevArmCmdState = ElevArmCmdState.L3
             elif self.ctrl.getYButton():
-                updateReefSide = False
                 self.elevArmCmdState = ElevArmCmdState.L4
             else:
                 self.elevArmCmdState = ElevArmCmdState.VEL_CONTROL
 
-            if updateReefSide:
-                self.updateDPadLeftOrRight()
         else:
+            self.elevArmCmdState = ElevArmCmdState.UNINITIALIZED
             # If the joystick is unplugged, pick safe-state commands and raise a fault
             self.elevatorVelYCmd = 0.0
             self.armVelYCmd = 0.0
 
-    def updateDPadLeftOrRight(self):
-        if self.ctrl.isConnected():
-            pov_deg = self.ctrl.getPOV()
-            if pov_deg >= 45 and pov_deg <=135:
-                self.dPadState = ReefLeftOrRight.RIGHT
-            elif pov_deg >= 225 and pov_deg <= 315:
-                self.dPadState = ReefLeftOrRight.LEFT
 
 # don't delete these they are unfortunately important (crying face emoji)
 
