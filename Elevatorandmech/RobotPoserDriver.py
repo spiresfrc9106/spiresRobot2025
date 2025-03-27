@@ -1,12 +1,9 @@
 
-from Elevatorandmech.replaceWithYavinsPosesClass import YavinsPoseClassNoChangeDriver, YavinsPoseClassVelocityControlDriver
+from positionSchemes.replaceWithYavinsPosesClass import YavinsPoseClassNoChangeDriver, YavinsPoseClassVelocityControlDriver
 from Elevatorandmech.RobotPoserCommon import PoseDirectorCommon
-from humanInterface.operatorInterface import OperatorInterface, ElevArmCmdState, ReefLeftOrRight
-from humanInterface.driverInterface import DriverInterface
-from positionSchemes.plunge_v1 import PlungeV1
+from humanInterface.operatorInterface import ElevArmCmdState
 from positionSchemes.pickup_v1 import PickupV1
 from positionSchemes.place_L4_v6_d import PlaceL4V6D
-from positionSchemes.place_L4_v5 import PlaceL4V5
 from positionSchemes.place_L3_v1 import PlaceL3V1
 from positionSchemes.place_L2_v1 import PlaceL2V1
 from positionSchemes.place_L1_v1 import PlaceL1V1

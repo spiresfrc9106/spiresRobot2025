@@ -1,6 +1,5 @@
-from Elevatorandmech.replaceWithYavinsPosesClass import YavinsPoseClassNoChangeDriver, YavinsPoseClassNoChangeOperator
-from humanInterface.operatorInterface import OperatorInterface, ElevArmCmdState, ReefLeftOrRight
-from humanInterface.driverInterface import DriverInterface
+from positionSchemes.replaceWithYavinsPosesClass import YavinsPoseClassNoChangeDriver, YavinsPoseClassNoChangeOperator
+from humanInterface.operatorInterface import ElevArmCmdState
 
 from utils.singleton import Singleton
 
