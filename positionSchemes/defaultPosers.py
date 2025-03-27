@@ -1,18 +1,14 @@
-
 from drivetrain.drivetrainCommand import DrivetrainCommand
 from Elevatorandmech.ElevatorCommand import ElevatorCommand
 from Elevatorandmech.ArmCommand import ArmCommand
-from Elevatorandmech.RobotPoserCommon import PoseDirectorCommon
 
-from humanInterface.driverInterface import DriverInterface
-from humanInterface.operatorInterface import OperatorInterface
 class PoserNoChangeDriver():
-    def __init__(self, poseDirectorCommon: PoseDirectorCommon):
+    def __init__(self, poseDirectorCommon):
         self.arm = poseDirectorCommon.arm
         self.driveTrain = poseDirectorCommon.driveTrain
         self.elev = poseDirectorCommon.elevator
-        self.oInt: OperatorInterface = poseDirectorCommon.oInt
-        self.dInt: DriverInterface = poseDirectorCommon.dInt
+        self.oInt = poseDirectorCommon.oInt
+        self.dInt = poseDirectorCommon.dInt
 
 
     # Every frame the update will be called, and then later, the updates for the Drivetrain, Elevator, and Arm will be called and they will all "get" their commands.
@@ -33,12 +29,12 @@ class PoserNoChangeDriver():
 
 
 class PoserNoChangeOperator():
-    def __init__(self, poseDirectorCommon: PoseDirectorCommon):
+    def __init__(self, poseDirectorCommon):
         self.arm = poseDirectorCommon.arm
         self.driveTrain = poseDirectorCommon.driveTrain
         self.elev = poseDirectorCommon.elevator
-        self.oInt: OperatorInterface = poseDirectorCommon.oInt
-        self.dInt: DriverInterface = poseDirectorCommon.dInt
+        self.oInt = poseDirectorCommon.oInt
+        self.dInt = poseDirectorCommon.dInt
 
     # Every frame the update will be called, and then later, the updates for the Drivetrain, Elevator, and Arm will be called and they will all "get" their commands.
     def update(self):
@@ -60,12 +56,12 @@ class PoserNoChangeOperator():
 
 class PoserVelocityControlDriver():
 
-    def __init__(self, poseDirectorCommon: PoseDirectorCommon):
+    def __init__(self, poseDirectorCommon):
         self.arm = poseDirectorCommon.arm
         self.driveTrain = poseDirectorCommon.driveTrain
         self.elev = poseDirectorCommon.elevator
-        self.oInt: OperatorInterface = poseDirectorCommon.oInt
-        self.dInt: DriverInterface = poseDirectorCommon.dInt
+        self.oInt = poseDirectorCommon.oInt
+        self.dInt = poseDirectorCommon.dInt
 
     # Every frame the update will be called, and then later, the updates for the Drivetrain, Elevator, and Arm will be called and they will all "get" their commands.
     def update(self):
@@ -83,12 +79,12 @@ class PoserVelocityControlDriver():
 
 class PoserVelocityControlOperator():
 
-    def __init__(self, poseDirectorCommon: PoseDirectorCommon):
+    def __init__(self, poseDirectorCommon):
         self.arm = poseDirectorCommon.arm
         self.driveTrain = poseDirectorCommon.driveTrain
         self.elev = poseDirectorCommon.elevator
-        self.oInt: OperatorInterface = poseDirectorCommon.oInt
-        self.dInt: DriverInterface = poseDirectorCommon.dInt
+        self.oInt= poseDirectorCommon.oInt
+        self.dInt = poseDirectorCommon.dInt
         self.elevatorVelocityInps = 0
         self.armVelocityDegps = 0
 

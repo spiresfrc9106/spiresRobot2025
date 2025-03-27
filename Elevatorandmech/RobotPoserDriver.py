@@ -26,7 +26,7 @@ class PoseDirectorDriver(metaclass=Singleton):
 
         self.common.controllerStateDriver = ElevArmCmdState.UNINITIALIZED
         self.common.prevControllerStateDriver = self.common.controllerStateDriver
-        self.common.currentPositionSchemeDriver = PoserClassNoChangeDriver(self.common)
+        self.common.currentPositionSchemeDriver = PoserNoChangeDriver(self.common)
         self.getDriveTrainCommand = lambda curCommand : self.common.currentPositionSchemeDriver.getDriveTrainCommand(curCommand)
         self.schemeProg = 0
         self.dashboardState = 1 # State 1, put the autonomous menu back up on the webserver dashboard
