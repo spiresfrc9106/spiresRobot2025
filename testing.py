@@ -40,7 +40,7 @@ if __name__ == "__main__":
     for pos in startPosList:
         print()
         print()
-        print(pI.decidePlacementPoseNoah(1, 0))
+        print(pI.decidePlacementPoseNoah(1, 0, startingPositionID17))
         print()
         print()
 

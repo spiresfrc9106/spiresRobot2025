@@ -40,9 +40,9 @@ class PlacementIntelligence():
         bestTagLocation = Pose2d(pos.x, pos.y, ((math.pi + pos.t) % (2 * math.pi)))
         return bestTagLocation
 
-    def decidePlacementPoseNoah(self, sideOfReef, bumperToEdge_m):
+    def decidePlacementPoseNoah(self, sideOfReef, bumperToEdge_m, currentPose):
 
-        self.currentTarget = self.decidePlacementTag()
+        self.currentTarget = self.decidePlacementTagNoah(currentPose)
         bestTagLocation = self.field.lookup(self.currentTarget).toPose2d()
         front_half_width = self.botLenX / 2
         edge_to_center_d = front_half_width + self.indivBumperWidth
