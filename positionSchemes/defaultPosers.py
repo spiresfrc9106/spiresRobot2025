@@ -93,7 +93,7 @@ class PoserVelocityControlOperator():
     def update(self):
         self.elevatorVelocityInps = self.oInt.elevatorVelYCmd * self.elev.maxVelocityInps #was effectively 20 was 10
         #print(f"elevatorVelocityInps={self.elevatorVelocityInps}")
-        self.armVelocityDegps = self.oInt.armVelYCmd * 720  # was 10 # TODO fix this like the elevator
+        self.armVelocityDegps = self.oInt.armVelYCmd * self.arm.maxVelocityDegps  # was 10
 
 
     ##### FIX THESE!!!!!! RIGHT NOW THEY AREN'T IMMUNE TO NONE!!!!

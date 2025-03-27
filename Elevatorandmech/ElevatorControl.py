@@ -256,12 +256,12 @@ class ElevatorControl(metaclass=Singleton):
 
     def _loadMaxVelAndAccFromCal(self):
         self.maxVelocityInps = self.calMaxVelocityInps.get()
-        self.maxAccelerationInps = self.calMaxAccelerationInps2.get()
+        self.maxAccelerationInps2 = self.calMaxAccelerationInps2.get()
 
     def _loadNewTrapProfiler(self):
         self.trapProfiler = TrapezoidProfile(
             TrapezoidProfile.Constraints(self.maxVelocityInps,
-                                         self.maxAccelerationInps))
+                                         self.maxAccelerationInps2))
 
     def hasMaxVelOrAccChanged(self):
         result = False
@@ -356,7 +356,7 @@ class ElevatorControl(metaclass=Singleton):
 
         if velocityCmd:
             desiredVelocityIsMaxVelocityProfiler = TrapezoidProfile(
-                TrapezoidProfile.Constraints(abs(self.desTrapPState.velocity), self.maxAccelerationInps))
+                TrapezoidProfile.Constraints(abs(self.desTrapPState.velocity), self.maxAccelerationInps2))
             possibleNextTrapPState = desiredVelocityIsMaxVelocityProfiler.calculate(TIME_STEP_S, self.curTrapPState, self.desTrapPState)
         else:
             possibleNextTrapPState = self.trapProfiler.calculate(TIME_STEP_S, self.curTrapPState, self.desTrapPState)
