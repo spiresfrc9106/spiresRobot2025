@@ -25,7 +25,6 @@ class ModeList:
         self.modes.append(modeIn)
 
     def setCurModeToDefault(self):
-        # todo Noah Change this set-in-stone loop to make it more flexible with Main Mode List changes, deleting modes based on the Name rather than starting at index 2
         self.curModeIdx = 0
 
 
