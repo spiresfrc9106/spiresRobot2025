@@ -33,9 +33,10 @@ class AutoSequencer(metaclass=Singleton):
         self.mainModeList.addMode(DoNothingMode())
         #right now, DriveOut is all commented out, so we don't need to add it to the list. 
         #self.mainModeList.addMode(DriveOut())
-        self.mainModeList.addMode(Square())
 
-        self.currentTeam = onRed() #i was doing something with this
+        #for testing
+        #self.mainModeList.addMode(Square())
+
         if onRed():
             self.addRedAllianceModes()
         else:
@@ -64,28 +65,25 @@ class AutoSequencer(metaclass=Singleton):
         self.mainModeList.addMode(newMode)
 
     def addRedAllianceModes(self):
-        #self.mainModeList.addMode(RedRightDriveOut())
-        #self.mainModeList.addMode(RedLeftDriveOut())
-        #self.mainModeList.addMode(RedCenterDriveOut())
         pass
 
+
     def addBlueAllianceModes(self):
-        #self.mainModeList.addMode(BlueLeftDriveOut())
-        #self.mainModeList.addMode(BlueCenterDriveOut())
-        #self.mainModeList.addMode(BlueRightDriveOut())
         pass
 
     def updateMainModeListAlliance(self):
         if self._allianceChanged():
             self.mainModeList.deleteOppositeColorModes()
-            self.changedMenu = True
             if onRed():
                 self.addRedAllianceModes()
             else:
                 self.addBlueAllianceModes()
+            self.changedMenu = True
+
     # Call this periodically while disabled to keep the dashboard updated
     # and, when things change, re-init modes
     def updateMode(self, force=False):
+
 
         self.updateMainModeListAlliance()
 

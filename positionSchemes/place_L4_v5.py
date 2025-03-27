@@ -16,9 +16,9 @@ from wpimath.geometry import Pose2d
 
 # if you can't find something here, it's probably in the _setup file.
 
-class PlaceL4V1(SetupScheme):
+class PlaceL4V5(SetupScheme):
     def __init__(self, arm, base, elev, oInt):
-        super().__init__(arm, base, elev)
+        super().__init__(arm=arm, base=base, elev=elev)
         self.arm = arm
         self.base = base
         self.elev = elev
@@ -44,7 +44,7 @@ class PlaceL4V1(SetupScheme):
         # structure:
         #   base: (Pose2d, velx, vely, velt)
         #   arm: (position_deg, deg/s)
-        #   elev: (pasition_in, in/s)
+        #   elev: (position_in, in/s)
 
         self.totalRuns = 0
         self.bestTag = 0
@@ -59,65 +59,60 @@ class PlaceL4V1(SetupScheme):
         currentTime = Timer.getFPGATimestamp()
         time = currentTime - self.startTime
         match self.currentState:
-            case 0:  # initializing
-                # self.armCmd/elevCmd could be called here to prep for the fun thing.
-                self.bestTag = self.placementIntel.decidePlacementPose(self.pdSideOfReef, self.inchesToMeters(11))
+            case 0:
+                self.bestTag = self.placementIntel.decidePlacementPose(0, self.inchesToMeters(20))
                 print(f"place l4 time = {Timer.getFPGATimestamp():.3f}s x={self.bestTag.x:+10.1f}m y={self.bestTag.y:+10.1f}m t={self.bestTag.rotation().degrees():+10.1f}deg")
                 self.setDriveTrainBaseCommand(self.bestTag)
-                # CAN WE DO BETTER?  YES OF COURSE WE CAN.
-                self.armCmd = (90, 0)  # straight up so no bumping.
-                if self.completedAwait("awaitbasecmdsendplz", 0.2):
+                self.setArmCommand(90, 0)
+                self.updateProgressTrajectory()
+                if self.completedTrajectory(self.base, 6, 5) or self.oInt.skipNext:
                     self.nextState()
             case 1:
-                if self.completedTrajectory(self.base) or self.oInt.skipNext:
-                    self.nextState()
-                pass
-            case 2:
                 self.bestTag = self.placementIntel.decidePlacementPose(self.pdSideOfReef, self.inchesToMeters(7))
-                self.elevCmd = (self.elevPlacePos, 0)
-                self.armCmd = (self.armPlacePos, 0)
+                self.setElevatorCommand(self.elevPlacePos, 0)
+                self.setArmCommand(self.armPlacePos, 0)
                 self.setDriveTrainBaseCommand(self.bestTag)
-                if self.completedAwait("waitforcmdsend1", 0.2):
+                if self.completedAwait("awaitForCmd2", 0.2):
                     self.nextState()
-            case 3:
-                elevGoalReached = math.isclose(self.elev.getPosition(), self.elevPlacePos, abs_tol=0.5)
-                armGoalReached = math.isclose(self.arm.getPosition(), self.armPlacePos, abs_tol=5)  # is abs_tol# good?
-                baseGoalReached = self.completedTrajectory(self.base)
+            case 2:
+                elevGoalReached = math.isclose(self.elev.getPosition(), self.elevPlacePos, abs_tol=1) #og 0.5
+                armGoalReached = math.isclose(self.arm.getPosition(), self.armPlacePos, abs_tol=2.5)  # is abs_tol good?
+                baseGoalReached = self.completedTrajectory(self.base, 0.75, 3)
                 if (elevGoalReached and armGoalReached and baseGoalReached) or self.oInt.skipNext:
                     self.nextState()
                 else:
                     self.localProg = sum([elevGoalReached, armGoalReached, baseGoalReached])/3
-            case 4: #human input
-                elevCmdOIntNorm = self.oInt.elevatorPosYCmd * 10
-                armCmdOIntNorm = self.oInt.armPosYCmd * 30
+            case 3:
+                elevCmdOIntNorm = self.oInt.elevatorVelYCmd * 10
+                armCmdOIntNorm = self.oInt.armVelYCmd * 30
                 xCmdDIntNorm = self.dInt.getVelXCmd() * MAX_FWD_REV_SPEED_MPS
                 yCmdDIntNorm = self.dInt.getVelYCmd() * MAX_FWD_REV_SPEED_MPS
-                elevCmdOIntNew = elevCmdOIntNorm*0.02
-                armCmdOIntNew = armCmdOIntNorm*0.02
-                xCmdDIntNew = xCmdDIntNorm*0.02
-                yCmdDIntNew = yCmdDIntNorm*0.02
-                self.armCmd = (None, armCmdOIntNew)
-                self.elevCmd = (None, elevCmdOIntNew)
+                elevCmdOIntNew = elevCmdOIntNorm*0.5
+                armCmdOIntNew = armCmdOIntNorm*0.5
+                xCmdDIntNew = xCmdDIntNorm*0.25
+                yCmdDIntNew = yCmdDIntNorm*0.25
+                self.setArmCommand(None, armCmdOIntNew)
+                self.setElevatorCommand(None, elevCmdOIntNew)
                 self.basePrimitiveCmd = (xCmdDIntNew, yCmdDIntNew, 0)
                 if self.oInt.launchPlacement:
                     self.nextState()
-            case 5: #launch it bruh
+            case 4:
                 self.basePrimitiveCmd = None
-                self.armCmd = (50, -15)
-                armGoalReached = math.isclose(self.arm.getPosition(), self.armPlacePos, abs_tol=0.75)
+                self.setArmCommand(47, -15)
+                self.armPlacePos = 47
+                armGoalReached = math.isclose(self.arm.getPosition(), self.armPlacePos, abs_tol=3)
                 if armGoalReached or self.oInt.skipNext:
                     self.nextState()
-            case 6:
-                self.armCmd = (-15, 0)
-                self.bestTag = self.placementIntel.decidePlacementPose(self.pdSideOfReef, self.inchesToMeters(10))
+            case 5:
+                self.setArmCommand(-15, 0)
+                self.bestTag = self.placementIntel.decidePlacementPose(self.pdSideOfReef, self.inchesToMeters(20))
                 self.setDriveTrainBaseCommand(self.bestTag)
-                if self.completedTrajectory(self.base) or self.oInt.skipNext:
+                if self.completedTrajectory(self.base, 2, 4) or self.oInt.skipNext:
                     self.nextState()
-            case 7:
+            case 6:
                 pass
             case _:
                 pass
 
-        state_max = 7
-        # when calculating the scheme prog, we can also add in local progress to show something as we go thru state.
-        self.schemeProg = min((self.currentState+self.localProg) / (state_max), 1)
+        state_max = 6
+        self.schemeProg = min((self.currentState+(self.localProg*0.9)) / state_max, 1)

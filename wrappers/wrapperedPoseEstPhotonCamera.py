@@ -47,7 +47,7 @@ class WrapperedPoseEstPhotonCamera:
         addLog("ytest_targets_photon_seen", lambda: self.targetLength, "")
 
 
-    def update(self, prevEstPose:Pose2d):
+    def update(self, prevEstPose:Pose2d, yawRateDegps=float):
 
         self.poseEstimates = []
 

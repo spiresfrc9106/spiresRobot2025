@@ -62,7 +62,27 @@ class WrapperedPoseEstLimelight:
         addLog("ytest_targets_limelight_seen", lambda: self.targetLength, "")
         addLog(f"ytest_{camName}total_latency", lambda: self.latency, '')
 
-    def update(self, prevEstPose:Pose2d):
+
+    def updateGyroHeading(self, prevEstPose:Pose2d, yawRateDegps:float):
+        """
+        self.cam.set_robot_orientation(
+            yaw_degrees: float,
+            yaw_rate_degrees_per_second: float,
+                              pitch_degrees: float, pitch_rate_degrees_per_second: float,
+                              roll_degrees: float, roll_rate_degrees_per_second: float)
+        """
+        x = prevEstPose.x
+        yawDeg = prevEstPose.rotation().degrees()
+        self.cam.set_robot_orientation(
+            yaw_degrees=yawDeg,
+            yaw_rate_degrees_per_second=yawRateDegps,
+            pitch_degrees=0.0,
+            pitch_rate_degrees_per_second=0.0,
+            roll_degrees=0.0,
+            roll_rate_degrees_per_second= 0.0)
+
+    def update(self, prevEstPose:Pose2d, yawRateDegps):
+        self.updateGyroHeading(prevEstPose, yawRateDegps)
         self.cam.update()
 
         self.poseEstimates = []
@@ -74,7 +94,6 @@ class WrapperedPoseEstLimelight:
 
         #res = self.cam.getLatestResult()
         # broken in photonvision 2.4.2. Hack with the non-broken latency calcualtion
-        # TODO: in 2025, fix this to actually use the real latency
         self.latency = self.cam.get_latency_total()
         latency = self.latency # a total guess
         obsTime = wpilib.Timer.getFPGATimestamp() - latency

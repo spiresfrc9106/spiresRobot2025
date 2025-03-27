@@ -22,7 +22,6 @@ from drivetrain.drivetrainPhysical import (
     WHEEL_MOTOR_WRAPPER,
 )
 from drivetrain.drivetrainCommand import DrivetrainCommand
-from drivetrain.controlStrategies.autoDrive import AutoDrive
 from drivetrain.controlStrategies.trajectory import Trajectory
 from drivetrain.controlStrategies.trajectoryGuts import TrajectoryGuts
 from utils.singleton import Singleton
@@ -40,7 +39,7 @@ from utils.constants import (DT_FL_WHEEL_CANID,
                              DT_BL_AZMTH_ENC_PORT,
                              DT_BR_AZMTH_ENC_PORT)
 from wrappers.wrapperedGyro import wrapperedGyro
-from Elevatorandmech.RobotPoser import PoseDirector
+from positionSchemes.RobotPoserDriver import PoseDirectorDriver
 from utils.signalLogging import addLog
 
 class DrivetrainControl(metaclass=Singleton):
@@ -90,13 +89,15 @@ class DrivetrainControl(metaclass=Singleton):
         self.tcPoseEst = TargetCentricPoseEstimator(self.getModulePositions(), self.gyro)
 
         self._updateAllCals()
-        self.poser = PoseDirector()
+        self.poser = PoseDirectorDriver()
         self.cmdVelX = 0
         self.cmdVelY = 0
         self.cmdVelT = 0
         addLog("yvn_drive_cmd_velx", lambda: self.cmdVelX, "")
         addLog("yvn_drive_cmd_vely", lambda: self.cmdVelY, "")
         addLog("yvn_drive_cmd_velt", lambda: self.cmdVelT, "")
+        addLog(f"{self.name}/robotYawDeg", lambda: self.poseEst.getCurEstPose().rotation().degrees(), "deg")
+        addLog(f"{self.name}/robotYawRateDegps", lambda: self.gyro.getGyroRotationRateDegps(), "degps")
 
         self.tcTraj = TrajectoryGuts()
         self.tcTraj.setName("TrajectoryTC")

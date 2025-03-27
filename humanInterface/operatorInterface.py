@@ -3,11 +3,6 @@ from wpimath import applyDeadband
 from wpimath.filter import SlewRateLimiter
 from wpilib import XboxController
 
-from dashboardWidgets.icon import Icon
-from drivetrain.drivetrainCommand import DrivetrainCommand
-from drivetrain.drivetrainPhysical import MAX_FWD_REV_SPEED_MPS,MAX_STRAFE_SPEED_MPS,\
-MAX_ROTATE_SPEED_RAD_PER_SEC,MAX_TRANSLATE_ACCEL_MPS2,MAX_ROTATE_ACCEL_RAD_PER_SEC_2
-from utils.allianceTransformUtils import onRed
 from utils.faults import Fault
 from utils.signalLogging import addLog
 from utils.singleton import Singleton
@@ -18,7 +13,6 @@ class ReefLeftOrRight(IntEnum):
     RIGHT = 1
 class ElevArmCmdState(IntEnum):
     VEL_CONTROL = 0
-    POS_CONTROL = 1
     PLUNGE = 2
     RECEIVE_CORAL = 3
     L1 = 4
@@ -44,34 +38,21 @@ class OperatorInterface(metaclass=Singleton):
 
 
         # Drivetrain motion commands
-        self.elevatorPosYCmd = 0
-        self.armPosYCmd = 0
+        self.elevatorVelYCmd = 0
+        self.armVelYCmd = 0
 
         # Driver motion rate limiters - enforce smoother driving
         #self.velXSlewRateLimiter = SlewRateLimiter(rateLimit=MAX_TRANSLATE_ACCEL_MPS2)
 
-        self.dPadState = ReefLeftOrRight.LEFT
+        #self.dPadState = ReefLeftOrRight.LEFT
         self.skipNext = False
 
         # Logging
-        addLog("OI/Elevator Pos Cmd", lambda: self.elevatorPosYCmd, "frac")
-        addLog("OI/Elevator Pos In", lambda: self.getDesElevatorPosIn(), "in")
-        addLog("OI/Arm Pos Cmd", lambda: self.armPosYCmd, "frac")
-        addLog("OI/armPosYCmd", lambda: self.armPosYCmd, "frac")
+        addLog("OI/elevatorVelCmd", lambda: self.elevatorVelYCmd, "frac")
+        addLog("OI/elevator Pos In", lambda: self.getDesElevatorPosIn(), "in")
+        addLog("OI/armVelCmd", lambda: self.armVelYCmd, "frac")
         addLog("OI/elevArmCmdState", lambda: self.elevArmCmdState, "int")
-        addLog("OI/ReefLeftOrRight", lambda: self.dPadState, "int")
 
-        addLog("isLeftReef",
-               lambda: (
-                   Icon.kON if self.getReefLeftOrRight() == ReefLeftOrRight.LEFT
-                   else Icon.kOFF)
-               )
-
-        addLog("isRightReef",
-               lambda: (
-                   Icon.kON if self.getReefLeftOrRight() == ReefLeftOrRight.RIGHT
-                   else Icon.kOFF)
-               )
 
 
 
@@ -85,62 +66,50 @@ class OperatorInterface(metaclass=Singleton):
             rightYJoyRaw = self.ctrl.getRightY() * -1 # TODO xyzzy talk to Benjamin about a better name for this
 
             # deadband
-            vYJoyWithDeadband = applyDeadband(leftYJoyRaw, 0.15)
-            vYJoy2WithDeadband = applyDeadband(rightYJoyRaw, 0.15) # TODO xyzzy talk to Benjamin about a better name for this
+            vElevJoyWithDeadband = applyDeadband(leftYJoyRaw, 0.05)
+            vArmJoyWithDeadband = applyDeadband(rightYJoyRaw, 0.05) # TODO xyzzy talk to Benjamin about a better name for this
 
-            self.elevatorPosYCmd = vYJoyWithDeadband
-            self.armPosYCmd = vYJoy2WithDeadband
+            slowMult = 1.0 if (self.ctrl.getRightBumper()) else 0.2
+            
+            self.elevatorVelYCmd = vElevJoyWithDeadband * slowMult
+            self.armVelYCmd = vArmJoyWithDeadband * slowMult
+
+            #print(f"elevatorVelYCmd={self.elevatorVelYCmd}")
+            
             self.skipNext = self.ctrl.getBackButtonPressed()
 
-            updateReefSide = True
             self.launchPlacement = self.ctrl.getLeftBumperPressed()
 
-            if self.ctrl.getRightBumperPressed():
-                self.elevArmCmdState = ElevArmCmdState.VEL_CONTROL  # xyzzy redundant because this is also the default
-            elif self.ctrl.getLeftBumperPressed():
-                pass #self.elevArmCmdState = ElevArmCmdState.POS_CONTROL
-            elif self.ctrl.getRightTriggerAxis() > .5:
+            if self.ctrl.getRightTriggerAxis() > .5:
                 self.elevArmCmdState = ElevArmCmdState.PLUNGE
             elif self.ctrl.getLeftTriggerAxis() > .5:
                 self.elevArmCmdState = ElevArmCmdState.RECEIVE_CORAL
             elif self.ctrl.getAButton():
-                updateReefSide = False
                 self.elevArmCmdState = ElevArmCmdState.L1
             elif self.ctrl.getXButton():
-                updateReefSide = False
                 self.elevArmCmdState = ElevArmCmdState.L2
             elif self.ctrl.getBButton():
-                updateReefSide = False
                 self.elevArmCmdState = ElevArmCmdState.L3
             elif self.ctrl.getYButton():
-                updateReefSide = False
                 self.elevArmCmdState = ElevArmCmdState.L4
             else:
                 self.elevArmCmdState = ElevArmCmdState.VEL_CONTROL
 
-            if updateReefSide:
-                self.updateDPadLeftOrRight()
         else:
+            self.elevArmCmdState = ElevArmCmdState.UNINITIALIZED
             # If the joystick is unplugged, pick safe-state commands and raise a fault
-            self.elevatorPosYCmd = 0.0
-            self.armPosYCmd = 0.0
+            self.elevatorVelYCmd = 0.0
+            self.armVelYCmd = 0.0
 
-    def updateDPadLeftOrRight(self):
-        if self.ctrl.isConnected():
-            pov_deg = self.ctrl.getPOV()
-            if pov_deg >= 45 and pov_deg <=135:
-                self.dPadState = ReefLeftOrRight.RIGHT
-            elif pov_deg >= 225 and pov_deg <= 315:
-                self.dPadState = ReefLeftOrRight.LEFT
 
 # don't delete these they are unfortunately important (crying face emoji)
 
     def getDesElevatorPosIn(self)->float:
         elevatorRangeIn = 5.0
-        return (elevatorRangeIn/2.0) * (1.0 + self.elevatorPosYCmd)
+        return (elevatorRangeIn/2.0) * (1.0 + self.elevatorVelYCmd)
 
     def getDesArmAngleDeg(self)->float:
-        return 90.0 * self.armPosYCmd
+        return 90.0 * self.armVelYCmd
 
     def getElevArmCmdState(self)->ElevArmCmdState:
         return self.elevArmCmdState

@@ -1,37 +1,35 @@
 import math
-from Elevatorandmech.armtest import ArmControl
-from Elevatorandmech.elevatortest import ElevatorControl
+
 from wpilib import Timer
 from utils.signalLogging import addLog
 from positionSchemes._setup import SetupScheme, ArmConsts, ElevConsts
-from drivetrain.drivetrainCommand import DrivetrainCommand
-from Elevatorandmech.ElevatorCommand import ElevatorCommand
-from Elevatorandmech.ArmCommand import ArmCommand
-from wpimath.geometry import Pose2d
 from positionSchemes._posintelligence import PlacementIntelligence
-from humanInterface.operatorInterface import OperatorInterface, ReefLeftOrRight
-from humanInterface.driverInterface import DriverInterface
+from positionSchemes.RobotPoserCommon import PoseDirectorCommon
+from humanInterface.operatorInterface import ReefLeftOrRight
 from drivetrain.drivetrainPhysical import MAX_FWD_REV_SPEED_MPS,MAX_STRAFE_SPEED_MPS
-from wpimath.geometry import Pose2d
+
 
 # if you can't find something here, it's probably in the _setup file.
 
 class PlaceL1V1(SetupScheme):
-    def __init__(self, arm, base, elev, oInt):
-        super().__init__(arm, base, elev)
-        self.arm = arm
-        self.base = base
-        self.elev = elev
-        self.oInt = oInt
-        self.dInt = DriverInterface()
-        self.pdReefSideState = self.oInt.dPadState
+
+    def __init__(self, poseDirectorCommon: PoseDirectorCommon):
+        super().__init__(arm=poseDirectorCommon.arm, base=poseDirectorCommon.driveTrain, elev=poseDirectorCommon.elevator)
+        self.pdc = poseDirectorCommon
+        self.arm = poseDirectorCommon.arm
+        self.base = poseDirectorCommon.driveTrain
+        self.elev = poseDirectorCommon.elevator
+        self.oInt = poseDirectorCommon.oInt
+        self.dInt = poseDirectorCommon.dInt
+
+        self.pdReefSideState = self.dInt.dPadState
         self.pdSideOfReef = -1
+
         if self.pdReefSideState == ReefLeftOrRight.RIGHT:
             self.pdSideOfReef = 1
         self.armConst = ArmConsts()
         self.elevConst = ElevConsts()
         self.currentState = 0
-        self.oInt = oInt
 
         self.startTime = Timer.getFPGATimestamp()
         self.changeInTime = 0
@@ -87,8 +85,8 @@ class PlaceL1V1(SetupScheme):
                 else:
                     self.localProg = sum([elevGoalReached, armGoalReached, baseGoalReached])/3
             case 4: #human input
-                elevCmdOIntNorm = self.oInt.elevatorPosYCmd * 10
-                armCmdOIntNorm = self.oInt.armPosYCmd * 30
+                elevCmdOIntNorm = self.oInt.elevatorVelYCmd * 10
+                armCmdOIntNorm = self.oInt.armVelYCmd * 30
                 xCmdDIntNorm = self.dInt.getVelXCmd() * MAX_FWD_REV_SPEED_MPS
                 yCmdDIntNorm = self.dInt.getVelYCmd() * MAX_FWD_REV_SPEED_MPS
                 elevCmdOIntNew = elevCmdOIntNorm*0.02

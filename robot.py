@@ -5,12 +5,13 @@ import ntcore as nt
 from wpimath.geometry import Translation2d, Pose2d, Rotation2d
 from dashboard import Dashboard
 from Elevatorandmech.ElevatorControl import ElevatorControl, elevDepConstants
-from Elevatorandmech.NewArmControl import ArmControl, armDepConstants
-from Elevatorandmech.RobotPoser import PoseDirector
+from Elevatorandmech.ArmControl import ArmControl, armDepConstants
+from positionSchemes.RobotPoserCommon import PoseDirectorCommon
+from positionSchemes.RobotPoserDriver import PoseDirectorDriver
+from positionSchemes.RobotPoserOperator import PoseDirectorOperator
 from testingMotors.motorCtrl import MotorControl, motorDepConstants
 from drivetrain.controlStrategies.autoDrive import AutoDrive
 from drivetrain.controlStrategies.trajectory import Trajectory
-from drivetrain.controlStrategies.trajectoryGuts import TrajectoryGuts
 from drivetrain.drivetrainCommand import DrivetrainCommand
 from drivetrain.drivetrainControl import DrivetrainControl
 from drivetrain.DrivetrainDependentConstants import drivetrainDepConstants
@@ -24,7 +25,6 @@ from utils.signalLogging import logUpdate, getNowLogger
 from utils.calibration import CalibrationWrangler
 from utils.faults import FaultWrangler
 from utils.crashLogger import CrashLogger
-from utils.rioMonitor import RIOMonitor
 from utils.robotIdentification import RobotIdentification
 from utils.singleton import destroyAllSingletonInstances
 from utils.powerMonitor import PowerMonitor
@@ -67,10 +67,6 @@ class MyRobot(wpilib.TimedRobot):
         if elevDepConstants['HAS_ELEVATOR']:
             self.elev= ElevatorControl()
 
-        self.poseDirector = PoseDirector()
-        self.poseDirector.initialize(self.arm, self.driveTrain, self.elev)
-
-
         self.autodrive = AutoDrive()
 
         self.stt = SegmentTimeTracker(longLoopPrintEnable=False, epochTracerEnable=False)
@@ -78,6 +74,16 @@ class MyRobot(wpilib.TimedRobot):
         self.dInt = DriverInterface()
         self.oInt = OperatorInterface()
         self.ledCtrl = LEDControl()
+
+        self.poseDirectorCommon = PoseDirectorCommon()
+        self.poseDirectorDriver = PoseDirectorDriver()
+        self.poseDirectorOperator = PoseDirectorOperator()
+        self.poseDirectorCommon.initialize(
+            self.poseDirectorDriver,
+            self.poseDirectorOperator,
+            self.dInt, self.oInt, self.driveTrain, self.arm, self.elev)
+        self.poseDirectorDriver.initialize()
+        self.poseDirectorOperator.initialize()
 
         self.autoSequencer = AutoSequencer()
 
@@ -170,15 +176,18 @@ class MyRobot(wpilib.TimedRobot):
         self.autoHasRun = True # pylint: disable=attribute-defined-outside-init
 
         if armDepConstants['HAS_ARM']:
+            self.arm.forceReInit()
             self.arm.initialize()
 
         if elevDepConstants['HAS_ELEVATOR']:
+            self.elev.forceReInit()
             self.elev.initialize()
 
     def autonomousPeriodic(self):
 
         self.autoSequencer.update()
-        self.poseDirector.update(isAuton=True)
+        self.poseDirectorDriver.update(isAuton=True)
+        self.poseDirectorOperator.update(isAuton=True)
 
         # Operators cannot control in autonomous
         if drivetrainDepConstants['HAS_DRIVETRAIN']:
@@ -239,7 +248,8 @@ class MyRobot(wpilib.TimedRobot):
         if drivetrainDepConstants['HAS_DRIVETRAIN']:
             self.driveTrain.setManualCmd(self.dInt.getCmd(), self.dInt.getRobotRelative())
 
-        self.poseDirector.update()
+        self.poseDirectorDriver.update()
+        self.poseDirectorOperator.update()
 
         if self.dInt.getGyroResetCmd():
             if drivetrainDepConstants['HAS_DRIVETRAIN']:
@@ -288,7 +298,7 @@ class MyRobot(wpilib.TimedRobot):
 
 
     def disabledInit(self):
-        self.poseDirector.setDashboardState(1) # State 1, put the autonomous menu back up on the webserver dashboard
+        self.poseDirectorOperator.setDashboardState(1) # State 1, put the autonomous menu back up on the webserver dashboard
         self.autoSequencer.updateMode(True)
         if armDepConstants['HAS_ARM'] and self.arm is not None:
             self.arm.disable()

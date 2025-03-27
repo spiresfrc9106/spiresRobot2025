@@ -18,6 +18,8 @@ class SetupScheme:
     def __init__(self, arm, base, elev):
         self.startTime = Timer.getFPGATimestamp()
         self.setupBase = base
+        self.setupArm = arm
+        self.setupElev = elev
         self.changeInTime = 0
         self.waitTimes = {}
         self.schemeProg = 0
@@ -27,8 +29,12 @@ class SetupScheme:
         self.elevCmd = None
         self.basePrimitiveCmd = None
         self.bestTag = Pose2d()
-        self.initMax = 100
+        self.initMaxDistLoc = 100
+        self.initMaxDistDeg = 100
+        self.initMaxDistLen = 100
         self.initLoc = 0
+        self.initDeg = 0
+        self.initLen = 0
 
     def nextState(self):
         self.currentState = self.currentState + 1
@@ -51,11 +57,36 @@ class SetupScheme:
 
     def updateProgressTrajectory(self):
         if self.initLoc != self.bestTag:
-            self.initMax = self.getFullDistanceSubjective()
+            self.initMaxDistLoc = self.getFullDistanceSubjective()
         self.initLoc = self.bestTag
         current = self.getFullDistanceSubjective()
-        progress = (self.initMax-current)/self.initMax
+        progress = (self.initMaxDistLoc-current)/self.initMaxDistLoc
         self.localProg = max(progress, self.localProg)
+
+    def updateProgressArm(self):
+        full_delta = abs(self.armCmd[0] - self.setupArm.getPosition())
+        if self.initDeg != self.armCmd[0]:
+            self.initMaxDistDeg = full_delta
+        self.initDeg = self.armCmd[0]
+        progress = (self.initMaxDistDeg-full_delta)/self.initMaxDistDeg
+        self.localProg = max(progress, self.localProg)
+
+    def updateProgressElev(self):
+        full_delta = abs(self.elevCmd[0] - self.setupElev.getPosition())
+        if self.initLen != self.elevCmd[0]:
+            self.initMaxDistLen = full_delta
+        self.initLen = self.elevCmd[0]
+        progress = (self.initMaxDistLen - full_delta) / self.initMaxDistLen
+        self.localProg = max(progress, self.localProg)
+
+    def addIntoProgress(self, progress):
+        if self.localProg < 0:
+            self.localProg = progress
+        else:
+            self.localProg = (self.localProg + progress) / 2
+
+    def prepareForProgress(self):
+        self.localProg = -1
 
     def getFullDistanceSubjective(self):
         desPose = self.bestTag
@@ -83,6 +114,29 @@ class SetupScheme:
         dist_rotate = abs(curT-desT)
         return dist_translate < in2m(max_in) and dist_rotate < max_deg
 
+    def setArmCommand(self, x_deg: float | None, v_degps: float | None):
+        if x_deg is not None:
+            if v_degps is not None:
+                self.armCmd = (x_deg, v_degps)
+            else:
+                self.armCmd = (x_deg, 0)
+        else:
+            if v_degps is not None:
+                self.armCmd = (x_deg, v_degps)
+            else:
+                self.armCmd = None
+
+    def setElevatorCommand(self, x_in: float | None, v_inps: float | None):
+        if x_in is not None:
+            if v_inps is not None:
+                self.armCmd = (x_in, v_inps)
+            else:
+                self.armCmd = (x_in, 0)
+        else:
+            if v_inps is not None:
+                self.armCmd = (x_in, v_inps)
+            else:
+                self.armCmd = None
 
     def setDriveTrainBaseCommand(self, pose: Pose2d | None, vxMps: float = 0.0, vyMps: float = 0.0, vtRadps: float = 0.0):
 
@@ -166,7 +220,7 @@ class ElevConsts:
         ## INCHES
         self.posLow = 1
         self.posLowMid = 1.5  # this is the location that the robot should be right before hitting coral
-        self.posMedium = 45  # middle of elevator, default location.
+        self.posMedium = 55 #45  # middle of elevator, default location.
         self.posHigh = 3
         ## INCHES/S
         self.velLow = 1
