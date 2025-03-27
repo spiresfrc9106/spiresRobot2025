@@ -67,9 +67,6 @@ class MyRobot(wpilib.TimedRobot):
         if elevDepConstants['HAS_ELEVATOR']:
             self.elev= ElevatorControl()
 
-
-
-
         self.autodrive = AutoDrive()
 
         self.stt = SegmentTimeTracker(longLoopPrintEnable=False, epochTracerEnable=False)

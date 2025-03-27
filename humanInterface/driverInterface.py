@@ -135,9 +135,7 @@ class DriverInterface(metaclass=Singleton):
             updateReefSide = True
             self.launchPlacement = self.ctrl.getLeftBumperPressed()
 
-            if self.ctrl.getLeftTriggerAxis() > .5:
-                self.elevArmCmdState = ElevArmCmdState.RECEIVE_CORAL
-            elif self.ctrl.getAButton():
+            if self.ctrl.getAButton():
                 updateReefSide = False
                 self.elevArmCmdState = ElevArmCmdState.L1
             elif self.ctrl.getXButton():

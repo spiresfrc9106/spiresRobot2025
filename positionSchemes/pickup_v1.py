@@ -1,28 +1,24 @@
 import math
 
-from Elevatorandmech.armtest import ArmControl
-from Elevatorandmech.elevatortest import ElevatorControl
 from wpilib import Timer
 from utils.signalLogging import addLog
 from positionSchemes._setup import SetupScheme, ArmConsts, ElevConsts
-from drivetrain.drivetrainCommand import DrivetrainCommand
-from Elevatorandmech.ElevatorCommand import ElevatorCommand
-from Elevatorandmech.ArmCommand import ArmCommand
-from wpimath.geometry import Pose2d
+from positionSchemes.RobotPoserCommon import PoseDirectorCommon
 from positionSchemes._posintelligence import PickupIntelligence
 
 #if you can't find something here, it's probably in the _setup file.
 
 class PickupV1(SetupScheme):
-    def __init__(self, arm, base, elev, oInt):
-        super().__init__(arm, base, elev)
-        self.arm = arm
-        self.base = base
-        self.elev = elev
+    def __init__(self, poseDirectorCommon: PoseDirectorCommon):
+        super().__init__(arm=poseDirectorCommon.arm, base=poseDirectorCommon.driveTrain, elev=poseDirectorCommon.elevator)
+        self.arm = poseDirectorCommon.arm
+        self.base = poseDirectorCommon.driveTrain
+        self.elev = poseDirectorCommon.elevator
+        self.oInt = poseDirectorCommon.oInt
+
         self.armConst = ArmConsts()
         self.elevConst = ElevConsts()
         self.currentState = 0
-        self.oInt = oInt
 
         self.startTime = Timer.getFPGATimestamp()
         self.changeInTime = 0

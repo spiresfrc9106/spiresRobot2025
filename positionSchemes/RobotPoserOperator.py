@@ -1,5 +1,4 @@
 
-
 from positionSchemes.defaultPosers import PoserNoChangeOperator, PoserVelocityControlOperator
 from positionSchemes.RobotPoserCommon import PoseDirectorCommon
 from humanInterface.operatorInterface import ElevArmCmdState
@@ -11,13 +10,6 @@ from positionSchemes.place_L2_v1 import PlaceL2V1
 from positionSchemes.place_L1_v1 import PlaceL1V1
 from utils.signalLogging import addLog
 from utils.singleton import Singleton
-
-# add a state variable that keeps track of if one of the left3 dpads where pressed or one of the right3 dpads where press
-# default to the left3
-# add a method that returns the state variable
-# pass the poseDirectorOperator singleton to all calls that create posers
-# add a method to operator interface that keeps track of if the left3 buttons on the dpad are pressed or the right3
-# in posedirector update make the state variable updated.
 
 class PoseDirectorOperator(metaclass=Singleton):
 
@@ -75,22 +67,21 @@ class PoseDirectorOperator(metaclass=Singleton):
                 return PoserNoChangeOperator(self.common)
             case ElevArmCmdState.VEL_CONTROL:
                 return PoserVelocityControlOperator(self.common)
-
             case ElevArmCmdState.PLUNGE:
                 self.setDashboardState(5)
-                return PlungeV1(self.common.arm, self.common.driveTrain, self.common.elevator, self.common.oInt)
+                return PlungeV1(self.common)
             case ElevArmCmdState.RECEIVE_CORAL:
                 self.setDashboardState(4)
-                return PickupV1(self.common.arm, self.common.driveTrain, self.common.elevator, self.common.oInt)
+                return PickupV1(self.common)
             case ElevArmCmdState.L1:
                 self.setDashboardState(6)
-                return PlaceL1V1(self.common.arm, self.common.driveTrain, self.common.elevator, self.common.oInt)
+                return PlaceL1V1(self.common)
             case ElevArmCmdState.L2:
                 self.setDashboardState(6)
-                return PlaceL2V1(self.common.arm, self.common.driveTrain, self.common.elevator, self.common.oInt)
+                return PlaceL2V1(self.common)
             case ElevArmCmdState.L3:
                 self.setDashboardState(6)
-                return PlaceL3V1(self.common.arm, self.common.driveTrain, self.common.elevator, self.common.oInt)
+                return PlaceL3V1(self.common)
             case ElevArmCmdState.L4:
                 self.setDashboardState(6)
                 return PlaceL4V6O(self.common)
