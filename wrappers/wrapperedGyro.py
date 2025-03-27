@@ -30,6 +30,10 @@ class WrapperedAdis16470Imu(ADIS16470_IMU):
     def getGyroAngleRotation2d(self)->Rotation2d:
         return Rotation2d().fromDegrees(self.getAngle(self.getYawAxis()))
 
+    def getGyroRotationRateDegps(self)->float:
+        rateDegps = self.getRate(ADIS16470_IMU.IMUAxis.kYaw)
+        return rateDegps
+
 def wrapperedGyro():
     result = None
     if RobotIdentification().isSpiresRobot():

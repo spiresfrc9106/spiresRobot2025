@@ -96,6 +96,8 @@ class DrivetrainControl(metaclass=Singleton):
         addLog("yvn_drive_cmd_velx", lambda: self.cmdVelX, "")
         addLog("yvn_drive_cmd_vely", lambda: self.cmdVelY, "")
         addLog("yvn_drive_cmd_velt", lambda: self.cmdVelT, "")
+        addLog(f"{self.name}/robotYawDeg", lambda: self.poseEst.getCurEstPose().rotation().degrees(), "deg")
+        addLog(f"{self.name}/robotYawRateDegps", lambda: self.gyro.getGyroRotationRateDegps(), "degps")
 
         self.tcTraj = TrajectoryGuts()
         self.tcTraj.setName("TrajectoryTC")

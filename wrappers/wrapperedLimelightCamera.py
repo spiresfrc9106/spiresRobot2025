@@ -62,7 +62,27 @@ class WrapperedPoseEstLimelight:
         addLog("ytest_targets_limelight_seen", lambda: self.targetLength, "")
         addLog(f"ytest_{camName}total_latency", lambda: self.latency, '')
 
-    def update(self, prevEstPose:Pose2d):
+
+    def updateGyroHeading(self, prevEstPose:Pose2d, yawRateDegps:float):
+        """
+        self.cam.set_robot_orientation(
+            yaw_degrees: float,
+            yaw_rate_degrees_per_second: float,
+                              pitch_degrees: float, pitch_rate_degrees_per_second: float,
+                              roll_degrees: float, roll_rate_degrees_per_second: float)
+        """
+        x = prevEstPose.x
+        yawDeg = prevEstPose.rotation().degrees()
+        self.cam.set_robot_orientation(
+            yaw_degrees=yawDeg,
+            yaw_rate_degrees_per_second=yawRateDegps,
+            pitch_degrees=0.0,
+            pitch_rate_degrees_per_second=0.0,
+            roll_degrees=0.0,
+            roll_rate_degrees_per_second= 0.0)
+
+    def update(self, prevEstPose:Pose2d, yawRateDegps):
+        self.updateGyroHeading(prevEstPose, yawRateDegps)
         self.cam.update()
 
         self.poseEstimates = []

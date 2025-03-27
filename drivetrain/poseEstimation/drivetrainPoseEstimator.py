@@ -118,7 +118,7 @@ class DrivetrainPoseEstimator:
             # uses sloppy way to test. don't judge
             index = 0
             for cam in self.cams:
-                cam.update(self._curEstPose)
+                cam.update(self._curEstPose, self._getGyroRateDegps())
                 observations = cam.getPoseEstimates()
                 for observation in observations:
                     if self.includeInFilter[index]:
@@ -192,3 +192,6 @@ class DrivetrainPoseEstimator:
     # Local helper to wrap the real hardware angle into a Rotation2d
     def _getGyroAngle(self)->Rotation2d:
         return self._gyro.getGyroAngleRotation2d()
+
+    def _getGyroRateDegps(self)->float:
+        return self._gyro.getGyroRotationRateDegps()
