@@ -1,6 +1,6 @@
 
 
-from positionSchemes.replaceWithYavinsPosesClass import YavinsPoseClassNoChangeOperator, YavinsPoseClassVelocityControlOperator
+from positionSchemes.defaultPosers import YavinsPoseClassNoChangeOperator, YavinsPoseClassVelocityControlOperator
 from Elevatorandmech.RobotPoserCommon import PoseDirectorCommon
 from humanInterface.operatorInterface import ElevArmCmdState
 from positionSchemes.plunge_v1 import PlungeV1

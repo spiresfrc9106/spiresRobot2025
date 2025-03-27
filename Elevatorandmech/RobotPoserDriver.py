@@ -1,5 +1,5 @@
 
-from positionSchemes.replaceWithYavinsPosesClass import YavinsPoseClassNoChangeDriver, YavinsPoseClassVelocityControlDriver
+from positionSchemes.defaultPosers import YavinsPoseClassNoChangeDriver, YavinsPoseClassVelocityControlDriver
 from Elevatorandmech.RobotPoserCommon import PoseDirectorCommon
 from humanInterface.operatorInterface import ElevArmCmdState
 from positionSchemes.pickup_v1 import PickupV1

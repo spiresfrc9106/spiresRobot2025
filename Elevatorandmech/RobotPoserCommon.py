@@ -1,4 +1,4 @@
-from positionSchemes.replaceWithYavinsPosesClass import YavinsPoseClassNoChangeDriver, YavinsPoseClassNoChangeOperator
+from positionSchemes.defaultPosers import YavinsPoseClassNoChangeDriver, YavinsPoseClassNoChangeOperator
 from humanInterface.operatorInterface import ElevArmCmdState
 
 from utils.singleton import Singleton
