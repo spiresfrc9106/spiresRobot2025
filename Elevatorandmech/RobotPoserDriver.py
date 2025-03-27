@@ -43,11 +43,10 @@ class PoseDirectorDriver(metaclass=Singleton):
     def update(self, isAuton=False):
 
         if (not isAuton) and self._isControllerStateChanging():
-            self.currentPositionSchemeDriver.deactivate()
+            self.common.currentPositionSchemeDriver.deactivate()
             self.common.currentPositionSchemeDriver = self.pickTheNewScheme()
             self.getDriveTrainCommand = lambda curCommand : self.currentPositionSchemeDriver.getDriveTrainCommand(curCommand)
 
-            # self.progress = self.currentPositionSchemeDriver.schemeProg *100
         self.common.currentPositionSchemeDriver.update()
         if hasattr(self.common.currentPositionSchemeDriver, "schemeProg"):
             self.schemeProg=round(self.common.currentPositionSchemeDriver.schemeProg*100)

@@ -28,8 +28,8 @@ class PoseDirectorOperator(metaclass=Singleton):
     def initialize(self):
 
 
-        self.common.controllerStatOperator = ElevArmCmdState.UNINITIALIZED
-        self.common.prevControllerStateOperator = self.common.controllerStatOperator
+        self.common.controllerStateOperator = ElevArmCmdState.UNINITIALIZED
+        self.common.prevControllerStateOperator = self.common.controllerStateOperator
         self.common.currentPositionSchemeOperator = YavinsPoseClassNoChangeOperator(self.common.arm, self.common.driveTrain, self.common.elevator, self.common.oInt)
         self.getElevatorCommand = lambda curCommand :  self.common.currentPositionSchemeOperator.getElevatorCommand(curCommand)
         self.getArmCommand = lambda curCommand : self.common.currentPositionSchemeOperator.getArmCommand(curCommand)
@@ -37,7 +37,7 @@ class PoseDirectorOperator(metaclass=Singleton):
         self.dashboardState = 1 # State 1, put the autonomous menu back up on the webserver dashboard
         addLog("RP/schemeProg", lambda: self.schemeProg, "") # don't delete this.
         addLog("RP/dashboardState", lambda: self.dashboardState, "") # don't delete this.
-        # addLog("RP/controllerState", lambda: self.common.controllerStatOperator, "int")
+        # addLog("RP/controllerState", lambda: self.common.controllerStateOperator, "int")
 
     def setDashboardState(self, dashboardState: int):
         self.dashboardState = dashboardState
@@ -62,16 +62,16 @@ class PoseDirectorOperator(metaclass=Singleton):
     def _isControllerStateChanging(self)->bool:
         nextState = self.common.oInt.getElevArmCmdState()
         changed = False
-        if nextState != self.common.controllerStatOperator:
+        if nextState != self.common.controllerStateOperator:
             print(
-                f"RobotPoser: state changing from {self.common.controllerStatOperator.name}({self.common.controllerStatOperator}) to {nextState.name} ({nextState})")
-            self.common.prevControllerStateOperator = self.common.controllerStatOperator
-            self.common.controllerStatOperator = nextState
+                f"RobotPoser: state changing from {self.common.controllerStateOperator.name}({self.common.controllerStateOperator}) to {nextState.name} ({nextState})")
+            self.common.prevControllerStateOperator = self.common.controllerStateOperator
+            self.common.controllerStateOperator = nextState
             changed = True
         return changed
 
     def pickTheNewScheme(self)->None:
-        match self.common.controllerStatOperator:
+        match self.common.controllerStateOperator:
             case ElevArmCmdState.UNINITIALIZED:
                 return YavinsPoseClassNoChangeOperator(self.common.arm, self.common.driveTrain, self.common.elevator, self.common.oInt)
             case ElevArmCmdState.VEL_CONTROL:
