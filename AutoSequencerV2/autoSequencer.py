@@ -12,6 +12,7 @@ from Autonomous.modes.redLeftDriveOut import RedLeftDriveOut
 from Autonomous.modes.redCenterDriveOut import RedCenterDriveOut
 from Autonomous.modes.blueLeftDriveOut import BlueLeftDriveOut
 from Autonomous.modes.blueCenterDriveOut import BlueCenterDriveOut
+from Autonomous.modes.DriveOutRight import DriveOutRight
 from Autonomous.modes.square import Square
 
 from utils.singleton import Singleton
@@ -31,16 +32,17 @@ class AutoSequencer(metaclass=Singleton):
         # Create a list of every autonomous mode we want
         self.mainModeList = ModeList("Main")
         self.mainModeList.addMode(DoNothingMode())
+        self.mainModeList.addMode(DriveOutRight())
         #right now, DriveOut is all commented out, so we don't need to add it to the list. 
         #self.mainModeList.addMode(DriveOut())
 
         #for testing
         #self.mainModeList.addMode(Square())
 
-        if onRed():
-            self.addRedAllianceModes()
-        else:
-            self.addBlueAllianceModes()
+        # if onRed():
+        #     self.addRedAllianceModes()
+        # else:
+        #     self.addBlueAllianceModes()
 
 
         self.topLevelCmdGroup = SequentialCommandGroup()
@@ -85,7 +87,7 @@ class AutoSequencer(metaclass=Singleton):
     def updateMode(self, force=False):
 
 
-        self.updateMainModeListAlliance()
+        # self.updateMainModeListAlliance()
 
         mainChanged = self.mainModeList.updateMode()
         delayChanged = self.delayModeList.updateMode()
