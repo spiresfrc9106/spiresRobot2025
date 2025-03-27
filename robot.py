@@ -5,14 +5,13 @@ import ntcore as nt
 from wpimath.geometry import Translation2d, Pose2d, Rotation2d
 from dashboard import Dashboard
 from Elevatorandmech.ElevatorControl import ElevatorControl, elevDepConstants
-from Elevatorandmech.NewArmControl import ArmControl, armDepConstants
-from Elevatorandmech.RobotPoserCommon import PoseDirectorCommon
-from Elevatorandmech.RobotPoserDriver import PoseDirectorDriver
-from Elevatorandmech.RobotPoserOperator import PoseDirectorOperator
+from Elevatorandmech.ArmControl import ArmControl, armDepConstants
+from positionSchemes.RobotPoserCommon import PoseDirectorCommon
+from positionSchemes.RobotPoserDriver import PoseDirectorDriver
+from positionSchemes.RobotPoserOperator import PoseDirectorOperator
 from testingMotors.motorCtrl import MotorControl, motorDepConstants
 from drivetrain.controlStrategies.autoDrive import AutoDrive
 from drivetrain.controlStrategies.trajectory import Trajectory
-from drivetrain.controlStrategies.trajectoryGuts import TrajectoryGuts
 from drivetrain.drivetrainCommand import DrivetrainCommand
 from drivetrain.drivetrainControl import DrivetrainControl
 from drivetrain.DrivetrainDependentConstants import drivetrainDepConstants
@@ -26,7 +25,6 @@ from utils.signalLogging import logUpdate, getNowLogger
 from utils.calibration import CalibrationWrangler
 from utils.faults import FaultWrangler
 from utils.crashLogger import CrashLogger
-from utils.rioMonitor import RIOMonitor
 from utils.robotIdentification import RobotIdentification
 from utils.singleton import destroyAllSingletonInstances
 from utils.powerMonitor import PowerMonitor

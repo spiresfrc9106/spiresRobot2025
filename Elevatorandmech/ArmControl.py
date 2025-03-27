@@ -13,7 +13,7 @@ import wpilib
 from wpilib import Timer
 
 from Elevatorandmech.ArmCommand import ArmCommand
-from Elevatorandmech.RobotPoserOperator import PoseDirectorOperator
+from positionSchemes.RobotPoserOperator import PoseDirectorOperator
 from utils.calibration import Calibration
 from utils.robotIdentification import RobotIdentification, RobotTypes
 from utils.signalLogging import  addLog, getNowLogger

@@ -1,6 +1,6 @@
 
 from positionSchemes.defaultPosers import PoserNoChangeDriver, PoserVelocityControlDriver
-from Elevatorandmech.RobotPoserCommon import PoseDirectorCommon
+from positionSchemes.RobotPoserCommon import PoseDirectorCommon
 from humanInterface.operatorInterface import ElevArmCmdState
 from positionSchemes.pickup_v1 import PickupV1
 from positionSchemes.place_L4_v6_d import PlaceL4V6D

@@ -22,7 +22,6 @@ from drivetrain.drivetrainPhysical import (
     WHEEL_MOTOR_WRAPPER,
 )
 from drivetrain.drivetrainCommand import DrivetrainCommand
-from drivetrain.controlStrategies.autoDrive import AutoDrive
 from drivetrain.controlStrategies.trajectory import Trajectory
 from drivetrain.controlStrategies.trajectoryGuts import TrajectoryGuts
 from utils.singleton import Singleton
@@ -40,7 +39,7 @@ from utils.constants import (DT_FL_WHEEL_CANID,
                              DT_BL_AZMTH_ENC_PORT,
                              DT_BR_AZMTH_ENC_PORT)
 from wrappers.wrapperedGyro import wrapperedGyro
-from Elevatorandmech.RobotPoserDriver import PoseDirectorDriver
+from positionSchemes.RobotPoserDriver import PoseDirectorDriver
 from utils.signalLogging import addLog
 
 class DrivetrainControl(metaclass=Singleton):

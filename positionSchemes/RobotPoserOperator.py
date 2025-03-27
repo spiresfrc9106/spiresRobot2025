@@ -1,7 +1,7 @@
 
 
 from positionSchemes.defaultPosers import PoserNoChangeOperator, PoserVelocityControlOperator
-from Elevatorandmech.RobotPoserCommon import PoseDirectorCommon
+from positionSchemes.RobotPoserCommon import PoseDirectorCommon
 from humanInterface.operatorInterface import ElevArmCmdState
 from positionSchemes.plunge_v1 import PlungeV1
 from positionSchemes.pickup_v1 import PickupV1
