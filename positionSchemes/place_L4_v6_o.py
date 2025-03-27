@@ -7,6 +7,7 @@ from positionSchemes._setup import SetupScheme, ArmConsts, ElevConsts
 from drivetrain.drivetrainCommand import DrivetrainCommand
 from Elevatorandmech.ElevatorCommand import ElevatorCommand
 from Elevatorandmech.ArmCommand import ArmCommand
+from Elevatorandmech.RobotPoserCommon import PoseDirectorCommon
 from wpimath.geometry import Pose2d
 from positionSchemes._posintelligence import PlacementIntelligence
 from humanInterface.operatorInterface import OperatorInterface, ReefLeftOrRight
@@ -17,21 +18,21 @@ from wpimath.geometry import Pose2d
 # if you can't find something here, it's probably in the _setup file.
 
 class PlaceL4V6O(SetupScheme):
-    def __init__(self, arm, base, elev, oInt):
-        super().__init__(arm=arm, base=base, elev=elev)
-        self.arm = arm
-        self.base = base
-        self.elev = elev
-        self.oInt: OperatorInterface = oInt
-        self.dInt = DriverInterface()
-        self.pdReefSideState = self.oInt.dPadState
+    def __init__(self, poseDirectorCommon: PoseDirectorCommon):
+        super().__init__(arm=poseDirectorCommon.arm, base=poseDirectorCommon.driveTrain, elev=poseDirectorCommon.elevator)
+        self.arm = poseDirectorCommon.arm
+        self.base = poseDirectorCommon.driveTrain
+        self.elev = poseDirectorCommon.elevator
+        self.oInt: OperatorInterface = poseDirectorCommon.oInt
+        self.dInt: DriverInterface = poseDirectorCommon.dInt
+        self.pdReefSideState = self.dInt.dPadState
         self.pdSideOfReef = -1
         if self.pdReefSideState == ReefLeftOrRight.RIGHT:
             self.pdSideOfReef = 1
         self.armConst = ArmConsts()
         self.elevConst = ElevConsts()
         self.currentState = 0
-        self.oInt = oInt
+
 
         self.startTime = Timer.getFPGATimestamp()
         self.changeInTime = 0

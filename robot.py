@@ -81,10 +81,13 @@ class MyRobot(wpilib.TimedRobot):
         self.ledCtrl = LEDControl()
 
         self.poseDirectorCommon = PoseDirectorCommon()
-        self.poseDirectorCommon.initialize(self.dInt, self.oInt, self.driveTrain, self.arm, self.elev)
         self.poseDirectorDriver = PoseDirectorDriver()
-        self.poseDirectorDriver.initialize()
         self.poseDirectorOperator = PoseDirectorOperator()
+        self.poseDirectorCommon.initialize(
+            self.poseDirectorDriver,
+            self.poseDirectorOperator,
+            self.dInt, self.oInt, self.driveTrain, self.arm, self.elev)
+        self.poseDirectorDriver.initialize()
         self.poseDirectorOperator.initialize()
 
         self.autoSequencer = AutoSequencer()

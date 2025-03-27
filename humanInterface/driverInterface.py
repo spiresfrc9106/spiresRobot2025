@@ -1,6 +1,7 @@
 from wpimath import applyDeadband
 from wpimath.filter import SlewRateLimiter
 from wpilib import XboxController
+from dashboardWidgets.icon import Icon
 from drivetrain.drivetrainCommand import DrivetrainCommand
 from drivetrain.drivetrainPhysical import MAX_FWD_REV_SPEED_MPS,MAX_STRAFE_SPEED_MPS, \
 MAX_ROTATE_SPEED_RAD_PER_SEC, MAX_TRANSLATE_ACCEL_MPS2,MAX_ROTATE_ACCEL_RAD_PER_SEC_2
@@ -60,6 +61,23 @@ class DriverInterface(metaclass=Singleton):
         addLog("DI/autoDriveToSpeaker", lambda: self.autoDriveToSpeaker, "bool")
         addLog("DI/autoDriveToPickup", lambda: self.autoDriveToPickup, "bool")
         addLog("DI/motorTestCmd", lambda: self.motorTestCmd, "frac")
+
+        self.dPadState = ReefLeftOrRight.LEFT
+
+        addLog("DI/ReefLeftOrRight", lambda: self.dPadState, "int")
+
+        addLog("isLeftReef",
+               lambda: (
+                   Icon.kON if self.getReefLeftOrRight() == ReefLeftOrRight.LEFT
+                   else Icon.kOFF)
+               )
+
+        addLog("isRightReef",
+               lambda: (
+                   Icon.kON if self.getReefLeftOrRight() == ReefLeftOrRight.RIGHT
+                   else Icon.kOFF)
+               )
+
 
     def update(self):
         # value of contoller buttons

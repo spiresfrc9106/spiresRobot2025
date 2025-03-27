@@ -3,7 +3,7 @@ from wpimath import applyDeadband
 from wpimath.filter import SlewRateLimiter
 from wpilib import XboxController
 
-from dashboardWidgets.icon import Icon
+
 from drivetrain.drivetrainCommand import DrivetrainCommand
 from drivetrain.drivetrainPhysical import MAX_FWD_REV_SPEED_MPS,MAX_STRAFE_SPEED_MPS,\
 MAX_ROTATE_SPEED_RAD_PER_SEC,MAX_TRANSLATE_ACCEL_MPS2,MAX_ROTATE_ACCEL_RAD_PER_SEC_2
@@ -49,7 +49,7 @@ class OperatorInterface(metaclass=Singleton):
         # Driver motion rate limiters - enforce smoother driving
         #self.velXSlewRateLimiter = SlewRateLimiter(rateLimit=MAX_TRANSLATE_ACCEL_MPS2)
 
-        self.dPadState = ReefLeftOrRight.LEFT
+        #self.dPadState = ReefLeftOrRight.LEFT
         self.skipNext = False
 
         # Logging
@@ -57,19 +57,7 @@ class OperatorInterface(metaclass=Singleton):
         addLog("OI/elevator Pos In", lambda: self.getDesElevatorPosIn(), "in")
         addLog("OI/armVelCmd", lambda: self.armVelYCmd, "frac")
         addLog("OI/elevArmCmdState", lambda: self.elevArmCmdState, "int")
-        addLog("OI/ReefLeftOrRight", lambda: self.dPadState, "int")
 
-        addLog("isLeftReef",
-               lambda: (
-                   Icon.kON if self.getReefLeftOrRight() == ReefLeftOrRight.LEFT
-                   else Icon.kOFF)
-               )
-
-        addLog("isRightReef",
-               lambda: (
-                   Icon.kON if self.getReefLeftOrRight() == ReefLeftOrRight.RIGHT
-                   else Icon.kOFF)
-               )
 
 
 

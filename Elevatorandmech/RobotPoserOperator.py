@@ -94,7 +94,7 @@ class PoseDirectorOperator(metaclass=Singleton):
                 return PlaceL3V1(self.common.arm, self.common.driveTrain, self.common.elevator, self.common.oInt)  # todo fix me
             case ElevArmCmdState.L4:
                 self.setDashboardState(6)
-                return PlaceL4V6O(self.common.arm, self.common.driveTrain, self.common.elevator, self.common.oInt)  # todo fix me
+                return PlaceL4V6O(self.common)  # todo fix me
             case _:
                 return YavinsPoseClassNoChangeOperator(self.common.arm, self.common.driveTrain, self.common.elevator, self.common.oInt)  # todo fix me
 

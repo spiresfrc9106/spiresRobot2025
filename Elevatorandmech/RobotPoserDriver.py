@@ -90,7 +90,7 @@ class PoseDirectorDriver(metaclass=Singleton):
                 return PlaceL3V1(self.common.driveTrain, self.common.dInt)
             case ElevArmCmdState.L4:
                 self.setDashboardState(6)
-                return PlaceL4V6D(self.common.driveTrain, self.common.dInt)
+                return PlaceL4V6D(self.common)
             case _:
                 return YavinsPoseClassNoChangeDriver(self.common.driveTrain, self.oInt)  
 
