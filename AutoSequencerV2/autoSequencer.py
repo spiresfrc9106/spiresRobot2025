@@ -5,14 +5,10 @@ from AutoSequencerV2.modeList import ModeList
 from AutoSequencerV2.builtInModes.doNothingMode import DoNothingMode
 from AutoSequencerV2.builtInModes.waitMode import WaitMode
 from AutoSequencerV2.sequentialCommandGroup import SequentialCommandGroup
-from Autonomous.modes.blueRightDriveOut import BlueRightDriveOut
 from Autonomous.modes.driveOut import DriveOut
-from Autonomous.modes.redRightDriveOut import RedRightDriveOut
-from Autonomous.modes.redLeftDriveOut import RedLeftDriveOut
-from Autonomous.modes.redCenterDriveOut import RedCenterDriveOut
-from Autonomous.modes.blueLeftDriveOut import BlueLeftDriveOut
-from Autonomous.modes.blueCenterDriveOut import BlueCenterDriveOut
 from Autonomous.modes.DriveOutRight import DriveOutRight
+from Autonomous.modes.DriveOutCenter import DriveOutCenter
+from Autonomous.modes.DriveOutLeft import DriveOutLeft
 from Autonomous.modes.square import Square
 
 from utils.singleton import Singleton
@@ -32,7 +28,12 @@ class AutoSequencer(metaclass=Singleton):
         # Create a list of every autonomous mode we want
         self.mainModeList = ModeList("Main")
         self.mainModeList.addMode(DoNothingMode())
+
+        # New Choreo Files
         self.mainModeList.addMode(DriveOutRight())
+        self.mainModeList.addMode(DriveOutLeft())
+        self.mainModeList.addMode(DriveOutCenter())
+
         #right now, DriveOut is all commented out, so we don't need to add it to the list. 
         #self.mainModeList.addMode(DriveOut())
 
@@ -75,11 +76,11 @@ class AutoSequencer(metaclass=Singleton):
 
     def updateMainModeListAlliance(self):
         if self._allianceChanged():
-            self.mainModeList.deleteOppositeColorModes()
-            if onRed():
-                self.addRedAllianceModes()
-            else:
-                self.addBlueAllianceModes()
+            # self.mainModeList.deleteOppositeColorModes()
+            # if onRed():
+            #     self.addRedAllianceModes()
+            # else:
+            #     self.addBlueAllianceModes()
             self.changedMenu = True
 
     # Call this periodically while disabled to keep the dashboard updated
@@ -87,7 +88,7 @@ class AutoSequencer(metaclass=Singleton):
     def updateMode(self, force=False):
 
 
-        # self.updateMainModeListAlliance()
+        self.updateMainModeListAlliance()
 
         mainChanged = self.mainModeList.updateMode()
         delayChanged = self.delayModeList.updateMode()
