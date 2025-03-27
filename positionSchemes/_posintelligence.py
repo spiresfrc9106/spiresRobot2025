@@ -40,10 +40,31 @@ class PlacementIntelligence():
         bestTagLocation = Pose2d(pos.x, pos.y, ((math.pi + pos.t) % (2 * math.pi)))
         return bestTagLocation
 
+    def decidePlacementPoseNoah(self, sideOfReef, bumperToEdge_m):
+
+        self.currentTarget = self.decidePlacementTag()
+        bestTagLocation = self.field.lookup(self.currentTarget).toPose2d()
+        front_half_width = self.botLenX / 2
+        edge_to_center_d = front_half_width + self.indivBumperWidth
+        safe_fudge_factor = 1.003
+        fb_offset = edge_to_center_d * safe_fudge_factor
+        newTargetPose = self.adjustLocationRobotRelative(bestTagLocation, fb_offset + bumperToEdge_m,
+                                                         self.shiftToNode_m * sideOfReef)
+        pos = YPose(newTargetPose)
+        bestTagLocation = Pose2d(pos.x, pos.y, ((math.pi + pos.t) % (2 * math.pi)))
+        return bestTagLocation
+
     def decidePlacementTag(self):
         tagLocations = {}
         for tag in self.placementTags:
             tagLocations[tag] = DriverAssist().calculateDistance(self.curPoseEst, self.field.lookup(tag).toPose2d())
+        best_tag = min(tagLocations, key=tagLocations.get)
+        return best_tag
+
+    def decidePlacementTagNoah(self, currentPose):
+        tagLocations = {}
+        for tag in self.placementTags:
+            tagLocations[tag] = DriverAssist().calculateDistance(currentPose, self.field.lookup(tag).toPose2d())
         best_tag = min(tagLocations, key=tagLocations.get)
         return best_tag
 
