@@ -45,7 +45,7 @@ class PoseDirectorDriver(metaclass=Singleton):
         if (not isAuton) and self._isControllerStateChanging():
             self.common.currentPositionSchemeDriver.deactivate()
             self.common.currentPositionSchemeDriver = self.pickTheNewScheme()
-            self.getDriveTrainCommand = lambda curCommand : self.currentPositionSchemeDriver.getDriveTrainCommand(curCommand)
+            self.getDriveTrainCommand = lambda curCommand : self.common.currentPositionSchemeDriver.getDriveTrainCommand(curCommand)
 
         self.common.currentPositionSchemeDriver.update()
         if hasattr(self.common.currentPositionSchemeDriver, "schemeProg"):
