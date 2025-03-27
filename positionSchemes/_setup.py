@@ -19,6 +19,8 @@ class SetupScheme:
     def __init__(self, arm, base, elev):
         self.startTime = Timer.getFPGATimestamp()
         self.setupBase = base
+        self.setupArm = arm
+        self.setupElev = elev
         self.changeInTime = 0
         self.waitTimes = {}
         self.schemeProg = 0
@@ -28,8 +30,12 @@ class SetupScheme:
         self.elevCmd = None
         self.basePrimitiveCmd = None
         self.bestTag = Pose2d()
-        self.initMax = 100
+        self.initMaxDistLoc = 100
+        self.initMaxDistDeg = 100
+        self.initMaxDistLen = 100
         self.initLoc = 0
+        self.initDeg = 0
+        self.initLen = 0
 
     def nextState(self):
         self.currentState = self.currentState + 1
@@ -52,11 +58,36 @@ class SetupScheme:
 
     def updateProgressTrajectory(self):
         if self.initLoc != self.bestTag:
-            self.initMax = self.getFullDistanceSubjective()
+            self.initMaxDistLoc = self.getFullDistanceSubjective()
         self.initLoc = self.bestTag
         current = self.getFullDistanceSubjective()
-        progress = (self.initMax-current)/self.initMax
+        progress = (self.initMaxDistLoc-current)/self.initMaxDistLoc
         self.localProg = max(progress, self.localProg)
+
+    def updateProgressArm(self):
+        full_delta = abs(self.armCmd[0] - self.setupArm.getPosition())
+        if self.initDeg != self.armCmd[0]:
+            self.initMaxDistDeg = full_delta
+        self.initDeg = self.armCmd[0]
+        progress = (self.initMaxDistDeg-full_delta)/self.initMaxDistDeg
+        self.localProg = max(progress, self.localProg)
+
+    def updateProgressElev(self):
+        full_delta = abs(self.elevCmd[0] - self.setupElev.getPosition())
+        if self.initLen != self.elevCmd[0]:
+            self.initMaxDistLen = full_delta
+        self.initLen = self.elevCmd[0]
+        progress = (self.initMaxDistLen - full_delta) / self.initMaxDistLen
+        self.localProg = max(progress, self.localProg)
+
+    def addIntoProgress(self, progress):
+        if self.localProg < 0:
+            self.localProg = progress
+        else:
+            self.localProg = (self.localProg + progress) / 2
+
+    def prepareForProgress(self):
+        self.localProg = -1
 
     def getFullDistanceSubjective(self):
         desPose = self.bestTag
