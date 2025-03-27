@@ -2,12 +2,17 @@
 from drivetrain.drivetrainCommand import DrivetrainCommand
 from Elevatorandmech.ElevatorCommand import ElevatorCommand
 from Elevatorandmech.ArmCommand import ArmCommand
-from wpimath.geometry import Pose2d, Rotation2d, Twist2d
+from Elevatorandmech.RobotPoserCommon import PoseDirectorCommon
 
+from humanInterface.driverInterface import DriverInterface
 from humanInterface.operatorInterface import OperatorInterface
-class YavinsPoseClassNoChangeDriver():
-    def __init__(self, driveTrain, dInt):
-        self.driveTrain = driveTrain
+class PoserNoChangeDriver():
+    def __init__(self, poseDirectorCommon: PoseDirectorCommon):
+        self.arm = poseDirectorCommon.arm
+        self.driveTrain = poseDirectorCommon.driveTrain
+        self.elev = poseDirectorCommon.elevator
+        self.oInt: OperatorInterface = poseDirectorCommon.oInt
+        self.dInt: DriverInterface = poseDirectorCommon.dInt
 
 
     # Every frame the update will be called, and then later, the updates for the Drivetrain, Elevator, and Arm will be called and they will all "get" their commands.
@@ -27,11 +32,13 @@ class YavinsPoseClassNoChangeDriver():
         pass
 
 
-class YavinsPoseClassNoChangeOperator():
-    def __init__(self, arm, driveTrain, elevator, oInt):
-        self.arm = arm
-        self.elevator = elevator
-        self.oInt = oInt
+class PoserNoChangeOperator():
+    def __init__(self, poseDirectorCommon: PoseDirectorCommon):
+        self.arm = poseDirectorCommon.arm
+        self.driveTrain = poseDirectorCommon.driveTrain
+        self.elev = poseDirectorCommon.elevator
+        self.oInt: OperatorInterface = poseDirectorCommon.oInt
+        self.dInt: DriverInterface = poseDirectorCommon.dInt
 
     # Every frame the update will be called, and then later, the updates for the Drivetrain, Elevator, and Arm will be called and they will all "get" their commands.
     def update(self):
@@ -51,11 +58,14 @@ class YavinsPoseClassNoChangeOperator():
 
 
 
-class YavinsPoseClassVelocityControlDriver():
+class PoserVelocityControlDriver():
 
-    def __init__(self, driveTrain, dInt):
-        self.driveTrain = driveTrain
-        self.oInt = dInt
+    def __init__(self, poseDirectorCommon: PoseDirectorCommon):
+        self.arm = poseDirectorCommon.arm
+        self.driveTrain = poseDirectorCommon.driveTrain
+        self.elev = poseDirectorCommon.elevator
+        self.oInt: OperatorInterface = poseDirectorCommon.oInt
+        self.dInt: DriverInterface = poseDirectorCommon.dInt
 
     # Every frame the update will be called, and then later, the updates for the Drivetrain, Elevator, and Arm will be called and they will all "get" their commands.
     def update(self):
@@ -71,14 +81,17 @@ class YavinsPoseClassVelocityControlDriver():
     def deactivate(self):
         pass
 
-class YavinsPoseClassVelocityControlOperator():
+class PoserVelocityControlOperator():
 
-    def __init__(self, arm, driveTrain, elevator, oInt):
-        self.arm = arm
-        self.elevator = elevator
+    def __init__(self, poseDirectorCommon: PoseDirectorCommon):
+        self.arm = poseDirectorCommon.arm
+        self.driveTrain = poseDirectorCommon.driveTrain
+        self.elev = poseDirectorCommon.elevator
+        self.oInt: OperatorInterface = poseDirectorCommon.oInt
+        self.dInt: DriverInterface = poseDirectorCommon.dInt
         self.elevatorVelocityInps = 0
         self.armVelocityDegps = 0
-        self.oInt = oInt
+
 
     # Every frame the update will be called, and then later, the updates for the Drivetrain, Elevator, and Arm will be called and they will all "get" their commands.
     def update(self):

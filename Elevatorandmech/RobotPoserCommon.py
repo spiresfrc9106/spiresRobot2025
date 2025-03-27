@@ -1,4 +1,4 @@
-from positionSchemes.defaultPosers import YavinsPoseClassNoChangeDriver, YavinsPoseClassNoChangeOperator
+from positionSchemes.defaultPosers import PoserNoChangeDriver, PoserNoChangeOperator
 from humanInterface.operatorInterface import ElevArmCmdState
 
 from utils.singleton import Singleton
@@ -26,8 +26,7 @@ class PoseDirectorCommon(metaclass=Singleton):
         self.elevator = elevator
         self.controllerStateDriver = ElevArmCmdState.UNINITIALIZED
         self.prevControllerStateDriver = self.controllerStateDriver
-        self.currentPositionSchemeDriver = YavinsPoseClassNoChangeDriver(self.driveTrain, self.dInt)
-
         self.controllerStateOperator = ElevArmCmdState.UNINITIALIZED
         self.prevControllerStateOperator = self.controllerStateDriver
-        self.currentPositionSchemeOperator = YavinsPoseClassNoChangeOperator(self.arm, self.driveTrain, self.elevator, self.oInt)
+        self.currentPositionSchemeDriver = PoserNoChangeDriver(self)
+        self.currentPositionSchemeOperator = PoserNoChangeOperator(self)

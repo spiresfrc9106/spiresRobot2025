@@ -1,5 +1,5 @@
 
-from positionSchemes.defaultPosers import YavinsPoseClassNoChangeDriver, YavinsPoseClassVelocityControlDriver
+from positionSchemes.defaultPosers import PoserNoChangeDriver, PoserVelocityControlDriver
 from Elevatorandmech.RobotPoserCommon import PoseDirectorCommon
 from humanInterface.operatorInterface import ElevArmCmdState
 from positionSchemes.pickup_v1 import PickupV1
@@ -26,7 +26,7 @@ class PoseDirectorDriver(metaclass=Singleton):
 
         self.common.controllerStateDriver = ElevArmCmdState.UNINITIALIZED
         self.common.prevControllerStateDriver = self.common.controllerStateDriver
-        self.common.currentPositionSchemeDriver = YavinsPoseClassNoChangeDriver(self.common.driveTrain, self.common.dInt)
+        self.common.currentPositionSchemeDriver = PoserClassNoChangeDriver(self.common)
         self.getDriveTrainCommand = lambda curCommand : self.common.currentPositionSchemeDriver.getDriveTrainCommand(curCommand)
         self.schemeProg = 0
         self.dashboardState = 1 # State 1, put the autonomous menu back up on the webserver dashboard
@@ -67,9 +67,9 @@ class PoseDirectorDriver(metaclass=Singleton):
     def pickTheNewScheme(self)->None:
         match self.common.controllerStateDriver:
             case ElevArmCmdState.UNINITIALIZED:
-                return YavinsPoseClassNoChangeDriver(self.common.driveTrain,  self.common.dInt)
+                return PoserNoChangeDriver(self.common)
             case ElevArmCmdState.VEL_CONTROL:
-                return YavinsPoseClassVelocityControlDriver(self.common.driveTrain, self.common.dInt) 
+                return PoserVelocityControlDriver(self.common)
             case ElevArmCmdState.PLUNGE:
                 #self.setDashboardState(5)
                 return None
@@ -89,7 +89,7 @@ class PoseDirectorDriver(metaclass=Singleton):
                 self.setDashboardState(6)
                 return PlaceL4V6D(self.common)
             case _:
-                return YavinsPoseClassNoChangeDriver(self.common.driveTrain, self.oInt)  
+                return PoserNoChangeDriver(self.common)
 
 
 
