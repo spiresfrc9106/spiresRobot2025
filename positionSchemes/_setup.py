@@ -1,15 +1,14 @@
 import math
 
 import wpilib
-from wpimath.geometry import Pose2d
-from utils.fieldTagLayout import FieldTagLayout
-from drivetrain.drivetrainCommand import DrivetrainCommand
-from drivetrain.controlStrategies.trajectoryGuts import TrajectoryGuts
-from Elevatorandmech.ElevatorCommand import ElevatorCommand
-from Elevatorandmech.ArmCommand import ArmCommand
+from wpilib import Timer
 from wpimath.geometry import Pose2d
 from wpilib import Timer
-from drivetrain.controlStrategies.trajectoryGuts import ChoreoTrajectoryState
+from choreo.trajectory import SwerveSample
+from drivetrain.drivetrainCommand import DrivetrainCommand
+from Elevatorandmech.ElevatorCommand import ElevatorCommand
+from Elevatorandmech.ArmCommand import ArmCommand
+
 from utils.units import deg2Rad, rad2Deg, in2m, m2in
 
 ### these are intrisic to any pos scheme class
@@ -150,14 +149,19 @@ class SetupScheme:
                 self.baseCmd = (pose,  vxMps, vyMps, vtRadps)
 
                 self.setupBase.tcTraj.setCmdFromPoser(
-                    ChoreoTrajectoryState(
+                    SwerveSample(
                         timestamp=1,  # TODO: no idea if this should be some sort of other type of time...
                         x=pose.X(),
                         y=pose.Y(),
                         heading=pose.rotation().radians(),
-                        velocityX=vxMps,
-                        velocityY=vyMps,
-                        angularVelocity=vtRadps
+                        vx=vxMps,
+                        vy=vyMps,
+                        omega=vtRadps,
+                        alpha=0, # we don't use estimates of anglular acceleration
+                        ax=0, # we don't use estimates of acceleration in x or y
+                        ay=0,
+                        fx=0, # we don't use estimates of force in x or y
+                        fy=0
                     )
                 )
 

@@ -16,7 +16,9 @@ class FieldTagLayout(metaclass=Singleton):
         # Throws exceptions if it has issues accessing the file. We should be catching
         # those exceptions so the robot code doesn't outright crash, but raise a fault
         # to indicate something has gone wrong with the RIO's ability to load the file.
+        #self.fieldTags =  AprilTagFieldLayout.loadField(AprilTagField.k2025Reefscape)
         self.fieldTags = AprilTagFieldLayout.loadField(AprilTagField.k2025ReefscapeWelded)
+        #self.fieldTags = AprilTagFieldLayout(path=os.path.join(wpilib.getDeployDirectory(), "combined_calibration.json"))
 
     def lookup(self, tagId) -> Pose3d | None:
         """

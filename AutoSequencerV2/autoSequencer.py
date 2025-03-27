@@ -65,14 +65,11 @@ class AutoSequencer(metaclass=Singleton):
         self.mainModeList.addMode(newMode)
 
     def addRedAllianceModes(self):
-        self.mainModeList.addMode(RedLeftDriveOut())
-        self.mainModeList.addMode(RedCenterDriveOut())
-        self.mainModeList.addMode(RedRightDriveOut())
+        pass
+
 
     def addBlueAllianceModes(self):
-        self.mainModeList.addMode(BlueLeftDriveOut())
-        self.mainModeList.addMode(BlueCenterDriveOut())
-        self.mainModeList.addMode(BlueRightDriveOut())
+        pass
 
     def updateMainModeListAlliance(self):
         if self._allianceChanged():
