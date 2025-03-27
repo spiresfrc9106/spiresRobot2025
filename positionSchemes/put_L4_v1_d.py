@@ -60,7 +60,6 @@ class PlaceL4V6(SetupScheme):
                 if self.oInt.skipNext:
                     self.nextState()
             case 1:
-                self.setArmCommand(-15, 0)
                 self.bestTag = self.placementIntel.decidePlacementPose(self.pdSideOfReef, self.inchesToMeters(20))
                 self.setDriveTrainBaseCommand(self.bestTag)
                 self.updateProgressTrajectory()

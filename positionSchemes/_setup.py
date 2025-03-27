@@ -80,6 +80,15 @@ class SetupScheme:
         progress = (self.initMaxDistLen - full_delta) / self.initMaxDistLen
         self.localProg = max(progress, self.localProg)
 
+    def addIntoProgress(self, progress):
+        if self.localProg < 0:
+            self.localProg = progress
+        else:
+            self.localProg = (self.localProg + progress) / 2
+
+    def prepareForProgress(self):
+        self.localProg = -1
+
     def getFullDistanceSubjective(self):
         desPose = self.bestTag
         curPose = self.setupBase.tcPoseEst.getCurEstPose()
