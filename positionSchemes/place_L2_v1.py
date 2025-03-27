@@ -14,6 +14,7 @@ from drivetrain.drivetrainPhysical import MAX_FWD_REV_SPEED_MPS,MAX_STRAFE_SPEED
 class PlaceL2V1(SetupScheme):
     def __init__(self, poseDirectorCommon: PoseDirectorCommon):
         super().__init__(arm=poseDirectorCommon.arm, base=poseDirectorCommon.driveTrain, elev=poseDirectorCommon.elevator)
+        self.pdc = poseDirectorCommon
         self.arm = poseDirectorCommon.arm
         self.base = poseDirectorCommon.driveTrain
         self.elev = poseDirectorCommon.elevator

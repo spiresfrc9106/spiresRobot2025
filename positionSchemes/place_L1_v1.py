@@ -15,6 +15,7 @@ class PlaceL1V1(SetupScheme):
 
     def __init__(self, poseDirectorCommon: PoseDirectorCommon):
         super().__init__(arm=poseDirectorCommon.arm, base=poseDirectorCommon.driveTrain, elev=poseDirectorCommon.elevator)
+        self.pdc = poseDirectorCommon
         self.arm = poseDirectorCommon.arm
         self.base = poseDirectorCommon.driveTrain
         self.elev = poseDirectorCommon.elevator

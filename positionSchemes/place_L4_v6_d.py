@@ -12,6 +12,7 @@ from humanInterface.driverInterface import DriverInterface
 class PlaceL4V6D(SetupScheme):
     def __init__(self, poseDirectorCommon: PoseDirectorCommon):
         super().__init__(arm=poseDirectorCommon.arm, base=poseDirectorCommon.driveTrain, elev=poseDirectorCommon.elevator)
+        self.pdc = poseDirectorCommon
         self.arm = poseDirectorCommon.arm
         self.base = poseDirectorCommon.driveTrain
         self.elev = poseDirectorCommon.elevator
@@ -55,7 +56,7 @@ class PlaceL4V6D(SetupScheme):
                 print(f"place l4 time = {Timer.getFPGATimestamp():.3f}s x={self.bestTag.x:+10.1f}m y={self.bestTag.y:+10.1f}m t={self.bestTag.rotation().degrees():+10.1f}deg")
                 self.setDriveTrainBaseCommand(self.bestTag)
                 self.updateProgressTrajectory()
-                if self.completedTrajectory(self.base, 6, 5) or self.oInt.skipNext:
+                if self.completedTrajectory(self.base, 6, 5) or self.dInt.skipNext:
                     self.nextState()
             case 1:
                 self.bestTag = self.placementIntel.decidePlacementPose(self.pdSideOfReef, self.inchesToMeters(7))
@@ -64,7 +65,7 @@ class PlaceL4V6D(SetupScheme):
                     self.nextState()
             case 2:
                 baseGoalReached = self.completedTrajectory(self.base, 0.75, 3)
-                if baseGoalReached or self.oInt.skipNext:
+                if baseGoalReached or self.dInt.skipNext:
                     self.nextState()
                 else:
                     pass

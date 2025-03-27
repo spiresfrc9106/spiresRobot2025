@@ -13,6 +13,7 @@ from humanInterface.driverInterface import DriverInterface
 class PlaceL4V6O(SetupScheme):
     def __init__(self, poseDirectorCommon: PoseDirectorCommon):
         super().__init__(arm=poseDirectorCommon.arm, base=poseDirectorCommon.driveTrain, elev=poseDirectorCommon.elevator)
+        self.pdc = poseDirectorCommon
         self.arm = poseDirectorCommon.arm
         self.base = poseDirectorCommon.driveTrain
         self.elev = poseDirectorCommon.elevator
@@ -50,6 +51,20 @@ class PlaceL4V6O(SetupScheme):
         self.armPlacePos = 60
 
     def update(self):
+        """
+        Yavin, things you have access to communicate back and forth between the operator and driver
+
+        Note that you should check if currentPositionSchemeDriver and currentPositionSchemeOperator
+        have the methods you want to access before you used them.
+
+        self.pdc.controllerStateDriver
+        self.pdc.currentPositionSchemeDriver
+        self.pdc.controllerStateOperator
+        self.pdc.currentPositionSchemeOperator
+        self.pdc.pdD
+        self.pdc.pdO
+        """
+
         currentTime = Timer.getFPGATimestamp()
         time = currentTime - self.startTime
         match self.currentState:
