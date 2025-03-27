@@ -3,11 +3,6 @@ from wpimath import applyDeadband
 from wpimath.filter import SlewRateLimiter
 from wpilib import XboxController
 
-
-from drivetrain.drivetrainCommand import DrivetrainCommand
-from drivetrain.drivetrainPhysical import MAX_FWD_REV_SPEED_MPS,MAX_STRAFE_SPEED_MPS,\
-MAX_ROTATE_SPEED_RAD_PER_SEC,MAX_TRANSLATE_ACCEL_MPS2,MAX_ROTATE_ACCEL_RAD_PER_SEC_2
-from utils.allianceTransformUtils import onRed
 from utils.faults import Fault
 from utils.signalLogging import addLog
 from utils.singleton import Singleton
@@ -74,7 +69,7 @@ class OperatorInterface(metaclass=Singleton):
             vElevJoyWithDeadband = applyDeadband(leftYJoyRaw, 0.05)
             vArmJoyWithDeadband = applyDeadband(rightYJoyRaw, 0.05) # TODO xyzzy talk to Benjamin about a better name for this
 
-            slowMult = 1.0 if (self.ctrl.getRightBumper()) else 0.1
+            slowMult = 1.0 if (self.ctrl.getRightBumper()) else 0.2
             
             self.elevatorVelYCmd = vElevJoyWithDeadband * slowMult
             self.armVelYCmd = vArmJoyWithDeadband * slowMult
