@@ -5,13 +5,8 @@ from AutoSequencerV2.modeList import ModeList
 from AutoSequencerV2.builtInModes.doNothingMode import DoNothingMode
 from AutoSequencerV2.builtInModes.waitMode import WaitMode
 from AutoSequencerV2.sequentialCommandGroup import SequentialCommandGroup
-from Autonomous.modes.blueRightDriveOut import BlueRightDriveOut
 from Autonomous.modes.driveOut import DriveOut
-from Autonomous.modes.redRightDriveOut import RedRightDriveOut
-from Autonomous.modes.redLeftDriveOut import RedLeftDriveOut
-from Autonomous.modes.redCenterDriveOut import RedCenterDriveOut
-from Autonomous.modes.blueLeftDriveOut import BlueLeftDriveOut
-from Autonomous.modes.blueCenterDriveOut import BlueCenterDriveOut
+from Autonomous.modes.driveOutRight import DriveOutRight
 from Autonomous.modes.square import Square
 
 from utils.singleton import Singleton
@@ -34,6 +29,7 @@ class AutoSequencer(metaclass=Singleton):
         #right now, DriveOut is all commented out, so we don't need to add it to the list. 
         #self.mainModeList.addMode(DriveOut())
         self.mainModeList.addMode(Square())
+        self.mainModeList.addMode(DriveOutRight())
 
         self.currentTeam = onRed() #i was doing something with this
         if onRed():
