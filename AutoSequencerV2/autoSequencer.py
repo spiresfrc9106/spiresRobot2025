@@ -83,7 +83,7 @@ class AutoSequencer(metaclass=Singleton):
     # and, when things change, re-init modes
     def updateMode(self, force=False):
 
-        self.updateMainModeListAlliance()
+        # self.updateMainModeListAlliance()
 
         mainChanged = self.mainModeList.updateMode()
         delayChanged = self.delayModeList.updateMode()
