@@ -37,13 +37,13 @@ class ElevatorDependentConstants:
                 "HAS_ELEVATOR": True,
                 "ELEV_FM_CANID": 12,
                 "ELEV_BM_CANID": 16,
-                "ELEV_M_INITIALIZING_CURRENT_LIMIT_A": 40,
+                "ELEV_M_INITIALIZING_CURRENT_LIMIT_A": 60,
                 "ELEV_M_OPERATING_CURRENT_LIMIT_A": 60,
                 "ELEVATOR_RANGE_IN": 46,  # reverted to 46 from 47 bc we tightened rope
                 "ELEV_GEARBOX_GEAR_RATIO": 3.0 / 1.0,
                 "ELEV_SPOOL_RADIUS_IN": 1.660 / 2.0,
-                "MAX_ELEV_VEL_INPS": 40.0,
-                "MAX_ELEV_ACCEL_INPS2": 80.0,
+                "MAX_ELEV_VEL_INPS": 70.0,
+                "MAX_ELEV_ACCEL_INPS2": 70.0*4,
                 "ELEV_HEIGHT_OFFSET": 15.25,
                 "ELEV_HEIGHT_WHEN_STILTS_FORM_NEW_BOTTOM_IN": 46.6125,
                 "ELEV_HEIGHT_STILTS_ADD_TO_BOTTOM_IN": 9.6125,
@@ -57,8 +57,8 @@ class ElevatorDependentConstants:
                 "ELEVATOR_RANGE_IN": 46,
                 "ELEV_GEARBOX_GEAR_RATIO": 3.0 / 1.0,
                 "ELEV_SPOOL_RADIUS_IN": 1.660 / 2.0,
-                "MAX_ELEV_VEL_INPS": 40.0,
-                "MAX_ELEV_ACCEL_INPS2": 80.0,
+                "MAX_ELEV_VEL_INPS": 80.0*2,
+                "MAX_ELEV_ACCEL_INPS2": 160.0*4,
                 "ELEV_HEIGHT_OFFSET": 15.25,
                 "ELEV_HEIGHT_WHEN_STILTS_FORM_NEW_BOTTOM_IN": 46.6125,
                 "ELEV_HEIGHT_STILTS_ADD_TO_BOTTOM_IN": 9.6125,
@@ -144,7 +144,7 @@ class ElevatorControl(metaclass=Singleton):
         self.kV = Calibration(name="Elevator kV", default=0.02, units="V/rps")
         self.kS = Calibration(name="Elevator kS", default=0.1, units="V")
         self.kG = Calibration(name="Elevator kG", default=0.25, units="V")
-        self.kP = Calibration(name="Elevator kP", default=0.4, units="V/rad error") # Per 0.001 seconds
+        self.kP = Calibration(name="Elevator kP", default=0.3, units="V/rad error") # Per 0.001 seconds
         self.calElevMinHeightIn = Calibration(name="Elevator Min Height Above Ground In", default=ELEV_HEIGHT_ABOVE_GROUND_IN, units="in")
         self.calElevRangeIn = Calibration(name="Elevator Range In", default=ELEVATOR_RANGE_IN, units="in")
         self.calMaxVelocityInps = Calibration(name="Elevator Max Vel", default=MAX_ELEV_VEL_INPS, units="inps")

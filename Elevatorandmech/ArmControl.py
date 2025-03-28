@@ -47,8 +47,8 @@ class ArmDependentConstants:
                 "MIN_ARM_POS_DEG": -90,
                 "MAX_SEARCH_ARM_VEL_DEGPS": 60,
                 "MAX_SEARCH_ARM_ACCEL_DEGPS2": 60*4,
-                "MAX_ARM_VEL_DEGPS": 90, # Was 180
-                "MAX_ARM_ACCEL_DEGPS2": 180, # Was 720
+                "MAX_ARM_VEL_DEGPS": 180*2, # Was 180
+                "MAX_ARM_ACCEL_DEGPS2": 720*2, # Was 720
                 "ABS_SENSOR_INVERTED": False,
             },
             RobotTypes.Spires2025Sim: {
@@ -150,7 +150,7 @@ class ArmControl(metaclass=Singleton):
         self.kV = Calibration(name="Arm kV", default=0.02, units="V/rps")
         self.kS = Calibration(name="Arm kS", default=0.1, units="V")
         self.kG = Calibration(name="Arm kG", default=0.25, units="V")
-        self.kP = Calibration(name="Arm kP", default=0.4, units="V/rad error")  # Per 0.001 seconds
+        self.kP = Calibration(name="Arm kP", default=0.3, units="V/rad error")  # Per 0.001 seconds
         self.calMaxPosDeg = Calibration(name="Arm Max Vel", default=MAX_ARM_POS_DEG, units="deg")
         self.calMinPosDeg = Calibration(name="Arm Max Vel", default=MIN_ARM_POS_DEG, units="deg")
         self.calMaxVelocityDegps = Calibration(name="Arm Max Vel", default=MAX_ARM_VEL_DEGPS, units="degps")
