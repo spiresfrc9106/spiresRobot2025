@@ -264,6 +264,8 @@ class ArmControl(metaclass=Singleton):
 
             self.count = 0
 
+            addLog(f"{self.name}/count", lambda: self.count, "int")
+
             self._initialized = True
 
             print(f"Init {self.name} complete")
@@ -332,19 +334,20 @@ class ArmControl(metaclass=Singleton):
         self.count = self.count + 1
 
     def _updateUninitialized(self) -> None:
-        self.startTime = Timer.getFPGATimestamp()
-        self.timeWhenChangeS = Timer.getFPGATimestamp()
-        self._changeState(ArmStates.INIT_GOING_UP)
-        self._forceStartAtAngleDeg(0.0)
+        if self.count >= 1:
+            self.startTime = Timer.getFPGATimestamp()
+            self.timeWhenChangeS = Timer.getFPGATimestamp()
+            self._changeState(ArmStates.INIT_GOING_UP)
+            self._forceStartAtAngleDeg(0.0)
 
-        if wpilib.RobotBase.isSimulation():
-            self.desTrapPState = TrapezoidProfile.State(self._getRelAngleWithOffsetDeg(),0)
-        else:
-            self.desTrapPState = TrapezoidProfile.State(self._getRelAngleWithOffsetDeg()+720,0)
-        self.curTrapPState = TrapezoidProfile.State(self._getRelAngleWithOffsetDeg(), 0)
-        self._largestAngleDeg = self._getRelAngleWithOffsetDeg()
-        self.motor.setSmartCurrentLimit(self.calArmInitializingCurrentLimitA.get())
-        self._setMotorPosAndFF()
+            if wpilib.RobotBase.isSimulation():
+                self.desTrapPState = TrapezoidProfile.State(self._getRelAngleWithOffsetDeg(),0)
+            else:
+                self.desTrapPState = TrapezoidProfile.State(self._getRelAngleWithOffsetDeg()+720,0)
+            self.curTrapPState = TrapezoidProfile.State(self._getRelAngleWithOffsetDeg(), 0)
+            self._largestAngleDeg = self._getRelAngleWithOffsetDeg()
+            self.motor.setSmartCurrentLimit(self.calArmInitializingCurrentLimitA.get())
+            self._setMotorPosAndFF()
 
     def _updateInitGoingUp(self) -> None:
         positionDeg = self._getRelAngleWithOffsetDeg()
@@ -367,6 +370,7 @@ class ArmControl(metaclass=Singleton):
                 self.motor.setSmartCurrentLimit(self.calArmOperatingCurrentLimitA.get())
                 self.stallDectector.stallCurrentLimitA = self.motor.currentLimitA
                 self._changeState(ArmStates.OPERATING)
+                self._setMotorPosAndFF()
             else:
                 self._setMotorPosAndFF()
 
