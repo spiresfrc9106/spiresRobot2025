@@ -13,6 +13,8 @@ from Autonomous.modes.redCenterDriveOut import RedCenterDriveOut
 from Autonomous.modes.blueLeftDriveOut import BlueLeftDriveOut
 from Autonomous.modes.blueCenterDriveOut import BlueCenterDriveOut
 from Autonomous.modes.RedToReefLeft import RedToReefLeft
+from Autonomous.modes.RedToReefRight import RedToReefRight
+
 
 from Autonomous.modes.square import Square
 
@@ -73,6 +75,7 @@ class AutoSequencer(metaclass=Singleton):
         self.mainModeList.addMode(RedCenterDriveOut())
         self.mainModeList.addMode(RedRightDriveOut())
         self.mainModeList.addMode(RedToReefLeft())
+        self.mainModeList.addMode(RedToReefRight())
 
 
     def addBlueAllianceModes(self):
