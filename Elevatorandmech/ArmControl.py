@@ -243,16 +243,16 @@ class ArmControl(metaclass=Singleton):
             self._largestAngleDeg = -180.0
 
             self._loadMaxVelAndAccFromCal()
-            addLog(f"{self.name}/_largestAngleDeg", lambda: self._largestAngleDeg, "deg")
+            #addLog(f"{self.name}/_largestAngleDeg", lambda: self._largestAngleDeg, "deg")
             addLog(f"{self.name}/state", lambda: self.state.value, "int")
             addLog(f"{self.name}/act_pos_deg", lambda: self.actTrapPState.position, "deg")
-            addLog(f"{self.name}/act_vel_degps", lambda: self.actTrapPState.velocity, "degps")
-            self.actAccLogger = getNowLogger(f"{self.name}/act acceleration", "degps2")
+            #addLog(f"{self.name}/act_vel_degps", lambda: self.actTrapPState.velocity, "degps")
+            #self.actAccLogger = getNowLogger(f"{self.name}/act acceleration", "degps2")
             addLog(f"{self.name}/curProfile_pos_deg", lambda: self.curTrapPState.position, "deg")
             addLog(f"{self.name}/curProfile_vel_degps", lambda: self.curTrapPState.velocity, "degps")
-            self.curTrapPAccLogger = getNowLogger(f"{self.name}/curProfile_acc_degps2", "degps2")
-            addLog(f"{self.name}/des_pos_deg", lambda: self.desTrapPState.position, "deg")
-            addLog(f"{self.name}/des_vel_degps", lambda: self.desTrapPState.velocity, "degps")
+            #self.curTrapPAccLogger = getNowLogger(f"{self.name}/curProfile_acc_degps2", "degps2")
+            #addLog(f"{self.name}/des_pos_deg", lambda: self.desTrapPState.position, "deg")
+            #addLog(f"{self.name}/des_vel_degps", lambda: self.desTrapPState.velocity, "degps")
 
             addLog("RParm/pos", lambda: self.actTrapPState.position, "deg")
 
@@ -397,7 +397,7 @@ class ArmControl(metaclass=Singleton):
             else:
                 self.curTrapPState = possibleNextTrapPState
 
-        self.curTrapPAccLogger.logNow((self.curTrapPState.velocity - oldVelocityDegps) / TIME_STEP_S)
+        #self.curTrapPAccLogger.logNow((self.curTrapPState.velocity - oldVelocityDegps) / TIME_STEP_S)
 
         motorPosCmdRad = self._angleDegToMotorRad(self.curTrapPState.position)
         motorVelCmdRadps = self._angleDegToMotorRad(self.curTrapPState.velocity)
@@ -465,7 +465,7 @@ class ArmControl(metaclass=Singleton):
         self.actualVelDegps = self._getVelocityDegps()
         if self.previousUpdateTimeS is not None:
             currentPeriodS = self.currentUpdateTimeS - self.previousUpdateTimeS
-            self.actAccLogger.logNow((self.actualVelDegps - self.previousVelDegps) / currentPeriodS)
+            #self.actAccLogger.logNow((self.actualVelDegps - self.previousVelDegps) / currentPeriodS)
 
         self.actTrapPState = TrapezoidProfile.State(self._getRelAngleWithOffsetDeg(), self.actualVelDegps)
 

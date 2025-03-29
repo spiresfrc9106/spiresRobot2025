@@ -231,16 +231,16 @@ class ElevatorControl(metaclass=Singleton):
 
             self._loadMaxVelAndAccFromCal()
 
-            addLog(f"{self.name}/lowestHeightIn", lambda: self.lowestHeightIn, "in")
+            #addLog(f"{self.name}/lowestHeightIn", lambda: self.lowestHeightIn, "in")
             addLog(f"{self.name}/state", lambda: self.state, "int")
             addLog(f"{self.name}/act_pos_in", lambda: self.actTrapPState.position, "in")
             addLog(f"{self.name}/act_vel_inps", lambda: self.actTrapPState.velocity, "inps")
-            self.actAccLogger = getNowLogger(f"{self.name}/act_acc_inps2", "inps2")
+            #self.actAccLogger = getNowLogger(f"{self.name}/act_acc_inps2", "inps2")
             addLog(f"{self.name}/curProfile_pos_in", lambda: self.curTrapPState.position, "in")
             addLog(f"{self.name}/curProfile_vel_inps", lambda: self.curTrapPState.velocity, "inps")
-            self.curTrapPAccLogger = getNowLogger(f"{self.name}/curProfile_acc_inps2", "inps2")
-            addLog(f"{self.name}/des_pos_in", lambda: self.desTrapPState.position, "in")
-            addLog(f"{self.name}/des_vel_inps", lambda: self.desTrapPState.velocity, "inps")
+            #self.curTrapPAccLogger = getNowLogger(f"{self.name}/curProfile_acc_inps2", "inps2")
+            #addLog(f"{self.name}/des_pos_in", lambda: self.desTrapPState.position, "in")
+            #addLog(f"{self.name}/des_vel_inps", lambda: self.desTrapPState.velocity, "inps")
 
             addLog("RPelev/pos", lambda: self.actTrapPState.position, "in")
 
@@ -380,7 +380,7 @@ class ElevatorControl(metaclass=Singleton):
             else:
                 self.curTrapPState = possibleNextTrapPState
 
-        self.curTrapPAccLogger.logNow((self.curTrapPState.velocity - oldVelocityInps) / TIME_STEP_S)
+        #self.curTrapPAccLogger.logNow((self.curTrapPState.velocity - oldVelocityInps) / TIME_STEP_S)
 
         motorPosCmdRad = self._heightInToMotorRad(self.curTrapPState.position)
         motorVelCmdRadps = self._heightVelInpsToMotorVelRadps(self.curTrapPState.velocity)
@@ -450,7 +450,7 @@ class ElevatorControl(metaclass=Singleton):
         self.actualVelInps = self._getVelocityInps()
         if self.previousUpdateTimeS is not None:
             currentPeriodS = self.currentUpdateTimeS - self.previousUpdateTimeS
-            self.actAccLogger.logNow((self.actualVelInps - self.previousVelInps) / currentPeriodS)
+            #self.actAccLogger.logNow((self.actualVelInps - self.previousVelInps) / currentPeriodS)
 
         self.actTrapPState = TrapezoidProfile.State(self.getHeightIn(), self.actualVelInps)
 

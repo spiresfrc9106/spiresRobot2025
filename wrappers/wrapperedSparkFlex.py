@@ -45,12 +45,14 @@ class WrapperedSparkFlex:
         self._spark_config(retries=10, resetMode=SparkBase.ResetMode.kResetSafeParameters, persistMode=SparkBase.PersistMode.kPersistParameters, step="Initial Config")
 
         addLog(self.name + "_outputCurrent", self.ctrl.getOutputCurrent, "A")
+        """
         addLog(self.name + "_desVolt", lambda: self.desVolt, "V")
         addLog(self.name + "_desPos", lambda: self.desPosRad, "rad")
         addLog(self.name + "_desVel", lambda: self.desVelRadps, "radps")
         addLog(self.name + "_actVolt", lambda: self.actVolt, "V")
         addLog(self.name + "_actPos", lambda: self.actPosRad, "rad")
         addLog(self.name + "_actVel", lambda: RPM2RadPerSec(self.encoder.getVelocity()), "radps")
+        """
 
         print(f"Init of SparkFlex {self.name} CANID={self.canID} is finished")
 
