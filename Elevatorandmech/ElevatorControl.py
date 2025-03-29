@@ -34,7 +34,7 @@ class ElevatorDependentConstants:
                 "ELEV_HEIGHT_STILTS_NEW_BOTTOM_IN": None,
             },
             RobotTypes.Spires2025: {
-                "HAS_ELEVATOR": True,
+                "HAS_ELEVATOR": False,
                 "ELEV_FM_CANID": 12,
                 "ELEV_BM_CANID": 16,
                 "ELEV_M_INITIALIZING_CURRENT_LIMIT_A": 60,
@@ -49,7 +49,7 @@ class ElevatorDependentConstants:
                 "ELEV_HEIGHT_STILTS_ADD_TO_BOTTOM_IN": 9.6125,
             },
             RobotTypes.Spires2025Sim: {
-                "HAS_ELEVATOR": True,
+                "HAS_ELEVATOR": False,
                 "ELEV_FM_CANID": 28,
                 "ELEV_BM_CANID": 29,
                 "ELEV_M_INITIALIZING_CURRENT_LIMIT_A": 20,

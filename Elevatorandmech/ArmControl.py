@@ -36,7 +36,7 @@ class ArmDependentConstants:
                 "ABS_SENSOR_INVERTED": True,
             },
             RobotTypes.Spires2025: {
-                "HAS_ARM": True,
+                "HAS_ARM": False,
                 "ARM_GEARBOX_GEAR_RATIO": 50.0 / 1.0,
                 "ARM_M_CANID": 23,
                 "ARM_M_INVERTED": False,
@@ -52,7 +52,7 @@ class ArmDependentConstants:
                 "ABS_SENSOR_INVERTED": False,
             },
             RobotTypes.Spires2025Sim: {
-                "HAS_ARM": True,
+                "HAS_ARM": False,
                 "ARM_GEARBOX_GEAR_RATIO": 50.0 / 1.0,
                 "ARM_M_CANID": 23,
                 "ARM_M_INVERTED": True,
