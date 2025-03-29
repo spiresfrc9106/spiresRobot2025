@@ -8,6 +8,7 @@ from Elevatorandmech.ElevatorControl import ElevatorControl, elevDepConstants
 from Elevatorandmech.ArmControl import ArmControl, armDepConstants
 from positionSchemes.RobotPoserCommon import PoseDirectorCommon
 from positionSchemes.RobotPoserDriver import PoseDirectorDriver
+from positionSchemes.poserDashComms import PoserDashComms
 from positionSchemes.RobotPoserOperator import PoseDirectorOperator
 from testingMotors.motorCtrl import MotorControl, motorDepConstants
 from drivetrain.controlStrategies.autoDrive import AutoDrive
@@ -78,6 +79,7 @@ class MyRobot(wpilib.TimedRobot):
         self.poseDirectorCommon = PoseDirectorCommon()
         self.poseDirectorDriver = PoseDirectorDriver()
         self.poseDirectorOperator = PoseDirectorOperator()
+        self.poserDashComms = PoserDashComms()
         self.poseDirectorCommon.initialize(
             self.poseDirectorDriver,
             self.poseDirectorOperator,
@@ -188,6 +190,7 @@ class MyRobot(wpilib.TimedRobot):
         self.autoSequencer.update()
         self.poseDirectorDriver.update(isAuton=True)
         self.poseDirectorOperator.update(isAuton=True)
+        self.poserDashComms.update(self.poseDirectorDriver, self.poseDirectorOperator)
 
         # Operators cannot control in autonomous
         if drivetrainDepConstants['HAS_DRIVETRAIN']:
@@ -250,6 +253,7 @@ class MyRobot(wpilib.TimedRobot):
 
         self.poseDirectorDriver.update()
         self.poseDirectorOperator.update()
+        self.poserDashComms.update(self.poseDirectorDriver, self.poseDirectorOperator)
 
         if self.dInt.getGyroResetCmd():
             if drivetrainDepConstants['HAS_DRIVETRAIN']:

@@ -27,7 +27,6 @@ class PlaceL4V6D(SetupScheme):
         self.elevConst = ElevConsts()
         self.currentState = 0
 
-
         self.startTime = Timer.getFPGATimestamp()
         self.changeInTime = 0
         self.waitTimes = {}
@@ -52,27 +51,18 @@ class PlaceL4V6D(SetupScheme):
         time = currentTime - self.startTime
         match self.currentState:
             case 0:
-                self.bestTag = self.placementIntel.decidePlacementPose(0, self.inchesToMeters(20))
+                self.bestTag = self.placementIntel.decidePlacementPose(self.pdSideOfReef, self.inchesToMeters(7))
                 print(f"place l4 time = {Timer.getFPGATimestamp():.3f}s x={self.bestTag.x:+10.1f}m y={self.bestTag.y:+10.1f}m t={self.bestTag.rotation().degrees():+10.1f}deg")
                 self.setDriveTrainBaseCommand(self.bestTag)
-                self.updateProgressTrajectory()
-                if self.completedTrajectory(self.base, 6, 5) or self.dInt.skipNext:
-                    self.nextState()
+                self.nextState()
             case 1:
-                self.bestTag = self.placementIntel.decidePlacementPose(self.pdSideOfReef, self.inchesToMeters(7))
-                self.setDriveTrainBaseCommand(self.bestTag)
-                if self.completedAwait("awaitForCmd1", 0.2):
+                self.updateProgressTrajectory()
+                if self.completedTrajectory(self.base, 1, 1) or self.dInt.skipNext:
                     self.nextState()
             case 2:
-                baseGoalReached = self.completedTrajectory(self.base, 0.75, 3)
-                if baseGoalReached or self.dInt.skipNext:
-                    self.nextState()
-                else:
-                    pass
-            case 3:
                 pass
             case _:
                 pass
 
-        state_max = 3
+        state_max = 2
         self.schemeProg = min((self.currentState+(self.localProg*0.9)) / state_max, 1)

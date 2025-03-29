@@ -1,4 +1,3 @@
-
 from positionSchemes.defaultPosers import PoserNoChangeOperator, PoserVelocityControlOperator
 from positionSchemes.RobotPoserCommon import PoseDirectorCommon
 from humanInterface.operatorInterface import ElevArmCmdState
@@ -18,7 +17,6 @@ class PoseDirectorOperator(metaclass=Singleton):
 
     def initialize(self):
 
-
         self.common.controllerStateOperator = ElevArmCmdState.UNINITIALIZED
         self.common.prevControllerStateOperator = self.common.controllerStateOperator
         self.common.currentPositionSchemeOperator = PoserNoChangeOperator(self.common)
@@ -26,8 +24,8 @@ class PoseDirectorOperator(metaclass=Singleton):
         self.getArmCommand = lambda curCommand : self.common.currentPositionSchemeOperator.getArmCommand(curCommand)
         self.schemeProg = 0
         self.dashboardState = 1 # State 1, put the autonomous menu back up on the webserver dashboard
-        addLog("RP/schemeProg", lambda: self.schemeProg, "") # don't delete this.
-        addLog("RP/dashboardState", lambda: self.dashboardState, "") # don't delete this.
+        addLog("RPO/schemeProg", lambda: self.schemeProg, "") # don't delete this.
+        addLog("RPO/dashboardState", lambda: self.dashboardState, "") # don't delete this.
         # addLog("RP/controllerState", lambda: self.common.controllerStateOperator, "int")
 
     def setDashboardState(self, dashboardState: int):

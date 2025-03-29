@@ -36,15 +36,9 @@ class PlaceL4V6O(SetupScheme):
         self.armCmd = None
         self.elevCmd = None
 
-        # structure:
-        #   base: (Pose2d, velx, vely, velt)
-        #   arm: (position_deg, deg/s)
-        #   elev: (position_in, in/s)
-
         self.totalRuns = 0
         self.bestTag = 0
-        addLog("yvn_current_placeL4_state", lambda: self.currentState, "")
-        addLog("yvn_placeL4_runs", lambda: self.totalRuns, "")
+        addLog("yvn_current_placeL4o_state", lambda: self.currentState, "")
         self.placementIntel = PlacementIntelligence(self.base)
         # DEFINE THESE
         self.elevPlacePos = 60

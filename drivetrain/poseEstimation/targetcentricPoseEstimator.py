@@ -105,6 +105,9 @@ class TargetCentricPoseEstimator:
             self._curRawGyroAngle, self._lastModulePositions, knownPose
         )
 
+    def prepareForPoseSchemes(self):
+        pass
+
     def update(self, curModulePositions:PosTupleType, curModuleSpeeds:StateTupleType):
         """Periodic update, call this every 20ms.
 
