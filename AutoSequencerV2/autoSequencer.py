@@ -12,6 +12,10 @@ from Autonomous.modes.redLeftDriveOut import RedLeftDriveOut
 from Autonomous.modes.redCenterDriveOut import RedCenterDriveOut
 from Autonomous.modes.blueLeftDriveOut import BlueLeftDriveOut
 from Autonomous.modes.blueCenterDriveOut import BlueCenterDriveOut
+from Autonomous.modes.RedToReefLeft import RedToReefLeft
+from Autonomous.modes.RedToReefRight import RedToReefRight
+
+
 from Autonomous.modes.square import Square
 from Autonomous.modes.BlueToReefLeft import BlueToReefLeft
 from Autonomous.modes.BlueToReefRight import BlueToReefRight
@@ -33,6 +37,8 @@ class AutoSequencer(metaclass=Singleton):
         # Create a list of every autonomous mode we want
         self.mainModeList = ModeList("Main")
         self.mainModeList.addMode(DoNothingMode())
+
+
         #right now, DriveOut is all commented out, so we don't need to add it to the list. 
         #self.mainModeList.addMode(DriveOut())
 
@@ -70,6 +76,9 @@ class AutoSequencer(metaclass=Singleton):
         self.mainModeList.addMode(RedLeftDriveOut())
         self.mainModeList.addMode(RedCenterDriveOut())
         self.mainModeList.addMode(RedRightDriveOut())
+        self.mainModeList.addMode(RedToReefLeft())
+        self.mainModeList.addMode(RedToReefRight())
+
 
     def addBlueAllianceModes(self):
         self.mainModeList.addMode(BlueLeftDriveOut())
