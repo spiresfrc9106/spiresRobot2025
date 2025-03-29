@@ -253,6 +253,7 @@ class ArmControl(metaclass=Singleton):
             #self.curTrapPAccLogger = getNowLogger(f"{self.name}/curProfile_acc_degps2", "degps2")
             addLog(f"{self.name}/des_pos_deg", lambda: self.desTrapPState.position, "deg")
             addLog(f"{self.name}/des_vel_degps", lambda: self.desTrapPState.velocity, "degps")
+            addLog(f"{self.name}/rel_enc_offset", lambda: self.relEncOffsetRad, "rad")
 
             addLog("RParm/pos", lambda: self.actTrapPState.position, "deg")
 
