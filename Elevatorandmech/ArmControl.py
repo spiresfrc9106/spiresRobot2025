@@ -243,7 +243,7 @@ class ArmControl(metaclass=Singleton):
             self._largestAngleDeg = -180.0
 
             self._loadMaxVelAndAccFromCal()
-            #addLog(f"{self.name}/_largestAngleDeg", lambda: self._largestAngleDeg, "deg")
+            addLog(f"{self.name}/_largestAngleDeg", lambda: self._largestAngleDeg, "deg")
             addLog(f"{self.name}/state", lambda: self.state.value, "int")
             addLog(f"{self.name}/act_pos_deg", lambda: self.actTrapPState.position, "deg")
             #addLog(f"{self.name}/act_vel_degps", lambda: self.actTrapPState.velocity, "degps")
@@ -251,8 +251,8 @@ class ArmControl(metaclass=Singleton):
             addLog(f"{self.name}/curProfile_pos_deg", lambda: self.curTrapPState.position, "deg")
             addLog(f"{self.name}/curProfile_vel_degps", lambda: self.curTrapPState.velocity, "degps")
             #self.curTrapPAccLogger = getNowLogger(f"{self.name}/curProfile_acc_degps2", "degps2")
-            #addLog(f"{self.name}/des_pos_deg", lambda: self.desTrapPState.position, "deg")
-            #addLog(f"{self.name}/des_vel_degps", lambda: self.desTrapPState.velocity, "degps")
+            addLog(f"{self.name}/des_pos_deg", lambda: self.desTrapPState.position, "deg")
+            addLog(f"{self.name}/des_vel_degps", lambda: self.desTrapPState.velocity, "degps")
 
             addLog("RParm/pos", lambda: self.actTrapPState.position, "deg")
 
@@ -518,5 +518,16 @@ class ArmControl(metaclass=Singleton):
 
     def getVelocity(self):
         return self.getCurProfileVelocityDegps()
+
+    def armMayGoPastLimits(self):
+        self.maxPosDeg = 720.0
+        self.minPosDeg = -720.0
+
+    def getDownBacklashDeg(self):
+        if self.state == ArmStates.OPERATING:
+            # return self._downBacklashDeg
+            return 0.0
+        else:
+            return 0.0
 
 
