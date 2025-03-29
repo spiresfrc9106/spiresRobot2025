@@ -498,10 +498,10 @@ class ElevatorControl(metaclass=Singleton):
     
     # Yavin todo use these:  
     def getCurProfilePosIn(self):
-        return self.curTrapPState.position
+        return self.actTrapPState.position
     
     def getCurProfileVelocityInps(self):
-        return self.curTrapPState.velocity
+        return self.actTrapPState.velocity
 
     def getPosition(self):
         return self.getCurProfilePosIn()

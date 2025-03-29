@@ -118,14 +118,14 @@ class SetupScheme:
     def setArmCommand(self, x_deg: float | None, v_degps: float | None):
         if x_deg is not None:
             if v_degps is not None:
-                self.armCmd = (x_deg, v_degps)
+                self.elevCmd = (x_deg, v_degps)
             else:
-                self.armCmd = (x_deg, 0)
+                self.elevCmd = (x_deg, 0)
         else:
             if v_degps is not None:
-                self.armCmd = (x_deg, v_degps)
+                self.elevCmd = (x_deg, v_degps)
             else:
-                self.armCmd = None
+                self.elevCmd = None
 
     def setElevatorCommand(self, x_in: float | None, v_inps: float | None):
         if x_in is not None:

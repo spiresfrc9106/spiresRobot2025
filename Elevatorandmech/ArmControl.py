@@ -41,14 +41,14 @@ class ArmDependentConstants:
                 "ARM_M_CANID": 23,
                 "ARM_M_INVERTED": False,
                 "ARM_M_INITIALIZING_CURRENT_LIMIT_A": 10, # xyzzy CAUTION we're not using this yet
-                "ARM_M_OPERATING_CURRENT_LIMIT_A": 40,
-                "ARM_ANGLE_AT_CURRENT_LIMIT_GOING_UP": 92,
-                "MAX_ARM_POS_DEG": 88,
-                "MIN_ARM_POS_DEG": -89,
+                "ARM_M_OPERATING_CURRENT_LIMIT_A": 60,
+                "ARM_ANGLE_AT_CURRENT_LIMIT_GOING_UP": 93.9,
+                "MAX_ARM_POS_DEG": 90,
+                "MIN_ARM_POS_DEG": -92,
                 "MAX_SEARCH_ARM_VEL_DEGPS": 60,
                 "MAX_SEARCH_ARM_ACCEL_DEGPS2": 60*4,
-                "MAX_ARM_VEL_DEGPS": 180*2, # Was 180
-                "MAX_ARM_ACCEL_DEGPS2": 720*2, # Was 720
+                "MAX_ARM_VEL_DEGPS": 180*1.5, # Was 180*2, 180 before
+                "MAX_ARM_ACCEL_DEGPS2": 720*1.5, # Was 720*2, 720 before
                 "ABS_SENSOR_INVERTED": False,
             },
             RobotTypes.Spires2025Sim: {
@@ -150,7 +150,7 @@ class ArmControl(metaclass=Singleton):
         self.kV = Calibration(name="Arm kV", default=0.02, units="V/rps")
         self.kS = Calibration(name="Arm kS", default=0.1, units="V")
         self.kG = Calibration(name="Arm kG", default=0.25, units="V")
-        self.kP = Calibration(name="Arm kP", default=0.3, units="V/rad error")  # Per 0.001 seconds
+        self.kP = Calibration(name="Arm kP", default=0.1, units="V/rad error")  # Per 0.001 seconds
         self.calMaxPosDeg = Calibration(name="Arm Max Vel", default=MAX_ARM_POS_DEG, units="deg")
         self.calMinPosDeg = Calibration(name="Arm Max Vel", default=MIN_ARM_POS_DEG, units="deg")
         self.calMaxVelocityDegps = Calibration(name="Arm Max Vel", default=MAX_ARM_VEL_DEGPS, units="degps")
@@ -508,10 +508,10 @@ class ArmControl(metaclass=Singleton):
 
     # Yavin todo use these:
     def getCurProfilePosDeg(self) -> float:
-        return self.curTrapPState.position
+        return self.actTrapPState.position
 
     def getCurProfileVelocityDegps(self) -> float:
-        return self.curTrapPState.velocity
+        return self.actTrapPState.velocity
 
     def getPosition(self):
         return self.getCurProfilePosDeg()

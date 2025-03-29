@@ -42,7 +42,7 @@ class PlungeV1(SetupScheme):
         addLog("yvn_plunge_runs", lambda: self.totalRuns, "")  # test purposes, not needed at all.
 
         # DOWN HEIGHT
-        self.elevSafestPlungeHeight_in = (43.47 + 41) / 2  # or 41.5? # 40.91 - 1 #added -1 #32.1875 - 2 - 1
+        self.elevSafestPlungeHeight_in = (43.47 + 41) / 2 - 1 - 1.5 # or 41.5? # 40.91 - 1 #added -1 #32.1875 - 2 - 1
         
         # UP HEIGHT
         self.elevBestMediumHeight_in = self.elevConst.posMedium
@@ -63,18 +63,19 @@ class PlungeV1(SetupScheme):
                 else:
                     self.nextState()
             case 1:
-                self.armCmd = (-90, 0)  # lowest and 0 speed when reached
+                self.armCmd = (-89, 0)  # lowest and 0 speed when reached
                 self.elevCmd = None  # originally we were going to slowly bring this down but no.
-                if math.isclose(self.arm.getPosition(), -90, abs_tol=2.5):
+                if self.arm.getPosition() < -88.5:
                     self.nextState()
+                    # if math.isclose(self.arm.getPosition(), -89, abs_tol=-0.5):
             case 2:  #
-                self.armCmd = (-90, 0)
                 self.elevCmd = (self.elevSafestPlungeHeight_in, 0)
-                if math.isclose(self.elev.getPosition(), self.elevSafestPlungeHeight_in, abs_tol=0.5):
+                if self.elev.getPosition() < self.elevSafestPlungeHeight_in + 0.5:
                     self.nextState()
+                # if math.isclose(self.elev.getPosition(), self.elevSafestPlungeHeight_in, abs_tol=0.5):
             case 3:
-                if self.completedAwait("bottomWait", 0.5):
-                    self.nextState()
+                # if self.completedAwait("bottomWait", 0.5):
+                self.nextState()
             case 4:
                 self.elevCmd = (self.elevBestMediumHeight_in, 0)
                 if self.completedAwait("waterfallElevUp", 0.1):
