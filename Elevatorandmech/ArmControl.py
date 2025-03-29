@@ -43,8 +43,8 @@ class ArmDependentConstants:
                 "ARM_M_INITIALIZING_CURRENT_LIMIT_A": 10, # xyzzy CAUTION we're not using this yet
                 "ARM_M_OPERATING_CURRENT_LIMIT_A": 40,
                 "ARM_ANGLE_AT_CURRENT_LIMIT_GOING_UP": 92,
-                "MAX_ARM_POS_DEG": 90,
-                "MIN_ARM_POS_DEG": -90,
+                "MAX_ARM_POS_DEG": 88,
+                "MIN_ARM_POS_DEG": -89,
                 "MAX_SEARCH_ARM_VEL_DEGPS": 60,
                 "MAX_SEARCH_ARM_ACCEL_DEGPS2": 60*4,
                 "MAX_ARM_VEL_DEGPS": 180*2, # Was 180
@@ -59,8 +59,8 @@ class ArmDependentConstants:
                 "ARM_M_INITIALIZING_CURRENT_LIMIT_A": 5,
                 "ARM_M_OPERATING_CURRENT_LIMIT_A": 5,
                 "ARM_ANGLE_AT_CURRENT_LIMIT_GOING_UP": 100,
-                "MAX_ARM_POS_DEG": 90,
-                "MIN_ARM_POS_DEG": -92,
+                "MAX_ARM_POS_DEG": 88,
+                "MIN_ARM_POS_DEG": -89,
                 "MAX_SEARCH_ARM_VEL_DEGPS": 60,
                 "MAX_SEARCH_ARM_ACCEL_DEGPS2": 60*4,
                 "MAX_ARM_VEL_DEGPS": 90,
