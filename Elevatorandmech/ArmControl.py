@@ -432,7 +432,7 @@ class ArmControl(metaclass=Singleton):
                 # limit the height goal so that it is less than max height
                 # limit the height goal so that is more than 0
                 newDesPosDeg = min(newDesPosDeg, self.maxPosDeg)
-                newDesPosDeg = max(newDesPosDeg, self.maxPosDeg)
+                newDesPosDeg = max(newDesPosDeg, self.minPosDeg)
 
                 # do these checks relative to the curTrapPState
                 # if height goal is to go up, make sure that velocity goal is 0 or +
