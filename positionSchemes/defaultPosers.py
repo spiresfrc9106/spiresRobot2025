@@ -91,9 +91,15 @@ class PoserVelocityControlOperator():
 
     # Every frame the update will be called, and then later, the updates for the Drivetrain, Elevator, and Arm will be called and they will all "get" their commands.
     def update(self):
-        self.elevatorVelocityInps = self.oInt.elevatorVelYCmd * self.elev.maxVelocityInps #was effectively 20 was 10
+        if self.elev is not None:
+            self.elevatorVelocityInps = self.oInt.elevatorVelYCmd * self.elev.maxVelocityInps #was effectively 20 was 10
+        else:
+            self.elevatorVelocityInp = 0.0
         #print(f"elevatorVelocityInps={self.elevatorVelocityInps}")
-        self.armVelocityDegps = self.oInt.armVelYCmd * self.arm.maxVelocityDegps  # was 10
+        if self.arm is not None:
+            self.armVelocityDegps = self.oInt.armVelYCmd * self.arm.maxVelocityDegps  # was 10
+        else:
+            self.armVelocityDegps = 0.0
 
 
     ##### FIX THESE!!!!!! RIGHT NOW THEY AREN'T IMMUNE TO NONE!!!!
