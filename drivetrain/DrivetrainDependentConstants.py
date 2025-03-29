@@ -75,62 +75,62 @@ class CameraDependentConstants:
 cameraDepConstants = CameraDependentConstants().get()
 
 COMMON_CAMS = [
-    {
-        "CAM": WrapperedPoseEstPhotonCamera("RIGHT_CAM", ROBOT_TO_RIGHT_CAM),
-        "POSE_EST_LOG_NAME": "photonR",
-        "PUBLISHER":
-            (
-                NetworkTableInstance.getDefault()
-                .getStructTopic("/RightCamPose", Pose3d)
-                .publish()
-            ),
-        "ROBOT_TO_CAM": ROBOT_TO_RIGHT_CAM,
-        "WEIGH_IN_FILTER": False,
-        "USE_IN_TC_FRONT": False,
-        "USE_IN_TC_BACK": False,
-    },
-    {
-        "CAM": WrapperedPoseEstPhotonCamera("LEFT_CAM", ROBOT_TO_LEFT_CAM),
-        "POSE_EST_LOG_NAME": "photonL",
-        "PUBLISHER":
-            (
-                NetworkTableInstance.getDefault()
-                .getStructTopic("/LeftCamPose", Pose3d)
-                .publish()
-            ),
-        "ROBOT_TO_CAM": ROBOT_TO_LEFT_CAM,
-        "WEIGH_IN_FILTER": False,
-        "USE_IN_TC_FRONT": False,
-        "USE_IN_TC_BACK": False,
-    },
-    {
-        "CAM": WrapperedPoseEstPhotonCamera("FRONT_CAM", ROBOT_TO_FRONT_CAM),
-        "POSE_EST_LOG_NAME": "photonF",
-        "PUBLISHER":
-            (
-                NetworkTableInstance.getDefault()
-                .getStructTopic("/FrontCamPose", Pose3d)
-                .publish()
-            ),
-        "ROBOT_TO_CAM": ROBOT_TO_FRONT_CAM,
-        "WEIGH_IN_FILTER": False,
-        "USE_IN_TC_FRONT": False,
-        "USE_IN_TC_BACK": False,
-    },
-    {
-        "CAM": wrapperedLimilightCameraFactory("limelight-br", ROBOT_TO_LIME_1, cameraDepConstants['LL_PIPELINE']),
-        "POSE_EST_LOG_NAME": "limeli-br",
-        "PUBLISHER":
-            (
-                NetworkTableInstance.getDefault()
-                .getStructTopic("/Limili-brPose", Pose3d)
-                .publish()
-            ),
-        "ROBOT_TO_CAM": ROBOT_TO_LIME_1,
-        "WEIGH_IN_FILTER": True,
-        "USE_IN_TC_FRONT": False,
-        "USE_IN_TC_BACK": True,
-    },
+    # {
+    #     "CAM": WrapperedPoseEstPhotonCamera("RIGHT_CAM", ROBOT_TO_RIGHT_CAM),
+    #     "POSE_EST_LOG_NAME": "photonR",
+    #     "PUBLISHER":
+    #         (
+    #             NetworkTableInstance.getDefault()
+    #             .getStructTopic("/RightCamPose", Pose3d)
+    #             .publish()
+    #         ),
+    #     "ROBOT_TO_CAM": ROBOT_TO_RIGHT_CAM,
+    #     "WEIGH_IN_FILTER": False,
+    #     "USE_IN_TC_FRONT": False,
+    #     "USE_IN_TC_BACK": False,
+    # },
+    # {
+    #     "CAM": WrapperedPoseEstPhotonCamera("LEFT_CAM", ROBOT_TO_LEFT_CAM),
+    #     "POSE_EST_LOG_NAME": "photonL",
+    #     "PUBLISHER":
+    #         (
+    #             NetworkTableInstance.getDefault()
+    #             .getStructTopic("/LeftCamPose", Pose3d)
+    #             .publish()
+    #         ),
+    #     "ROBOT_TO_CAM": ROBOT_TO_LEFT_CAM,
+    #     "WEIGH_IN_FILTER": False,
+    #     "USE_IN_TC_FRONT": False,
+    #     "USE_IN_TC_BACK": False,
+    # },
+    # {
+    #     "CAM": WrapperedPoseEstPhotonCamera("FRONT_CAM", ROBOT_TO_FRONT_CAM),
+    #     "POSE_EST_LOG_NAME": "photonF",
+    #     "PUBLISHER":
+    #         (
+    #             NetworkTableInstance.getDefault()
+    #             .getStructTopic("/FrontCamPose", Pose3d)
+    #             .publish()
+    #         ),
+    #     "ROBOT_TO_CAM": ROBOT_TO_FRONT_CAM,
+    #     "WEIGH_IN_FILTER": False,
+    #     "USE_IN_TC_FRONT": False,
+    #     "USE_IN_TC_BACK": False,
+    # },
+    # {
+    #     "CAM": wrapperedLimilightCameraFactory("limelight-br", ROBOT_TO_LIME_1, cameraDepConstants['LL_PIPELINE']),
+    #     "POSE_EST_LOG_NAME": "limeli-br",
+    #     "PUBLISHER":
+    #         (
+    #             NetworkTableInstance.getDefault()
+    #             .getStructTopic("/Limili-brPose", Pose3d)
+    #             .publish()
+    #         ),
+    #     "ROBOT_TO_CAM": ROBOT_TO_LIME_1,
+    #     "WEIGH_IN_FILTER": True,
+    #     "USE_IN_TC_FRONT": False,
+    #     "USE_IN_TC_BACK": True,
+    # },
     {
         "CAM": wrapperedLimilightCameraFactory("limelight-fl", ROBOT_TO_LIME_1, cameraDepConstants['LL_PIPELINE']),
         "POSE_EST_LOG_NAME": "limeli-fl",

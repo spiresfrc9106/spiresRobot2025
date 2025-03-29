@@ -156,7 +156,7 @@ class WrapperedPoseEstLimelight:
         if measure_x or measure_y:
             return max(y, 0.1)  # We should put make this a number between .1 and 1 #(CoachMike) Went from 1 to 0.1   #max(y, 0.0127)
         else:
-            return max(y, 1.0) #Theta of one radian is about 60 degrees
+            return max(y, 1000000000)  # billions of dollars
 
 
 def wrapperedLimilightCameraFactory(camName:str, robotToCam, pipeline_mode):

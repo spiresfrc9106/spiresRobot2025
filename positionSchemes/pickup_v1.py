@@ -41,23 +41,22 @@ class PickupV1(SetupScheme):
         time = currentTime - self.startTime
         match self.currentState:
             case 0:  # initializing
-                self.bestTag = PickupIntelligence(self.base).decidePickupPose(self.inchesToMeters(10))
-                self.setDriveTrainBaseCommand(self.bestTag)
+                # self.bestTag = PickupIntelligence(self.base).decidePickupPose(self.inchesToMeters(10))
+                # self.setDriveTrainBaseCommand(self.bestTag)
                 self.armCmd = None
                 self.elevCmd = None
-                if self.completedAwait("awaitbasecmdsend", 0.2):
-                    self.nextState()
+                self.nextState()
             case 1:
                 self.elevCmd = (self.elevPickupPose, 0)
-                if self.completedTrajectory(self.base):
-                    self.nextState()
+                # if self.completedTrajectory(self.base):
+                self.nextState()
             case 2:
                 elevGoalReached = math.isclose(self.elev.getPosition(), self.elevPickupPose, abs_tol=0.5)
                 if elevGoalReached:
                     self.nextState()
             case 3:
-                self.bestTag = PickupIntelligence(self.base).decidePickupPose(self.inchesToMeters(1))
-                self.setDriveTrainBaseCommand(self.bestTag)
+                # self.bestTag = PickupIntelligence(self.base).decidePickupPose(self.inchesToMeters(1))
+                # self.setDriveTrainBaseCommand(self.bestTag)
                 pass
             case _:
                 pass
