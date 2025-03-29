@@ -1,6 +1,7 @@
 import time
 from rev import SparkMax, SparkBase, SparkMaxConfig, REVLibError, ClosedLoopSlot, SparkBaseConfig
 from rev import SparkClosedLoopController
+import wpilib
 from wpilib import TimedRobot
 from utils.signalLogging import addLog
 from utils.units import rev2Rad, rad2Rev, radPerSec2RPM, RPM2RadPerSec
@@ -24,14 +25,20 @@ class WrapperedSparkMax:
         self.currentLimitA = round(currentLimitA)
         self.configSuccess = False
         self.disconFault = Fault(f"Spark Max {name} ID {canID} disconnected")
-        self.simActPos = 0
+        if wpilib.RobotBase.isSimulation():
+            self.simActPos = 1.0
+        else:
+            self.simActPos = 0
         self.canID = canID
 
         # pylint: disable= R0801
         self.desPosRad = 0
         self.desVelRadps = 0
         self.desVolt = 0
-        self.actPosRad = 0
+        if wpilib.RobotBase.isSimulation():
+            self.actPosRad = self.simActPos
+        else:
+            self.actPosRad = 0
         self.actVelRadps = 0
         self.actVolt = 0
         self.controlState = MotorControlStates.UNKNOWN

@@ -55,16 +55,16 @@ class ArmDependentConstants:
                 "HAS_ARM": True,
                 "ARM_GEARBOX_GEAR_RATIO": 50.0 / 1.0,
                 "ARM_M_CANID": 23,
-                "ARM_M_INVERTED": True,
-                "ARM_M_INITIALIZING_CURRENT_LIMIT_A": 5,
-                "ARM_M_OPERATING_CURRENT_LIMIT_A": 5,
-                "ARM_ANGLE_AT_CURRENT_LIMIT_GOING_UP": 100,
-                "MAX_ARM_POS_DEG": 88,
-                "MIN_ARM_POS_DEG": -89,
+                "ARM_M_INVERTED": False,
+                "ARM_M_INITIALIZING_CURRENT_LIMIT_A": 10,  # xyzzy CAUTION we're not using this yet
+                "ARM_M_OPERATING_CURRENT_LIMIT_A": 60,
+                "ARM_ANGLE_AT_CURRENT_LIMIT_GOING_UP": 93.9,
+                "MAX_ARM_POS_DEG": 90,
+                "MIN_ARM_POS_DEG": -92,
                 "MAX_SEARCH_ARM_VEL_DEGPS": 60,
-                "MAX_SEARCH_ARM_ACCEL_DEGPS2": 60*4,
-                "MAX_ARM_VEL_DEGPS": 90,
-                "MAX_ARM_ACCEL_DEGPS2": 180,
+                "MAX_SEARCH_ARM_ACCEL_DEGPS2": 60 * 4,
+                "MAX_ARM_VEL_DEGPS": 180 * 2,  # Was 180*2, 180 before
+                "MAX_ARM_ACCEL_DEGPS2": 720 * 2,  # Was 720*2, 720 before
                 "ABS_SENSOR_INVERTED": False,
             },
             RobotTypes.SpiresTestBoard: {
@@ -348,6 +348,8 @@ class ArmControl(metaclass=Singleton):
 
     def _updateInitGoingUp(self) -> None:
         positionDeg = self._getRelAngleWithOffsetDeg()
+        self.actualVelDegps = self._getVelocityDegps()
+        self.actTrapPState = TrapezoidProfile.State(positionDeg, self.actualVelDegps)
 
         if positionDeg > self._largestAngleDeg:
             self._largestAngleDeg = positionDeg
