@@ -35,6 +35,7 @@ class PickupV1(SetupScheme):
         addLog("yvn_pickup_runs", lambda: self.totalRuns, "")
 
         self.elevPickupPose = 45.30  # 47.6875  #inches
+        self.armPickupPose = -75
 
     def update(self):
         currentTime = Timer.getFPGATimestamp()
@@ -55,8 +56,7 @@ class PickupV1(SetupScheme):
                 if elevGoalReached:
                     self.nextState()
             case 3:
-                # self.bestTag = PickupIntelligence(self.base).decidePickupPose(self.inchesToMeters(1))
-                # self.setDriveTrainBaseCommand(self.bestTag)
+                self.armCmd = (self.armPickupPose, 0)
                 pass
             case _:
                 pass

@@ -7,6 +7,9 @@ from positionSchemes.place_L4_v6_o import PlaceL4V6O
 from positionSchemes.place_L3_v1 import PlaceL3V1
 from positionSchemes.place_L2_v1 import PlaceL2V1
 from positionSchemes.place_L1_v1 import PlaceL1V1
+from positionSchemes.place_L3_v2_o import PlaceL3V1
+from positionSchemes.put_L3_v2_o import PutL3V2O
+from positionSchemes.put_L4_v1_o import PutL4V1O
 from utils.signalLogging import addLog
 from utils.singleton import Singleton
 
@@ -16,13 +19,13 @@ class PoseDirectorOperator(metaclass=Singleton):
         self.common = PoseDirectorCommon()
 
     def initialize(self):
-
         self.common.controllerStateOperator = ElevArmCmdState.UNINITIALIZED
         self.common.prevControllerStateOperator = self.common.controllerStateOperator
         self.common.currentPositionSchemeOperator = PoserNoChangeOperator(self.common)
         self.getElevatorCommand = lambda curCommand :  self.common.currentPositionSchemeOperator.getElevatorCommand(curCommand)
         self.getArmCommand = lambda curCommand : self.common.currentPositionSchemeOperator.getArmCommand(curCommand)
         self.schemeProg = 0
+        self.whatToDo = ElevArmCmdState.L4
         self.dashboardState = 1 # State 1, put the autonomous menu back up on the webserver dashboard
         addLog("RPO/schemeProg", lambda: self.schemeProg, "") # don't delete this.
         addLog("RPO/dashboardState", lambda: self.dashboardState, "") # don't delete this.
@@ -73,16 +76,26 @@ class PoseDirectorOperator(metaclass=Singleton):
                 return PickupV1(self.common)
             case ElevArmCmdState.L1:
                 self.setDashboardState(6)
+                self.whatToDo = ElevArmCmdState.L1
                 return PlaceL1V1(self.common)
             case ElevArmCmdState.L2:
                 self.setDashboardState(6)
+                self.whatToDo = ElevArmCmdState.L2
                 return PlaceL2V1(self.common)
             case ElevArmCmdState.L3:
                 self.setDashboardState(6)
+                self.whatToDo = ElevArmCmdState.L3
                 return PlaceL3V1(self.common)
             case ElevArmCmdState.L4:
                 self.setDashboardState(6)
+                self.whatToDo = ElevArmCmdState.L4
                 return PlaceL4V6O(self.common)
+            case ElevArmCmdState.PUT:
+                self.setDashboardState(6)
+                if self.whatToDo==ElevArmCmdState.L3:
+                    return PutL3V2O(self.common)
+                else:
+                    return PutL4V1O(self.common)
             case _:
                 return PoserNoChangeOperator(self.common)
 

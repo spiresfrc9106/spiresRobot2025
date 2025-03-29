@@ -27,7 +27,6 @@ class PlaceL4V6O(SetupScheme):
         self.elevConst = ElevConsts()
         self.currentState = 0
 
-
         self.startTime = Timer.getFPGATimestamp()
         self.changeInTime = 0
         self.waitTimes = {}

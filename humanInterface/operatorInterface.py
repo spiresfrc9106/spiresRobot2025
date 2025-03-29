@@ -19,6 +19,7 @@ class ElevArmCmdState(IntEnum):
     L2 = 5
     L3 = 6
     L4 = 7
+    PUT = 8
     UNINITIALIZED = -1
 
 class OperatorInterface(metaclass=Singleton):
@@ -95,6 +96,8 @@ class OperatorInterface(metaclass=Singleton):
                 self.elevArmCmdState = ElevArmCmdState.L3
             elif self.ctrl.getYButton():
                 self.elevArmCmdState = ElevArmCmdState.L4
+            elif self.launchPlacement:
+                self.elevArmCmdState = ElevArmCmdState.PUT
             else:
                 self.elevArmCmdState = ElevArmCmdState.VEL_CONTROL
 
