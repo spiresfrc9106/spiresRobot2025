@@ -323,6 +323,8 @@ class ElevatorControl(metaclass=Singleton):
             self.desTrapPState = TrapezoidProfile.State(self.getHeightIn()-1000,0)
         self.curTrapPState = TrapezoidProfile.State(self.getHeightIn(), 0)
         self.lowestHeightIn = self.getHeightIn()
+        self.fMotor.setSmartCurrentLimit(self.calElevInitializingCurrentLimitA.get())
+        self.bMotor.setSmartCurrentLimit(self.calElevInitializingCurrentLimitA.get())
         self._setMotorPosAndFF()
 
     def _updateInitGoingDown(self) -> None:
@@ -341,6 +343,9 @@ class ElevatorControl(metaclass=Singleton):
                 self._loadNewTrapProfiler()
                 self.desTrapPState = TrapezoidProfile.State(self.getHeightIn(), 0)
                 self.curTrapPState = TrapezoidProfile.State(self.getHeightIn(), 0)
+                self.fMotor.setSmartCurrentLimit(self.calElevOperatingCurrentLimitA.get())
+                self.bMotor.setSmartCurrentLimit(self.calElevOperatingCurrentLimitA.get())
+                self.stallDectector.stallCurrentLimitA = self.fMotor.currentLimitA
                 self._changeState(ElevatorStates.OPERATING)
             else:
                 self._setMotorPosAndFF()
