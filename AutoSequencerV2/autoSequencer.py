@@ -14,7 +14,6 @@ from Autonomous.modes.blueLeftDriveOut import BlueLeftDriveOut
 from Autonomous.modes.blueCenterDriveOut import BlueCenterDriveOut
 from Autonomous.modes.square import Square
 from Autonomous.modes.BlueToReefLeft import BlueToReefLeft
-from Autonomous.modes.BlueToReefCenter import BlueToReefCenter
 from Autonomous.modes.BlueToReefRight import BlueToReefRight
 
 from utils.singleton import Singleton
@@ -77,7 +76,6 @@ class AutoSequencer(metaclass=Singleton):
         self.mainModeList.addMode(BlueCenterDriveOut())
         self.mainModeList.addMode(BlueRightDriveOut())
         self.mainModeList.addMode(BlueToReefRight())
-        self.mainModeList.addMode(BlueToReefCenter())
         self.mainModeList.addMode(BlueToReefLeft())
 
 
