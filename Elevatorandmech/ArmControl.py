@@ -198,7 +198,7 @@ class ArmControl(metaclass=Singleton):
 
     def initialize(self):
         changed = self.calMaxPosDeg.isChanged() or \
-                  self.calMaxPosDeg.isChanged() or \
+                  self.calMinPosDeg.isChanged() or \
                   self.kP.isChanged() or \
                   self.calMaxVelocityDegps.isChanged() or \
                   self.calMaxAccelerationDegps2.isChanged() or \
@@ -215,6 +215,9 @@ class ArmControl(metaclass=Singleton):
             self.motor.setVoltage(0)
 
             # units for trapezoidal will be degrees per second (velocity) and degrees per second squared (acceleration)
+
+            self.minPosDeg = self.calMinPosDeg.get()
+            self.maxPosDeg = self.calMaxPosDeg.get()
             self.trapProfiler = TrapezoidProfile(TrapezoidProfile.Constraints(self.calSearchMaxVelocityDegps.get(), self.calSearchMaxAccelerationDegps2.get()))
             self._setActCurDesTrapPStates(0,0)
 
@@ -428,8 +431,8 @@ class ArmControl(metaclass=Singleton):
             if newDesPosDeg is not None:
                 # limit the height goal so that it is less than max height
                 # limit the height goal so that is more than 0
-                newDesPosDeg = min(newDesPosDeg, self.calMaxPosDeg.get())
-                newDesPosDeg = max(newDesPosDeg, self.calMinPosDeg.get())
+                newDesPosDeg = min(newDesPosDeg, self.maxPosDeg)
+                newDesPosDeg = max(newDesPosDeg, self.maxPosDeg)
 
                 # do these checks relative to the curTrapPState
                 # if height goal is to go up, make sure that velocity goal is 0 or +
@@ -445,10 +448,10 @@ class ArmControl(metaclass=Singleton):
             elif newDesVelocityDegps == 0.0:
                 newDesPosDeg = self.curTrapPState.position
             elif newDesVelocityDegps > 0.0:
-                newDesPosDeg = self.calMaxPosDeg.get()
+                newDesPosDeg = self.maxPosDeg
                 isVelocityCmd = True
             elif newDesVelocityDegps < 0.0:
-                newDesPosDeg = self.calMinPosDeg.get()
+                newDesPosDeg = self.minPosDeg
                 isVelocityCmd = True
             else:
                 newDesPosDeg = newDesPosDeg
