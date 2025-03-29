@@ -127,6 +127,7 @@ class ElevatorStates(IntEnum):
 
 TIME_STEP_S = 0.02
 
+ELEV_FORCE_SKIP_OF_INIT_PULLDOWN = True
 
 class ElevatorControl(metaclass=Singleton):
     def __init__(self):
@@ -316,7 +317,7 @@ class ElevatorControl(metaclass=Singleton):
         self.timeWhenChangeS = Timer.getFPGATimestamp()
         self._changeState(ElevatorStates.INIT_GOING_DOWN)
         self._forceStartAtHeightZeroIn()
-        if wpilib.RobotBase.isSimulation():
+        if ELEV_FORCE_SKIP_OF_INIT_PULLDOWN or wpilib.RobotBase.isSimulation():
             self.desTrapPState = TrapezoidProfile.State(self.getHeightIn(),0)
         else:
             self.desTrapPState = TrapezoidProfile.State(self.getHeightIn()-1000,0)
@@ -335,7 +336,7 @@ class ElevatorControl(metaclass=Singleton):
         else:
             # because we didn't go any lower, maybe we have been at the lowest height for a second
             nowS = Timer.getFPGATimestamp()
-            if nowS - 1 >= self.timeWhenChangeS:
+            if ELEV_FORCE_SKIP_OF_INIT_PULLDOWN or (nowS - 1 >= self.timeWhenChangeS):
                 self._forceStartAtHeightZeroIn()
                 self._loadNewTrapProfiler()
                 self.desTrapPState = TrapezoidProfile.State(self.getHeightIn(), 0)
