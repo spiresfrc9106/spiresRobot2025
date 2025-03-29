@@ -47,13 +47,16 @@ class OperatorInterface(metaclass=Singleton):
         #self.dPadState = ReefLeftOrRight.LEFT
         self.skipNext = False
 
+        self.armStaysInLimits = True
+        self.armReInit = False
+
         # Logging
         addLog("OI/elevatorVelCmd", lambda: self.elevatorVelYCmd, "frac")
         addLog("OI/elevator Pos In", lambda: self.getDesElevatorPosIn(), "in")
         addLog("OI/armVelCmd", lambda: self.armVelYCmd, "frac")
-        addLog("OI/elevArmCmdState", lambda: self.elevArmCmdState, "int")
-
-
+        addLog("OI/elevArmCmdState", lambda: self.elevArmCmdState, "bool")
+        addLog("OI/armStaysInLimits", lambda: self.armStaysInLimits, "bool")
+        addLog("OI/armReInit", lambda: self.armReInit, "bool")
 
 
     def update(self):
@@ -95,11 +98,20 @@ class OperatorInterface(metaclass=Singleton):
             else:
                 self.elevArmCmdState = ElevArmCmdState.VEL_CONTROL
 
+            if self.ctrl.getStartButtonPressed():
+                self.armStaysInLimits = False
+
+            self.armReInit = self.ctrl.getBackButton()
+            if self.armReInit:
+                self.armStaysInLimits = True
+
         else:
             self.elevArmCmdState = ElevArmCmdState.UNINITIALIZED
             # If the joystick is unplugged, pick safe-state commands and raise a fault
             self.elevatorVelYCmd = 0.0
             self.armVelYCmd = 0.0
+            self.armStaysInLimits = True
+            self.armReInit = False
 
 
 # don't delete these they are unfortunately important (crying face emoji)

@@ -281,6 +281,11 @@ class MyRobot(wpilib.TimedRobot):
 
         if armDepConstants['HAS_ARM']:
             #self.arm.setPosVelocityGoal(posGoalDeg=self.oInt.getDesArmAngleDeg(), velocityGoalDegps=0.0)
+            if self.oInt.armReInit:
+                self.arm.forceReInit()
+                self.arm.initialize()
+            elif not self.oInt.armStaysInLimits:
+                self.arm.armMayGoPastLimits()
             self.arm.update()
             self.stt.mark("Arm-teleop")
 
