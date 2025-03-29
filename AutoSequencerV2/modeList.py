@@ -44,7 +44,10 @@ class ModeList:
         )  # Return true if the selection has changed
 
     def getCurMode(self) -> Mode:
-        return self.modes[self.curModeIdx]
+        try:
+            return self.modes[self.curModeIdx]
+        except:
+            return self.modes[0]
 
     def getNames(self):
         return [x.getName() for x in self.modes]
