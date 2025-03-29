@@ -224,11 +224,11 @@ class MyRobot(wpilib.TimedRobot):
             if not self.autoHasRun:
                 if onRed():
                     self.driveTrain.poseEst.setKnownPose(
-                        Pose2d(10.4279, 3.722, Rotation2d(0))
+                        Pose2d(10.4279, 4.031, Rotation2d(0))
                     )
                 else:
                     self.driveTrain.poseEst.setKnownPose(
-                        Pose2d(7.1411, 3.722, Rotation2d(deg2Rad(180)))
+                        Pose2d(7.1411, 4.031, Rotation2d(deg2Rad(180)))
                     )
 
         if armDepConstants['HAS_ARM']:
