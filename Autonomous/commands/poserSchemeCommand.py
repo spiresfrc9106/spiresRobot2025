@@ -11,6 +11,7 @@ from Elevatorandmech.ElevatorControl import ElevatorControl, elevDepConstants
 from Elevatorandmech.ArmControl import ArmControl, armDepConstants
 
 from positionSchemes.auton_schemes.place_L4_v6_a import PlaceL4V1Auto
+from positionSchemes.auton_schemes.drive_fwd_a import DriveFwdAuto
 from positionSchemes.auton_schemes.empty_a import EmptyAuto
 from wpimath.geometry import Pose2d, Rotation2d
 from utils.units import deg2Rad
@@ -41,12 +42,12 @@ class StartingPoses:
         pass
     def getInitialPose(self):
         positions = {
-            "BL": Pose2d(7.13,7.55,Rotation2d(deg2Rad(180))),
-            "BC": Pose2d(7.13,4.031,Rotation2d(deg2Rad(180))),
-            "BR": Pose2d(7.13,0.4826,Rotation2d(deg2Rad(180))),
-            "RL": Pose2d(10.418,7.55,Rotation2d(deg2Rad(0))),
-            "RC": Pose2d(10.418,4.031,Rotation2d(deg2Rad(0))),
-            "RR": Pose2d(10.418,0.4826,Rotation2d(deg2Rad(0))),
+            "BL": Pose2d(7.13, 7.55, Rotation2d(deg2Rad(180))),
+            "BC": Pose2d(7.13, 4.031, Rotation2d(deg2Rad(180))),
+            "BR": Pose2d(7.13, 0.4826, Rotation2d(deg2Rad(180))),
+            "RL": Pose2d(10.418, 0.4826, Rotation2d(deg2Rad(0))),
+            "RC": Pose2d(10.418, 4.031, Rotation2d(deg2Rad(0))),
+            "RR": Pose2d(10.418, 7.55, Rotation2d(deg2Rad(0))),
         }
 
         match self.command:
@@ -110,37 +111,62 @@ class PoserSchemeCommand(Command):
     def initialize(self):
         LEFT = -1
         RIGHT = 1
+
+        BL_TAG = 20
+        BC_TAG = 21
+        BR_TAG = 22
+        RL_TAG = 11
+        RC_TAG = 10
+        RR_TAG = 9
+
+        BLUE = -1
+        RED = 1
+
+        SHORT = 0.25
+        LONG = 0.5
+
         print(f"our pose scheme: {self.poseScheme}")
         match self.poseScheme:
             case AutonPoserSelected.B_LEFT_REEF:
-                self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, LEFT)
+                self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, LEFT, BC_TAG)
             case AutonPoserSelected.B_RIGHT_REEF:
-                self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, RIGHT)
+                self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, RIGHT, BC_TAG)
             case AutonPoserSelected.R_LEFT_REEF:
-                self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, LEFT)
+                self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, LEFT, RC_TAG)
             case AutonPoserSelected.R_RIGHT_REEF:
-                self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, RIGHT)
+                self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, RIGHT, RC_TAG)
             case AutonPoserSelected.B_LEFT_TO_LEFT_REEF:
-                self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, LEFT)
+                self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, LEFT, BL_TAG)
             case AutonPoserSelected.B_LEFT_TO_RIGHT_REEF:
-                self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, RIGHT)
+                self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, RIGHT, BL_TAG)
             case AutonPoserSelected.R_LEFT_TO_LEFT_REEF:
-                self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, LEFT)
+                self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, LEFT, RL_TAG)
             case AutonPoserSelected.R_LEFT_TO_RIGHT_REEF:
-                self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, RIGHT)
+                self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, RIGHT, RL_TAG)
             case AutonPoserSelected.B_RIGHT_TO_LEFT_REEF:
-                self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, LEFT)
+                self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, LEFT, BR_TAG)
             case AutonPoserSelected.B_RIGHT_TO_RIGHT_REEF:
-                self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, RIGHT)
+                self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, RIGHT, BR_TAG)
             case AutonPoserSelected.R_RIGHT_TO_LEFT_REEF:
-                self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, LEFT)
+                self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, LEFT, RR_TAG)
             case AutonPoserSelected.R_RIGHT_TO_RIGHT_REEF:
-                self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, RIGHT)
+                self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, RIGHT, RR_TAG)
+            case AutonPoserSelected.B_LEFT_DRIVE:
+                self.poser = DriveFwdAuto(self.arm, self.drivetrain, self.elev, BLUE, LONG)
+            case AutonPoserSelected.B_RIGHT_DRIVE:
+                self.poser = DriveFwdAuto(self.arm, self.drivetrain, self.elev, BLUE, LONG)
+            case AutonPoserSelected.B_CENTER_DRIVE:
+                self.poser = DriveFwdAuto(self.arm, self.drivetrain, self.elev, BLUE, SHORT)
+            case AutonPoserSelected.R_LEFT_DRIVE:
+                self.poser = DriveFwdAuto(self.arm, self.drivetrain, self.elev, RED, LONG)
+            case AutonPoserSelected.R_RIGHT_DRIVE:
+                self.poser = DriveFwdAuto(self.arm, self.drivetrain, self.elev, RED, LONG)
+            case AutonPoserSelected.R_CENTER_DRIVE:
+                self.poser = DriveFwdAuto(self.arm, self.drivetrain, self.elev, RED, SHORT)
             case _:
                 self.poser = EmptyAuto(self.arm, self.drivetrain, self.elev)
 
     def execute(self):
-        print(f"our pose scheme: {self.poseScheme}")
         self.poser.update()
 
     def isDone(self):

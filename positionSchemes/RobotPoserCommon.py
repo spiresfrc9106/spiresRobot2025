@@ -16,7 +16,7 @@ class PoseDirectorCommon(metaclass=Singleton):
 
 
 
-    def initialize(self, pdD, pdO, dInt, oInt, drivetTrain, arm, elevator):
+    def initialize(self, pdD, pdO, dInt, oInt, drivetTrain, arm, elevator, auto):
         self.pdD = pdD
         self.pdO = pdO
         self.dInt = dInt
@@ -24,6 +24,7 @@ class PoseDirectorCommon(metaclass=Singleton):
         self.driveTrain = drivetTrain
         self.arm = arm
         self.elevator = elevator
+        self.auto = auto
         self.controllerStateDriver = ElevArmCmdState.UNINITIALIZED
         self.prevControllerStateDriver = self.controllerStateDriver
         self.controllerStateOperator = ElevArmCmdState.UNINITIALIZED

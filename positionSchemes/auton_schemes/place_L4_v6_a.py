@@ -5,16 +5,18 @@ from positionSchemes._intel._setup import SetupScheme, ArmConsts, ElevConsts
 from positionSchemes._intel._posintelligence import PlacementIntelligence
 from drivetrain.drivetrainPhysical import MAX_FWD_REV_SPEED_MPS
 
+# multiply speed by 0.20 for the out speed
 
 # if you can't find something here, it's probably in the _setup file.
 
 class PlaceL4V1Auto(SetupScheme):
-    def __init__(self, arm, base, elev, sideOfReef):
+    def __init__(self, arm, base, elev, sideOfReef, reefTag):
         super().__init__(arm=arm, base=base, elev=elev)
         self.arm = arm
         self.base = base
         self.elev = elev
         self.pdSideOfReef = sideOfReef
+        self.reefTag = reefTag
         self.armConst = ArmConsts()
         self.elevConst = ElevConsts()
         self.currentState = 0
@@ -49,8 +51,7 @@ class PlaceL4V1Auto(SetupScheme):
         time = currentTime - self.startTime
         match self.currentState:
             case 0:
-                print("going")
-                self.bestTag = self.placementIntel.decidePlacementPose(0, self.inchesToMeters(20))
+                self.bestTag = self.placementIntel.decidePlacementPose(0, self.inchesToMeters(20), self.reefTag)
                 print(f"place l4 time = {Timer.getFPGATimestamp():.3f}s x={self.bestTag.x:+10.1f}m y={self.bestTag.y:+10.1f}m t={self.bestTag.rotation().degrees():+10.1f}deg")
                 self.setDriveTrainBaseCommand(self.bestTag)
                 self.setArmCommand(90, 0)
@@ -58,7 +59,7 @@ class PlaceL4V1Auto(SetupScheme):
                 if self.completedTrajectory(self.base, 6, 5):
                     self.nextState()
             case 1:
-                self.bestTag = self.placementIntel.decidePlacementPose(self.pdSideOfReef, self.inchesToMeters(7))
+                self.bestTag = self.placementIntel.decidePlacementPose(self.pdSideOfReef, self.inchesToMeters(7), self.reefTag)
                 self.setElevatorCommand(self.elevPlacePos, 0)
                 self.setArmCommand(self.armPlacePos, 0)
                 self.setDriveTrainBaseCommand(self.bestTag)

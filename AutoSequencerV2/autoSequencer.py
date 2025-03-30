@@ -73,6 +73,8 @@ class AutoSequencer(metaclass=Singleton):
 
         self.changedMenu = False
 
+        self.currentScheme = None
+
         self.updateMode(force=True)  # Ensure we load the auto sequencer at least once.
 
     # Returns true if the alliance has changed since the last call
@@ -138,13 +140,15 @@ class AutoSequencer(metaclass=Singleton):
                 mainMode.getCmdGroup()
             )
             self.startPose = mainMode.getInitialDrivetrainPose()
+
+            self.currentScheme = mainMode.getCmdGroup()
             print(
                 f"[Auto] New Modes Selected: {DriverStation.getAlliance()} {delayMode.getName()}, {mainMode.getName()}"
             )
 
     # Call this once during autonmous init to init the current command sequence
     def initialize(self):
-        self.updateMode() # Last-shot update before starting autonomous
+        self.updateMode()  # Last-shot update before starting autonomous
         print("[Auto] Starting Sequencer")
         self.topLevelCmdGroup.initialize()
 

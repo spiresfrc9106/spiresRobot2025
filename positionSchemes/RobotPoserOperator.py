@@ -24,7 +24,9 @@ class PoseDirectorOperator(metaclass=Singleton):
         self.getElevatorCommand = lambda curCommand :  self.common.currentPositionSchemeOperator.getElevatorCommand(curCommand)
         self.getArmCommand = lambda curCommand : self.common.currentPositionSchemeOperator.getArmCommand(curCommand)
         self.schemeProg = 0
+        self.lastAutonToggle = 0
         self.whatToDo = ElevArmCmdState.L4
+        self.scheme = None
         self.dashboardState = 1 # State 1, put the autonomous menu back up on the webserver dashboard
         addLog("RPO/schemeProg", lambda: self.schemeProg, "") # don't delete this.
         addLog("RPO/dashboardState", lambda: self.dashboardState, "") # don't delete this.
@@ -35,16 +37,25 @@ class PoseDirectorOperator(metaclass=Singleton):
 
     def update(self, isAuton=False):
 
-        if (not isAuton) and self._isControllerStateChanging():
-            self.common.currentPositionSchemeOperator.deactivate()
-            self.common.currentPositionSchemeOperator = self.pickTheNewScheme()
-            self.getElevatorCommand = lambda curCommand: self.common.currentPositionSchemeOperator.getElevatorCommand(curCommand)
-            self.getArmCommand = lambda curCommand : self.common.currentPositionSchemeOperator.getArmCommand(curCommand)
-            # self.progress = self.common.currentPositionSchemeOperator.schemeProg *100
-        self.common.currentPositionSchemeOperator.update()
+        if isAuton and self.lastAutonToggle != isAuton:
+            scheme = self.common.auto.currentScheme
+            if scheme is not None:
+                if scheme.poser != 0:
+                    self.scheme = scheme.poser
+                    self.common.currentPositionSchemeOperator.deactivate()
+                    self.common.currentPositionSchemeOperator = self.scheme
+                    self.getElevatorCommand = lambda curCommand: self.scheme.getElevatorCommand(curCommand)
+                    self.getArmCommand = lambda curCommand : self.scheme.getArmCommand(curCommand)
+            self.lastAutonToggle = isAuton
+        else:
+            if self._isControllerStateChanging():
+                self.common.currentPositionSchemeOperator.deactivate()
+                self.common.currentPositionSchemeOperator = self.pickTheNewScheme()
+                self.getElevatorCommand = lambda curCommand: self.common.currentPositionSchemeOperator.getElevatorCommand(curCommand)
+                self.getArmCommand = lambda curCommand : self.common.currentPositionSchemeOperator.getArmCommand(curCommand)
+            self.common.currentPositionSchemeOperator.update()
         if hasattr(self.common.currentPositionSchemeOperator, "schemeProg"):
             self.schemeProg=round(self.common.currentPositionSchemeOperator.schemeProg*100)
-            # xyzzy, todo ask Yavin, shouldn't we set a dashboard state here?
         else:
             self.setDashboardState(3)
         if isAuton:
