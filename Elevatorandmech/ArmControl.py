@@ -44,7 +44,7 @@ class ArmDependentConstants:
                 "ARM_M_OPERATING_CURRENT_LIMIT_A": 60,
                 "ARM_ANGLE_AT_CURRENT_LIMIT_GOING_UP": 90.9,
                 "MAX_ARM_POS_DEG": 90,
-                "MIN_ARM_POS_DEG": -92,
+                "MIN_ARM_POS_DEG": -89.5,
                 "MAX_SEARCH_ARM_VEL_DEGPS": 60,
                 "MAX_SEARCH_ARM_ACCEL_DEGPS2": 60*4,
                 "MAX_ARM_VEL_DEGPS": 180*2,  # Was 180*2, 180 before
