@@ -12,7 +12,7 @@ class BlueRightToReefLeft(Mode):
 
         #This is setting the path command (pathCmd), which is what we will use. The DrivePathCommand must be 
         #exactly the same as it is in the Choreo name. 
-        self.pathCmd = PoserSchemeCommand(AutonPoserSelected.B_LEFT_REEF)
+        self.pathCmd = PoserSchemeCommand(AutonPoserSelected.B_RIGHT_TO_LEFT_REEF)
 
     def getCmdGroup(self):
         # Just return the path command normally, since we're only doing one path. 
