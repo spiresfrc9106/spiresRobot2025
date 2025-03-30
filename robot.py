@@ -227,7 +227,7 @@ class MyRobot(wpilib.TimedRobot):
             if not self.autoHasRun:
                 if onRed():
                     self.driveTrain.poseEst.setKnownPose(
-                        Pose2d(10.4279, 4.031, Rotation2d(0))
+                        Pose2d(10.418, 4.031, Rotation2d(0))
                     )
                 else:
                     self.driveTrain.poseEst.setKnownPose(

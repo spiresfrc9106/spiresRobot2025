@@ -111,3 +111,7 @@ class Ultrasound(metaclass=Singleton):
         self.readArmDistance()
         self.readLeftFrontDistance()
         self.readRightFrontDistance()
+
+class CoralDetection:
+    def checkForCoral(self):
+        pass

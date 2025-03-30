@@ -6,12 +6,14 @@ from jormungandr import choreo
 from AutoSequencerV2.command import Command
 from utils.allianceTransformUtils import transform
 
+
 from Elevatorandmech.ElevatorControl import ElevatorControl, elevDepConstants
 from Elevatorandmech.ArmControl import ArmControl, armDepConstants
 
 from positionSchemes.auton_schemes.place_L4_v6_a import PlaceL4V1Auto
 from positionSchemes.auton_schemes.empty_a import EmptyAuto
-from wpimath.geometry import Pose2d
+from wpimath.geometry import Pose2d, Rotation2d
+from utils.units import deg2Rad
 
 class AutonPoserSelected(IntEnum):
     B_LEFT_DRIVE = 0
@@ -39,12 +41,12 @@ class StartingPoses:
         pass
     def getInitialPose(self):
         positions = {
-            "BL": Pose2d(0,0,0),
-            "BC": Pose2d(0,0,0),
-            "BR": Pose2d(0,0,0),
-            "RL": Pose2d(0,0,0),
-            "RC": Pose2d(0,0,0),
-            "RR": Pose2d(0,0,0),
+            "BL": Pose2d(7.13,7.55,Rotation2d(deg2Rad(180))),
+            "BC": Pose2d(7.13,4.031,Rotation2d(deg2Rad(180))),
+            "BR": Pose2d(7.13,0.4826,Rotation2d(deg2Rad(180))),
+            "RL": Pose2d(10.418,7.55,Rotation2d(deg2Rad(0))),
+            "RC": Pose2d(10.418,4.031,Rotation2d(deg2Rad(0))),
+            "RR": Pose2d(10.418,0.4826,Rotation2d(deg2Rad(0))),
         }
 
         match self.command:
