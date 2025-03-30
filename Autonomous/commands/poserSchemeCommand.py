@@ -37,6 +37,14 @@ class StartingPoses:
     def __init__(self, command):
         pass
     def getInitialPose(self):
+        positions = {
+            "BL": Pose2d(0,0,0),
+            "BC": Pose2d(0,0,0),
+            "BR": Pose2d(0,0,0),
+            "RL": Pose2d(0,0,0),
+            "RC": Pose2d(0,0,0),
+            "RR": Pose2d(0,0,0),
+        }
         return Pose2d(2, 2, 0)
 
 class PoserSchemeCommand(Command):
