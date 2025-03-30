@@ -264,6 +264,8 @@ class ArmControl(metaclass=Singleton):
 
             self.count = 0
 
+            self.timeWhenChangeS = Timer.getFPGATimestamp()
+
             self._initialized = True
 
             print(f"Init {self.name} complete")
@@ -332,19 +334,22 @@ class ArmControl(metaclass=Singleton):
         self.count = self.count + 1
 
     def _updateUninitialized(self) -> None:
-        self.startTime = Timer.getFPGATimestamp()
-        self.timeWhenChangeS = Timer.getFPGATimestamp()
-        self._changeState(ArmStates.INIT_GOING_UP)
-        self._forceStartAtAngleDeg(0.0)
 
-        if wpilib.RobotBase.isSimulation():
-            self.desTrapPState = TrapezoidProfile.State(self._getRelAngleWithOffsetDeg(),0)
-        else:
-            self.desTrapPState = TrapezoidProfile.State(self._getRelAngleWithOffsetDeg()+720,0)
-        self.curTrapPState = TrapezoidProfile.State(self._getRelAngleWithOffsetDeg(), 0)
-        self._largestAngleDeg = self._getRelAngleWithOffsetDeg()
-        self.motor.setSmartCurrentLimit(self.calArmInitializingCurrentLimitA.get())
-        self._setMotorPosAndFF()
+        nowS = Timer.getFPGATimestamp()
+        if nowS - 1 >= self.timeWhenChangeS:
+
+            self._changeState(ArmStates.INIT_GOING_UP)
+            self._forceStartAtAngleDeg(0.0)
+            self.timeWhenChangeS = Timer.getFPGATimestamp()
+
+            if wpilib.RobotBase.isSimulation():
+                self.desTrapPState = TrapezoidProfile.State(self._getRelAngleWithOffsetDeg(),0)
+            else:
+                self.desTrapPState = TrapezoidProfile.State(self._getRelAngleWithOffsetDeg()+720,0)
+            self.curTrapPState = TrapezoidProfile.State(self._getRelAngleWithOffsetDeg(), 0)
+            self._largestAngleDeg = self._getRelAngleWithOffsetDeg()
+            self.motor.setSmartCurrentLimit(self.calArmInitializingCurrentLimitA.get())
+            self._setMotorPosAndFF()
 
     def _updateInitGoingUp(self) -> None:
         positionDeg = self._getRelAngleWithOffsetDeg()
@@ -359,7 +364,7 @@ class ArmControl(metaclass=Singleton):
         else:
             # because we didn't go any lower, maybe we have been at the lowest height for a second
             nowS = Timer.getFPGATimestamp()
-            if nowS - 1 >= self.timeWhenChangeS:
+            if nowS - 0.2 >= self.timeWhenChangeS:
                 self._forceStartAtAngleDeg(self.calArmAngleAtCurrentLimitGoingUpDeg.get())
                 self._loadNewTrapProfiler()
                 self.desTrapPState = TrapezoidProfile.State(self._getRelAngleWithOffsetDeg(), 0)
