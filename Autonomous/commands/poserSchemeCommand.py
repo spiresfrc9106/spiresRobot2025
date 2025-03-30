@@ -35,6 +35,7 @@ class AutonPoserSelected(IntEnum):
 
 class StartingPoses:
     def __init__(self, command):
+        self.command = command
         pass
     def getInitialPose(self):
         positions = {
@@ -45,7 +46,47 @@ class StartingPoses:
             "RC": Pose2d(0,0,0),
             "RR": Pose2d(0,0,0),
         }
-        return Pose2d(2, 2, 0)
+
+        match self.command:
+            case AutonPoserSelected.B_LEFT_REEF:
+                return positions.get("BC", Pose2d())
+            case AutonPoserSelected.B_RIGHT_REEF:
+                return positions.get("BC", Pose2d())
+            case AutonPoserSelected.R_LEFT_REEF:
+                return positions.get("RC", Pose2d())
+            case AutonPoserSelected.R_RIGHT_REEF:
+                return positions.get("RC", Pose2d())
+            case AutonPoserSelected.B_LEFT_TO_LEFT_REEF:
+                return positions.get("BL", Pose2d())
+            case AutonPoserSelected.B_LEFT_TO_RIGHT_REEF:
+                return positions.get("BL", Pose2d())
+            case AutonPoserSelected.R_LEFT_TO_LEFT_REEF:
+                return positions.get("RL", Pose2d())
+            case AutonPoserSelected.R_LEFT_TO_RIGHT_REEF:
+                return positions.get("RL", Pose2d())
+            case AutonPoserSelected.B_RIGHT_TO_LEFT_REEF:
+                return positions.get("BR", Pose2d())
+            case AutonPoserSelected.B_RIGHT_TO_RIGHT_REEF:
+                return positions.get("BR", Pose2d())
+            case AutonPoserSelected.R_RIGHT_TO_LEFT_REEF:
+                return positions.get("RR", Pose2d())
+            case AutonPoserSelected.R_RIGHT_TO_RIGHT_REEF:
+                return positions.get("RR", Pose2d())
+            case AutonPoserSelected.B_LEFT_DRIVE:
+                return positions.get("BL", Pose2d())
+            case AutonPoserSelected.B_RIGHT_DRIVE:
+                return positions.get("BR", Pose2d())
+            case AutonPoserSelected.B_CENTER_DRIVE:
+                return positions.get("BC", Pose2d())
+            case AutonPoserSelected.R_LEFT_DRIVE:
+                return positions.get("RL", Pose2d())
+            case AutonPoserSelected.R_RIGHT_DRIVE:
+                return positions.get("RR", Pose2d())
+            case AutonPoserSelected.R_CENTER_DRIVE:
+                return positions.get("RC", Pose2d())
+            case _:
+                return Pose2d()
+
 
 class PoserSchemeCommand(Command):
     def __init__(self, poseScheme):
