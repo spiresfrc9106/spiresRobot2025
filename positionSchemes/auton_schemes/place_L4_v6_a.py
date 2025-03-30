@@ -51,28 +51,19 @@ class PlaceL4V1Auto(SetupScheme):
         time = currentTime - self.startTime
         match self.currentState:
             case 0:
-                self.bestTag = self.placementIntel.decidePlacementPose(0, self.inchesToMeters(20), self.reefTag)
-                print(f"place l4 time = {Timer.getFPGATimestamp():.3f}s x={self.bestTag.x:+10.1f}m y={self.bestTag.y:+10.1f}m t={self.bestTag.rotation().degrees():+10.1f}deg")
-                self.setDriveTrainBaseCommand(self.bestTag)
-                self.setArmCommand(90, 0)
-                self.updateProgressTrajectory()
-                if self.completedTrajectory(self.base, 6, 5):
+                if self.completedAwait("waitForAutonLoad",2):
+                    self.bestTag = self.placementIntel.decidePlacementPose(self.pdSideOfReef, self.inchesToMeters(7), self.reefTag)
+                    print(f"place l4 time = {Timer.getFPGATimestamp():.3f}s x={self.bestTag.x:+10.1f}m y={self.bestTag.y:+10.1f}m t={self.bestTag.rotation().degrees():+10.1f}deg")
+                    self.setDriveTrainBaseCommand(self.bestTag)
                     self.nextState()
             case 1:
-                self.bestTag = self.placementIntel.decidePlacementPose(self.pdSideOfReef, self.inchesToMeters(7), self.reefTag)
+                self.updateProgressTrajectory()
                 self.setElevatorCommand(self.elevPlacePos, 0)
                 self.setArmCommand(self.armPlacePos, 0)
-                self.setDriveTrainBaseCommand(self.bestTag)
-                if self.completedAwait("awaitForCmd2", 0.2):
+                if self.completedTrajectory(self.base, 6, 5):
                     self.nextState()
             case 2:
-                elevGoalReached = math.isclose(self.elev.getPosition(), self.elevPlacePos, abs_tol=1) #og 0.5
-                armGoalReached = math.isclose(self.arm.getPosition(), self.armPlacePos, abs_tol=2.5)  # is abs_tol good?
-                baseGoalReached = self.completedTrajectory(self.base, 0.75, 3)
-                if (elevGoalReached and armGoalReached and baseGoalReached):
-                    self.nextState()
-                else:
-                    self.localProg = sum([elevGoalReached, armGoalReached, baseGoalReached])/3
+                pass
             case 3:
                 pass
             case 4:

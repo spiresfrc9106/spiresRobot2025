@@ -164,15 +164,13 @@ class MyRobot(wpilib.TimedRobot):
     def autonomousInit(self):
         print("autonomousInit has run")
 
-        # Start up the autonomous sequencer
-        self.autoSequencer.initialize()
-
-        #consider resetting gyro here
-
         if drivetrainDepConstants['HAS_DRIVETRAIN']:
             # Use the autonomous routines starting pose to init the pose estimator
             self.driveTrain.poseEst.setKnownPose(self.autoSequencer.getStartingPose())  #position set.
             self.driveTrain.tcPoseEst.setKnownPose(self.autoSequencer.getStartingPose())
+
+        # Start up the autonomous sequencer
+        self.autoSequencer.initialize()
 
         # Mark we at least started autonomous
         self.autoHasRun = True # pylint: disable=attribute-defined-outside-init
@@ -206,6 +204,8 @@ class MyRobot(wpilib.TimedRobot):
 
     def autonomousExit(self):
         self.autoSequencer.end()
+        Trajectory().setCmdFromPoser(None)
+        self.tcTraj.setCmdFromPoser(None)
 
 
     #########################################################

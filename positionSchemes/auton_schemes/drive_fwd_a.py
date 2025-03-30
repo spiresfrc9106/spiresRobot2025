@@ -51,12 +51,11 @@ class DriveFwdAuto(SetupScheme):
         match self.currentState:
             case 0:
                 self.ogPos = YPose(self.odoPostEst.getCurEstPose())
+                self.nextState()
+            case 1:
                 self.locationGoal = Pose2d(self.ogPos.x+self.driveOut_m, self.ogPos.y, self.ogPos.t)
                 self.setDriveTrainBaseCommand(self.locationGoal)
                 self.updateProgressTrajectory()
-                self.nextState()
-            case 1:
-                pass
             case _:
                 pass
 

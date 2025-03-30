@@ -63,13 +63,11 @@ class SetupScheme:
         pos = YPose(self.bestTag)
         string = f"{pos.x} {pos.y} {pos.t}"
         if self.initLoc != string:
-            print(f"new location: {string}")
             self.initMaxDistLoc = self.getFullDistanceSubjective()
         self.initLoc = string
         current = self.getFullDistanceSubjective()
         progress = (self.initMaxDistLoc-current)/self.initMaxDistLoc
         self.localProg = max(progress, self.localProg)
-        print(self.localProg)
 
     def updateProgressArm(self):
         full_delta = abs(self.armCmd[0] - self.setupArm.getPosition())

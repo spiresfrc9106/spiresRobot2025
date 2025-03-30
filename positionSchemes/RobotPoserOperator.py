@@ -40,12 +40,13 @@ class PoseDirectorOperator(metaclass=Singleton):
         if isAuton and self.lastAutonToggle != isAuton:
             scheme = self.common.auto.currentScheme
             if scheme is not None:
-                if scheme.poser != 0:
-                    self.scheme = scheme.poser
-                    self.common.currentPositionSchemeOperator.deactivate()
-                    self.common.currentPositionSchemeOperator = self.scheme
-                    self.getElevatorCommand = lambda curCommand: self.scheme.getElevatorCommand(curCommand)
-                    self.getArmCommand = lambda curCommand : self.scheme.getArmCommand(curCommand)
+                if hasattr(scheme, "poser"):
+                    if scheme.poser != 0:
+                        self.scheme = scheme.poser
+                        self.common.currentPositionSchemeOperator.deactivate()
+                        self.common.currentPositionSchemeOperator = self.scheme
+                        self.getElevatorCommand = lambda curCommand: self.scheme.getElevatorCommand(curCommand)
+                        self.getArmCommand = lambda curCommand : self.scheme.getArmCommand(curCommand)
         else:
             if self._isControllerStateChanging() or self.lastAutonToggle != isAuton:
                 self.common.currentPositionSchemeOperator.deactivate()

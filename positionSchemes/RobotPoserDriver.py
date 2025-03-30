@@ -20,6 +20,7 @@ class PoseDirectorDriver(metaclass=Singleton):
         self.common.currentPositionSchemeDriver = PoserNoChangeDriver(self.common)
         self.getDriveTrainCommand = lambda curCommand : self.common.currentPositionSchemeDriver.getDriveTrainCommand(curCommand)
         self.schemeProg = 0
+        self.lastAutonToggle = 0
         self.dashboardState = 1 # State 1, put the autonomous menu back up on the webserver dashboard
         addLog("RPD/schemeProg", lambda: self.schemeProg, "") # don't delete this.
         addLog("RPD/dashboardState", lambda: self.dashboardState, "") # don't delete this.
@@ -30,15 +31,17 @@ class PoseDirectorDriver(metaclass=Singleton):
 
     def update(self, isAuton=False):
 
-        if (not isAuton) and self._isControllerStateChanging():
-            self.common.currentPositionSchemeDriver.deactivate()
-            self.common.currentPositionSchemeDriver = self.pickTheNewScheme()
-            self.getDriveTrainCommand = lambda curCommand : self.common.currentPositionSchemeDriver.getDriveTrainCommand(curCommand)
-
-        self.common.currentPositionSchemeDriver.update()
+        if isAuton:
+            pass
+        else:
+            if self._isControllerStateChanging() or self.lastAutonToggle != isAuton:
+                self.common.currentPositionSchemeDriver.deactivate()
+                self.common.currentPositionSchemeDriver = self.pickTheNewScheme()
+                self.getDriveTrainCommand = lambda curCommand : self.common.currentPositionSchemeDriver.getDriveTrainCommand(curCommand)
+            self.common.currentPositionSchemeDriver.update()
+        self.lastAutonToggle = isAuton
         if hasattr(self.common.currentPositionSchemeDriver, "schemeProg"):
             self.schemeProg=round(self.common.currentPositionSchemeDriver.schemeProg*100)
-            # xyzzy, todo ask Yavin, shouldn't we set a dashboard state here?
         else:
             self.setDashboardState(3)
         if isAuton:
