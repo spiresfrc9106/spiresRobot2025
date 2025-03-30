@@ -141,7 +141,10 @@ class DrivetrainControl(metaclass=Singleton):
 
         self.curCmd = self.curManCmd
         #self._debugCurCmd("manCmd     ")
+
         self.curCmd = Trajectory().update(self.curCmd, curEstPose)
+        # ^ we are trying to phase this out.
+
         self.curCmd = self.tcTraj.update(self.curCmd, tcEstPose)
         #self._debugCurCmd("Trajectory ")
         self.curCmd = self.poser.getDriveTrainCommand(self.curCmd)

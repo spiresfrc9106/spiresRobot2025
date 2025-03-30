@@ -1,12 +1,11 @@
 
-from positionSchemes.defaultPosers import PoserNoChangeDriver, PoserVelocityControlDriver
+from positionSchemes.teleop_schemes.defaultPosers import PoserNoChangeDriver, PoserVelocityControlDriver
 from positionSchemes.RobotPoserCommon import PoseDirectorCommon
 from humanInterface.operatorInterface import ElevArmCmdState
-from positionSchemes.pickup_v1 import PickupV1
-from positionSchemes.place_L4_v6_d import PlaceL4V6D
-from positionSchemes.place_L3_v1 import PlaceL3V1
-from positionSchemes.place_L2_v1 import PlaceL2V1
-from positionSchemes.place_L1_v1 import PlaceL1V1
+from positionSchemes.teleop_schemes.place_L4_v6_d import PlaceL4V6D
+from positionSchemes.teleop_schemes.place_L3_v1 import PlaceL3V1
+from positionSchemes.teleop_schemes.place_L2_v1 import PlaceL2V1
+from positionSchemes.teleop_schemes.place_L1_v1 import PlaceL1V1
 from utils.signalLogging import addLog
 from utils.singleton import Singleton
 

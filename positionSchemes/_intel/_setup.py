@@ -10,6 +10,7 @@ from Elevatorandmech.ArmCommand import ArmCommand
 from wpimath.geometry import Pose2d
 from wpilib import Timer
 from drivetrain.controlStrategies.trajectoryGuts import ChoreoTrajectoryState
+from utils.signalLogging import addLog
 from utils.units import deg2Rad, rad2Deg, in2m, m2in
 
 ### these are intrisic to any pos scheme class
@@ -36,6 +37,8 @@ class SetupScheme:
         self.initLoc = 0
         self.initDeg = 0
         self.initLen = 0
+        self.dist_rotate = 0
+        addLog("/poseSchemeRotateDist", lambda: self.dist_rotate, "")
 
     def nextState(self):
         self.currentState = self.currentState + 1
@@ -57,12 +60,16 @@ class SetupScheme:
             return False
 
     def updateProgressTrajectory(self):
-        if self.initLoc != self.bestTag:
+        pos = YPose(self.bestTag)
+        string = f"{pos.x} {pos.y} {pos.t}"
+        if self.initLoc != string:
+            print(f"new location: {string}")
             self.initMaxDistLoc = self.getFullDistanceSubjective()
-        self.initLoc = self.bestTag
+        self.initLoc = string
         current = self.getFullDistanceSubjective()
         progress = (self.initMaxDistLoc-current)/self.initMaxDistLoc
         self.localProg = max(progress, self.localProg)
+        print(self.localProg)
 
     def updateProgressArm(self):
         full_delta = abs(self.armCmd[0] - self.setupArm.getPosition())
@@ -92,28 +99,30 @@ class SetupScheme:
     def getFullDistanceSubjective(self):
         desPose = self.bestTag
         curPose = self.setupBase.tcPoseEst.getCurEstPose()
+        anglePose = self.setupBase.poseEst.getCurEstPose()
         desX = YPose(desPose).x
         desY = YPose(desPose).y
-        desT = YPose(desPose).t
+        desT = YPose(desPose).t + (2 * math.pi)*10
         curX = YPose(curPose).x
         curY = YPose(curPose).y
-        curT = YPose(curPose).t
+        curT = YPose(anglePose).t + (2 * math.pi)*10
         dist_translate = math.sqrt(pow((desX-curX), 2)+pow((desY-curY), 2))
-        dist_rotate = abs(curT-desT)
-        return dist_translate+dist_rotate
+        self.dist_rotate = abs(curT % (2 * math.pi)-desT % (2 * math.pi)) % (2 * math.pi)
+        return dist_translate
 
     def completedTrajectory(self, base, max_in=1, max_deg=1):
         desPose = self.bestTag
         curPose = base.tcPoseEst.getCurEstPose()
+        anglePose = base.poseEst.getCurEstPose()
         desX = YPose(desPose).x
         desY = YPose(desPose).y
-        desT = YPose(desPose).t
+        desT = YPose(desPose).t + (2 * math.pi)*10
         curX = YPose(curPose).x
         curY = YPose(curPose).y
-        curT = YPose(curPose).t
+        curT = YPose(anglePose).t + (2 * math.pi)*10
         dist_translate = math.sqrt(pow((desX-curX), 2)+pow((desY-curY), 2))
-        dist_rotate = abs(curT-desT)
-        return dist_translate < in2m(max_in) and dist_rotate < max_deg
+        self.dist_rotate = abs(curT % (2 * math.pi) - desT % (2 * math.pi)) % (2 * math.pi)
+        return dist_translate < in2m(max_in)  # and dist_rotate < max_deg
 
     def setArmCommand(self, x_deg: float | None, v_degps: float | None):
         if x_deg is not None:

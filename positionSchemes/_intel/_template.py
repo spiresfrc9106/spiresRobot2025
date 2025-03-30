@@ -1,12 +1,7 @@
-from Elevatorandmech.armtest import ArmControl
-from Elevatorandmech.elevatortest import ElevatorControl
 from wpilib import Timer
 from utils.signalLogging import addLog
-from positionSchemes._setup import SetupScheme, ArmConsts, ElevConsts
-from drivetrain.drivetrainCommand import DrivetrainCommand
-from Elevatorandmech.ElevatorCommand import ElevatorCommand
-from Elevatorandmech.ArmCommand import ArmCommand
-from wpimath.geometry import Pose2d
+from positionSchemes._intel._setup import SetupScheme, ArmConsts, ElevConsts
+
 
 #if you can't find something here, it's probably in the _setup file.
 

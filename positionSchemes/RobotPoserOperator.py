@@ -1,15 +1,14 @@
-from positionSchemes.defaultPosers import PoserNoChangeOperator, PoserVelocityControlOperator
+from positionSchemes.teleop_schemes.defaultPosers import PoserNoChangeOperator, PoserVelocityControlOperator
 from positionSchemes.RobotPoserCommon import PoseDirectorCommon
 from humanInterface.operatorInterface import ElevArmCmdState
-from positionSchemes.plunge_v1 import PlungeV1
-from positionSchemes.pickup_v1 import PickupV1
-from positionSchemes.place_L4_v6_o import PlaceL4V6O
-from positionSchemes.place_L3_v1 import PlaceL3V1
-from positionSchemes.place_L2_v1 import PlaceL2V1
-from positionSchemes.place_L1_v1 import PlaceL1V1
-from positionSchemes.place_L3_v2_o import PlaceL3V1
-from positionSchemes.put_L3_v2_o import PutL3V2O
-from positionSchemes.put_L4_v1_o import PutL4V1O
+from positionSchemes.teleop_schemes.plunge_v1 import PlungeV1
+from positionSchemes.teleop_schemes.pickup_v1 import PickupV1
+from positionSchemes.teleop_schemes.place_L4_v6_o import PlaceL4V6O
+from positionSchemes.teleop_schemes.place_L2_v1 import PlaceL2V1
+from positionSchemes.teleop_schemes.place_L1_v1 import PlaceL1V1
+from positionSchemes.teleop_schemes.place_L3_v2_o import PlaceL3V1
+from positionSchemes.teleop_schemes.put_L3_v2_o import PutL3V2O
+from positionSchemes.teleop_schemes.put_L4_v1_o import PutL4V1O
 from utils.signalLogging import addLog
 from utils.singleton import Singleton
 

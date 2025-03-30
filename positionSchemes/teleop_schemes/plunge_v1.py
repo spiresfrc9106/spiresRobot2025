@@ -2,7 +2,7 @@ import math
 
 from wpilib import Timer
 from utils.signalLogging import addLog
-from positionSchemes._setup import SetupScheme, ArmConsts, ElevConsts
+from positionSchemes._intel._setup import SetupScheme, ArmConsts, ElevConsts
 from positionSchemes.RobotPoserCommon import PoseDirectorCommon
 
 

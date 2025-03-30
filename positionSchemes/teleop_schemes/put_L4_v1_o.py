@@ -1,27 +1,23 @@
-import math
-
 from wpilib import Timer
-from utils.signalLogging import addLog
-from positionSchemes._setup import SetupScheme, ArmConsts, ElevConsts
-from positionSchemes._posintelligence import PlacementIntelligence
-from positionSchemes.RobotPoserCommon import PoseDirectorCommon
-from humanInterface.operatorInterface import ReefLeftOrRight
 
-from drivetrain.drivetrainPhysical import MAX_FWD_REV_SPEED_MPS,MAX_STRAFE_SPEED_MPS
-from wpimath.geometry import Pose2d
+from positionSchemes.RobotPoserCommon import PoseDirectorCommon
+from utils.signalLogging import addLog
+from positionSchemes._intel._setup import SetupScheme, ArmConsts, ElevConsts
+from humanInterface.operatorInterface import OperatorInterface, ReefLeftOrRight
+from humanInterface.driverInterface import DriverInterface
+
 
 # if you can't find something here, it's probably in the _setup file.
 
-class PutL3V2O(SetupScheme):
+class PutL4V1O(SetupScheme):
     def __init__(self, poseDirectorCommon: PoseDirectorCommon):
         super().__init__(arm=poseDirectorCommon.arm, base=poseDirectorCommon.driveTrain, elev=poseDirectorCommon.elevator)
         self.pdc = poseDirectorCommon
         self.arm = poseDirectorCommon.arm
         self.base = poseDirectorCommon.driveTrain
         self.elev = poseDirectorCommon.elevator
-        self.oInt = poseDirectorCommon.oInt
-        self.dInt = poseDirectorCommon.dInt
-
+        self.oInt: OperatorInterface = poseDirectorCommon.oInt
+        self.dInt: DriverInterface = poseDirectorCommon.dInt
         self.pdReefSideState = self.dInt.dPadState
         self.pdSideOfReef = -1
         if self.pdReefSideState == ReefLeftOrRight.RIGHT:
@@ -41,35 +37,29 @@ class PutL3V2O(SetupScheme):
         # structure:
         #   base: (Pose2d, velx, vely, velt)
         #   arm: (position_deg, deg/s)
-        #   elev: (pasition_in, in/s)
+        #   elev: (position_in, in/s)
 
         self.totalRuns = 0
         self.bestTag = 0
-        addLog("yvn_current_placeL3_state", lambda: self.currentState, "")
-        addLog("yvn_placeL3_runs", lambda: self.totalRuns, "")
-        self.placementIntel = PlacementIntelligence(self.base)
+        addLog("yvn_current_putL4_o_state", lambda: self.currentState, "")
         # DEFINE THESE
-        self.elevPlacePos = 34
-        self.elevDistanceDownNeeded = 6
-        self.armPlacePos = 55
+        self.elevPlacePos = 60
+        self.armPlacePos = 60
 
     def update(self):
         currentTime = Timer.getFPGATimestamp()
         time = currentTime - self.startTime
         match self.currentState:
             case 0:
-                self.elevCmd = (self.elevPlacePos-self.elevDistanceDownNeeded, 0)
-                self.nextState()
-            case 1:
-                elevGoal = self.elevPlacePos-self.elevDistanceDownNeeded
-                elevGoalReached = math.isclose(self.elev.getPosition(), elevGoal, abs_tol=1)
-                if elevGoalReached:
+                self.setArmCommand(47, -15)
+                self.armPlacePos = 47
+                armGoalReached = self.arm.getPosition() < self.armPlacePos
+                if armGoalReached or self.oInt.skipNext:
                     self.nextState()
-            case 2:
-                pass
+            case 1:
+                self.setArmCommand(-15, 0)
             case _:
                 pass
 
-        state_max = 2
-        # when calculating the scheme prog, we can also add in local progress to show something as we go thru state.
-        self.schemeProg = min((self.currentState+self.localProg) / (state_max), 1)
+        state_max = 1
+        self.schemeProg = min((self.currentState+(self.localProg*0.9)) / state_max, 1)

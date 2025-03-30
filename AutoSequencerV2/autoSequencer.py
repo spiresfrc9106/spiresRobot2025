@@ -6,7 +6,7 @@ from AutoSequencerV2.builtInModes.doNothingMode import DoNothingMode
 from AutoSequencerV2.builtInModes.waitMode import WaitMode
 from AutoSequencerV2.sequentialCommandGroup import SequentialCommandGroup
 from Autonomous.modes.blueRightDriveOut import BlueRightDriveOut
-from Autonomous.modes.driveOut import DriveOut
+from Autonomous.modes.x_driveOut import DriveOut
 from Autonomous.modes.redRightDriveOut import RedRightDriveOut
 from Autonomous.modes.redLeftDriveOut import RedLeftDriveOut
 from Autonomous.modes.redCenterDriveOut import RedCenterDriveOut
@@ -16,7 +16,7 @@ from Autonomous.modes.RedToReefLeft import RedToReefLeft
 from Autonomous.modes.RedToReefRight import RedToReefRight
 
 
-from Autonomous.modes.square import Square
+from Autonomous.modes.x_square import Square
 from Autonomous.modes.BlueToReefLeft import BlueToReefLeft
 from Autonomous.modes.BlueToReefRight import BlueToReefRight
 
@@ -113,7 +113,7 @@ class AutoSequencer(metaclass=Singleton):
             self.topLevelCmdGroup = delayMode.getCmdGroup().andThen(
                 mainMode.getCmdGroup()
             )
-            self.startPose = transform(mainMode.getInitialDrivetrainPose())
+            self.startPose = mainMode.getInitialDrivetrainPose()
             print(
                 f"[Auto] New Modes Selected: {DriverStation.getAlliance()} {delayMode.getName()}, {mainMode.getName()}"
             )

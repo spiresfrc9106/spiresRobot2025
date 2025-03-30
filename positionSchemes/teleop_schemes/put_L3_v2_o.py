@@ -2,13 +2,15 @@ import math
 
 from wpilib import Timer
 from utils.signalLogging import addLog
-from positionSchemes._setup import SetupScheme, ArmConsts, ElevConsts
+from positionSchemes._intel._setup import SetupScheme, ArmConsts, ElevConsts
+from positionSchemes._intel._posintelligence import PlacementIntelligence
 from positionSchemes.RobotPoserCommon import PoseDirectorCommon
-from positionSchemes._posintelligence import PickupIntelligence
+from humanInterface.operatorInterface import ReefLeftOrRight
 
-#if you can't find something here, it's probably in the _setup file.
 
-class PickupV1(SetupScheme):
+# if you can't find something here, it's probably in the _setup file.
+
+class PutL3V2O(SetupScheme):
     def __init__(self, poseDirectorCommon: PoseDirectorCommon):
         super().__init__(arm=poseDirectorCommon.arm, base=poseDirectorCommon.driveTrain, elev=poseDirectorCommon.elevator)
         self.pdc = poseDirectorCommon
@@ -16,7 +18,12 @@ class PickupV1(SetupScheme):
         self.base = poseDirectorCommon.driveTrain
         self.elev = poseDirectorCommon.elevator
         self.oInt = poseDirectorCommon.oInt
+        self.dInt = poseDirectorCommon.dInt
 
+        self.pdReefSideState = self.dInt.dPadState
+        self.pdSideOfReef = -1
+        if self.pdReefSideState == ReefLeftOrRight.RIGHT:
+            self.pdSideOfReef = 1
         self.armConst = ArmConsts()
         self.elevConst = ElevConsts()
         self.currentState = 0
@@ -29,38 +36,38 @@ class PickupV1(SetupScheme):
         self.armCmd = None
         self.elevCmd = None
 
+        # structure:
+        #   base: (Pose2d, velx, vely, velt)
+        #   arm: (position_deg, deg/s)
+        #   elev: (pasition_in, in/s)
+
         self.totalRuns = 0
         self.bestTag = 0
-        addLog("yvn_current_pickup_state", lambda: self.currentState, "")
-        addLog("yvn_pickup_runs", lambda: self.totalRuns, "")
-
-        self.elevPickupPose = 45.30  # 47.6875  #inches
-        self.armPickupPose = -75
+        addLog("yvn_current_placeL3_state", lambda: self.currentState, "")
+        addLog("yvn_placeL3_runs", lambda: self.totalRuns, "")
+        self.placementIntel = PlacementIntelligence(self.base)
+        # DEFINE THESE
+        self.elevPlacePos = 34
+        self.elevDistanceDownNeeded = 6
+        self.armPlacePos = 55
 
     def update(self):
         currentTime = Timer.getFPGATimestamp()
         time = currentTime - self.startTime
         match self.currentState:
-            case 0:  # initializing
-                # self.bestTag = PickupIntelligence(self.base).decidePickupPose(self.inchesToMeters(10))
-                # self.setDriveTrainBaseCommand(self.bestTag)
-                self.armCmd = None
-                self.elevCmd = None
+            case 0:
+                self.elevCmd = (self.elevPlacePos-self.elevDistanceDownNeeded, 0)
                 self.nextState()
             case 1:
-                self.elevCmd = (self.elevPickupPose, 0)
-                # if self.completedTrajectory(self.base):
-                self.nextState()
-            case 2:
-                elevGoalReached = math.isclose(self.elev.getPosition(), self.elevPickupPose, abs_tol=0.5)
+                elevGoal = self.elevPlacePos-self.elevDistanceDownNeeded
+                elevGoalReached = math.isclose(self.elev.getPosition(), elevGoal, abs_tol=1)
                 if elevGoalReached:
                     self.nextState()
-            case 3:
-                self.armCmd = (self.armPickupPose, 0)
+            case 2:
                 pass
             case _:
                 pass
 
-        state_max = 3
+        state_max = 2
         # when calculating the scheme prog, we can also add in local progress to show something as we go thru state.
-        self.schemeProg = min((self.currentState) / (state_max), 1)
+        self.schemeProg = min((self.currentState+self.localProg) / (state_max), 1)

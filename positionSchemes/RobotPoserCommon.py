@@ -1,4 +1,4 @@
-from positionSchemes.defaultPosers import PoserNoChangeDriver, PoserNoChangeOperator
+from positionSchemes.teleop_schemes.defaultPosers import PoserNoChangeDriver, PoserNoChangeOperator
 from humanInterface.operatorInterface import ElevArmCmdState
 
 from utils.singleton import Singleton

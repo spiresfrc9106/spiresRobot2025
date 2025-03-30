@@ -28,3 +28,8 @@ class PoserDashComms:
         self.dashboardState = f_d
         self.schemeProg = f_p
 
+    def changeDisabled(self, driver, operator):
+        driver.setDashboardState(1)
+        operator.setDashboardState(1)
+        self.update(driver, operator)
+

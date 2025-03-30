@@ -15,6 +15,7 @@ from wrappers.wrapperedPoseEstPhotonCamera import WrapperedPoseEstPhotonCamera
 from sensors.limelight import Limelight
 from wrappers.wrapperedLimelightCamera import wrapperedLimilightCameraFactory
 from ytests.logging import YTestForPosition
+from ytests.actualLogging import YTestForPositionActual
 
 
 # Convienent abreviations for the types that we'll be passing around here.
@@ -62,7 +63,7 @@ class DrivetrainPoseEstimator:
             self.posEstLogs.append(YTestForPosition(camConfig['POSE_EST_LOG_NAME']))
             self.includeInFilter.append(camConfig['WEIGH_IN_FILTER'])
 
-        self.finalPosEst = YTestForPosition("final_DT")
+        self.finalPosEst = YTestForPositionActual("final_DT")
 
         self._camTargetsVisible = False
         self._useAprilTags = True

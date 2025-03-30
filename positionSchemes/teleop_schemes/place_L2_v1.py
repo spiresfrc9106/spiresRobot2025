@@ -2,11 +2,11 @@ import math
 
 from wpilib import Timer
 from utils.signalLogging import addLog
-from positionSchemes._setup import SetupScheme, ArmConsts, ElevConsts
+from positionSchemes._intel._setup import SetupScheme, ArmConsts, ElevConsts
 from positionSchemes.RobotPoserCommon import PoseDirectorCommon
-from positionSchemes._posintelligence import PlacementIntelligence
+from positionSchemes._intel._posintelligence import PlacementIntelligence
 from humanInterface.operatorInterface import ReefLeftOrRight
-from drivetrain.drivetrainPhysical import MAX_FWD_REV_SPEED_MPS,MAX_STRAFE_SPEED_MPS
+from drivetrain.drivetrainPhysical import MAX_FWD_REV_SPEED_MPS
 
 
 # if you can't find something here, it's probably in the _setup file.

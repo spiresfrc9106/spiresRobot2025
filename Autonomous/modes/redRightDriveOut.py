@@ -1,6 +1,8 @@
 from Autonomous.commands.drivePathCommand import DrivePathCommand
 from AutoSequencerV2.mode import Mode
 
+from Autonomous.commands.poserSchemeCommand import AutonPoserSelected, PoserSchemeCommand
+
 
 # Just drives out of the starting zone. That's all.
 class RedRightDriveOut(Mode):
@@ -10,7 +12,7 @@ class RedRightDriveOut(Mode):
 
         #This is setting the path command (pathCmd), which is what we will use. The DrivePathCommand must be 
         #exactly the same as it is in the Choreo name. 
-        self.pathCmd = DrivePathCommand("RedRightDriveOut")
+        self.pathCmd = PoserSchemeCommand(AutonPoserSelected.R_RIGHT_DRIVE)
 
     def getCmdGroup(self):
         # Just return the path command normally, since we're only doing one path. 

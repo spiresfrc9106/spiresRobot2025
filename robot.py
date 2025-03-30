@@ -307,13 +307,12 @@ class MyRobot(wpilib.TimedRobot):
 
 
     def disabledInit(self):
-        self.poseDirectorOperator.setDashboardState(1) # State 1, put the autonomous menu back up on the webserver dashboard
         self.autoSequencer.updateMode(True)
         if armDepConstants['HAS_ARM'] and self.arm is not None:
             self.arm.disable()
-
         if elevDepConstants['HAS_ELEVATOR'] and self.elev is not None:
             self.elev.disable()
+        self.poserDashComms.changeDisabled(self.poseDirectorDriver, self.poseDirectorOperator)
 
     #########################################################
     ## Test-Specific init and update

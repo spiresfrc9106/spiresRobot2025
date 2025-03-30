@@ -1,18 +1,10 @@
-import math
-from Elevatorandmech.armtest import ArmControl
-from Elevatorandmech.elevatortest import ElevatorControl
 from wpilib import Timer
 from utils.signalLogging import addLog
-from positionSchemes._setup import SetupScheme, ArmConsts, ElevConsts
-from drivetrain.drivetrainCommand import DrivetrainCommand
-from Elevatorandmech.ElevatorCommand import ElevatorCommand
-from Elevatorandmech.ArmCommand import ArmCommand
-from wpimath.geometry import Pose2d
-from positionSchemes._posintelligence import PlacementIntelligence
+from positionSchemes._intel._setup import SetupScheme, ArmConsts, ElevConsts
+from positionSchemes._intel._posintelligence import PlacementIntelligence
 from humanInterface.operatorInterface import OperatorInterface, ReefLeftOrRight
 from humanInterface.driverInterface import DriverInterface
-from drivetrain.drivetrainPhysical import MAX_FWD_REV_SPEED_MPS,MAX_STRAFE_SPEED_MPS
-from wpimath.geometry import Pose2d
+
 
 # if you can't find something here, it's probably in the _setup file.
 

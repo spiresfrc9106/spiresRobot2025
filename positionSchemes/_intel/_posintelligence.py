@@ -1,4 +1,6 @@
 import math
+
+from ntcore import NetworkTableInstance
 from wpimath.geometry import Pose2d
 from wpilib import Timer
 from utils.fieldTagLayout import FieldTagLayout
@@ -7,7 +9,7 @@ from utils.signalLogging import addLog
 from drivetrain.DrivetrainDependentConstants import drivetrainDepConstants
 
 
-class PlacementIntelligence():
+class PlacementIntelligence:
     def __init__(self, driveTrain):
         self.placementTags = [6, 7, 8, 9, 10, 11, 17, 18, 19, 20, 21, 22]  # red first
         self.field = FieldTagLayout()
@@ -22,6 +24,12 @@ class PlacementIntelligence():
         self.shiftToNode_m = in2m(6.50)  # the distance from center to the right side of note of the center of robot's f
 
         addLog("yvn_current_placeL4_tag", lambda: self.currentTarget, "")
+
+        self.CamPublisher = (
+            NetworkTableInstance.getDefault()
+            .getStructTopic("/poseSchemeDesiredPos", Pose2d)
+            .publish()
+        )
 
     def decidePlacementPose(self, sideOfReef, bumperToEdge_m, manualSetTarget=0):
         if self.currentTarget == 0:  # only sets if fresh tag is needed
@@ -38,6 +46,7 @@ class PlacementIntelligence():
                                                          self.shiftToNode_m * sideOfReef)
         pos = YPose(newTargetPose)
         bestTagLocation = Pose2d(pos.x, pos.y, ((math.pi + pos.t) % (2 * math.pi)))
+        self.CamPublisher.set(bestTagLocation)
         return bestTagLocation
 
     def decidePlacementTag(self):
