@@ -122,7 +122,8 @@ class DrivetrainPoseEstimator:
                 cam.update(self._curEstPose)
                 observations = cam.getPoseEstimates()
                 for observation in observations:
-                    if self.includeInFilter[index]:
+                    # we are cutting cameras from traditional poseEst. we need to test fugde + use for delta x and y
+                    if self.includeInFilter[index] and False:
                         self._poseEst.addVisionMeasurement(
                             observation.estFieldPose, observation.time,
                             (observation.xyStdDev, observation.xyStdDev, observation.rotStdDev)

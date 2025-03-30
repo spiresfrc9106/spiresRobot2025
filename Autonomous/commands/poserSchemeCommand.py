@@ -24,6 +24,14 @@ class AutonPoserSelected(IntEnum):
     B_RIGHT_REEF = 7
     R_LEFT_REEF = 8
     R_RIGHT_REEF = 9
+    B_LEFT_TO_LEFT_REEF = 10
+    B_LEFT_TO_RIGHT_REEF = 11
+    B_RIGHT_TO_LEFT_REEF = 12
+    B_RIGHT_TO_RIGHT_REEF = 13
+    R_LEFT_TO_LEFT_REEF = 14
+    R_LEFT_TO_RIGHT_REEF = 15
+    R_RIGHT_TO_LEFT_REEF = 16
+    R_RIGHT_TO_RIGHT_REEF = 17
 
 class StartingPoses:
     def __init__(self, command):
@@ -56,6 +64,18 @@ class PoserSchemeCommand(Command):
             case AutonPoserSelected.B_LEFT_REEF:
                 self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, LEFT)
             case AutonPoserSelected.B_RIGHT_REEF:
+                self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, RIGHT)
+            case AutonPoserSelected.R_LEFT_REEF:
+                self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, LEFT)
+            case AutonPoserSelected.R_RIGHT_REEF:
+                self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, RIGHT)
+            case AutonPoserSelected.B_LEFT_TO_LEFT_REEF:
+                self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, LEFT)
+            case AutonPoserSelected.B_RIGHT_REEF:
+                self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, RIGHT)
+            case AutonPoserSelected.R_LEFT_REEF:
+                self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, LEFT)
+            case AutonPoserSelected.R_RIGHT_REEF:
                 self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, RIGHT)
             case _:
                 self.poser = EmptyAuto(self.arm, self.drivetrain, self.elev)

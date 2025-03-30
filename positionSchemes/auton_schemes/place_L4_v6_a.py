@@ -41,6 +41,9 @@ class PlaceL4V1Auto(SetupScheme):
         self.elevPlacePos = 60
         self.armPlacePos = 60
 
+        self.odoPostEst = self.base.poseEst
+        self.camPostEst = self.base.tcPoseEst
+
     def update(self):
         currentTime = Timer.getFPGATimestamp()
         time = currentTime - self.startTime
