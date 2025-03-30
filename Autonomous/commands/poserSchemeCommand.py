@@ -71,11 +71,19 @@ class PoserSchemeCommand(Command):
                 self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, RIGHT)
             case AutonPoserSelected.B_LEFT_TO_LEFT_REEF:
                 self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, LEFT)
-            case AutonPoserSelected.B_RIGHT_REEF:
+            case AutonPoserSelected.B_LEFT_TO_RIGHT_REEF:
                 self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, RIGHT)
-            case AutonPoserSelected.R_LEFT_REEF:
+            case AutonPoserSelected.R_LEFT_TO_LEFT_REEF:
                 self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, LEFT)
-            case AutonPoserSelected.R_RIGHT_REEF:
+            case AutonPoserSelected.R_LEFT_TO_RIGHT_REEF:
+                self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, RIGHT)
+            case AutonPoserSelected.B_RIGHT_TO_LEFT_REEF:
+                self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, LEFT)
+            case AutonPoserSelected.B_RIGHT_TO_RIGHT_REEF:
+                self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, RIGHT)
+            case AutonPoserSelected.R_RIGHT_TO_LEFT_REEF:
+                self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, LEFT)
+            case AutonPoserSelected.R_RIGHT_TO_RIGHT_REEF:
                 self.poser = PlaceL4V1Auto(self.arm, self.drivetrain, self.elev, RIGHT)
             case _:
                 self.poser = EmptyAuto(self.arm, self.drivetrain, self.elev)
