@@ -4,6 +4,8 @@ import wpilib
 from utils.robotIdentification import RobotIdentification, RobotTypes
 from utils.signalLogging import  addLog, getNowLogger
 from utils.singleton import Singleton
+from Elevatorandmech.ElevatorControl import ElevatorControl
+from Elevatorandmech.ArmControl import ArmControl
 
 
 class UltrasoundDependentConstants:
@@ -113,5 +115,46 @@ class Ultrasound(metaclass=Singleton):
         self.readRightFrontDistance()
 
 class CoralDetection:
-    def checkForCoral(self):
+
+    def __init__(self):
+        self.ultrasound = Ultrasound()
+        self.elevCtrl = ElevatorControl()
+        self.armCtrl = ArmControl()
+
+
+    def hasCoral(self):
+        if 16.0 < self.ultrasound.readArmDistance() < 20.0:
+            #Has A coral ready for Placement
+            return True
+        return False
+
+    def checkIfCoralPlaced(self) -> bool:
+        if 20.0 < self.ultrasound.readArmDistance() < 24.0:
+            #True when Coral has just placed
+            return True
+        return False
+
+    def checkElevPlaceL4(self) -> bool:
+        if 59.0 < self.elevCtrl.getCurProfilePosIn() < 61.0:
+            #Elev at a level where it is able to place
+            return True
+        return False
+
+    def checkArmPlaceL4(self) -> bool:
+        if self.armCtrl.getCurProfilePosDeg() < 0.0:
+            #Arm is going down and has just placed, assuming there was already coral
+            return True
+        return False
+
+    def hasJustPlacedL4(self, code: str) -> bool:
+        if self.checkIfCoralPlaced() and self.checkElevPlaceL4() and self.checkArmPlaceL4():
+            #Coral has just been placed
+            #Will only be true just after placing
+            return True
+        print(code)
+        return False
+
+    def update(self):
+        print("YavinYavinYavinYavinYaivin")
         pass
+
