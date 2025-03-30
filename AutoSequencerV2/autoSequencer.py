@@ -15,6 +15,19 @@ from Autonomous.modes.blueCenterDriveOut import BlueCenterDriveOut
 from Autonomous.modes.RedToReefLeft import RedToReefLeft
 from Autonomous.modes.RedToReefRight import RedToReefRight
 
+#Noah's New Modes At Yavin's Request :D
+from Autonomous.modes.BlueLeftToReefLeft import BlueLeftToReefLeft
+from Autonomous.modes.BlueLeftToReefRight import BlueLeftToReefRight
+from Autonomous.modes.BlueRightToReefLeft import BlueRightToReefLeft
+from Autonomous.modes.BlueRightToReefRight import BlueRightToReefRight
+
+from Autonomous.modes.RedLeftToReefLeft import RedLeftToReefLeft
+from Autonomous.modes.RedLeftToReefRight import RedLeftToReefRight
+from Autonomous.modes.RedRightToReefLeft import RedRightToReefLeft
+from Autonomous.modes.RedRightToReefRight import RedRightToReefRight
+
+
+
 
 from Autonomous.modes.x_square import Square
 from Autonomous.modes.BlueToReefLeft import BlueToReefLeft
@@ -79,6 +92,12 @@ class AutoSequencer(metaclass=Singleton):
         self.mainModeList.addMode(RedToReefLeft())
         self.mainModeList.addMode(RedToReefRight())
 
+        self.mainModeList.addMode(RedLeftToReefLeft())
+        self.mainModeList.addMode(RedLeftToReefRight())
+        self.mainModeList.addMode(RedRightToReefLeft())
+        self.mainModeList.addMode(RedRightToReefRight())
+
+
 
     def addBlueAllianceModes(self):
         self.mainModeList.addMode(BlueLeftDriveOut())
@@ -86,6 +105,11 @@ class AutoSequencer(metaclass=Singleton):
         self.mainModeList.addMode(BlueRightDriveOut())
         self.mainModeList.addMode(BlueToReefRight())
         self.mainModeList.addMode(BlueToReefLeft())
+
+        self.mainModeList.addMode(BlueLeftToReefLeft())
+        self.mainModeList.addMode(BlueLeftToReefRight())
+        self.mainModeList.addMode(BlueRightToReefLeft())
+        self.mainModeList.addMode(BlueRightToReefRight())
 
 
     def updateMainModeListAlliance(self):
