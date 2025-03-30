@@ -46,14 +46,14 @@ class PoseDirectorOperator(metaclass=Singleton):
                     self.common.currentPositionSchemeOperator = self.scheme
                     self.getElevatorCommand = lambda curCommand: self.scheme.getElevatorCommand(curCommand)
                     self.getArmCommand = lambda curCommand : self.scheme.getArmCommand(curCommand)
-            self.lastAutonToggle = isAuton
         else:
-            if self._isControllerStateChanging():
+            if self._isControllerStateChanging() or self.lastAutonToggle != isAuton:
                 self.common.currentPositionSchemeOperator.deactivate()
                 self.common.currentPositionSchemeOperator = self.pickTheNewScheme()
                 self.getElevatorCommand = lambda curCommand: self.common.currentPositionSchemeOperator.getElevatorCommand(curCommand)
                 self.getArmCommand = lambda curCommand : self.common.currentPositionSchemeOperator.getArmCommand(curCommand)
             self.common.currentPositionSchemeOperator.update()
+        self.lastAutonToggle = isAuton
         if hasattr(self.common.currentPositionSchemeOperator, "schemeProg"):
             self.schemeProg=round(self.common.currentPositionSchemeOperator.schemeProg*100)
         else:
