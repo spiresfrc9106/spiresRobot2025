@@ -1,6 +1,12 @@
 import sys
 import gc
+
+import hal
 import wpilib
+
+from wpilib.timedrobotpy import TimedRobotPy
+from wpilib.shuffleboard import Shuffleboard
+
 import ntcore as nt
 from wpimath.geometry import Translation2d, Pose2d, Rotation2d
 from dashboard import Dashboard
@@ -22,7 +28,7 @@ from humanInterface.ledControl import LEDControl
 from navigation.forceGenerators import PointObstacle
 from ultrasound.ultrasound import Ultrasound
 from utils.segmentTimeTracker import SegmentTimeTracker
-from utils.signalLogging import logUpdate, getNowLogger
+from utils.signalLogging import logUpdate, getNowLogger, addLog
 from utils.calibration import CalibrationWrangler
 from utils.faults import FaultWrangler
 from utils.crashLogger import CrashLogger
@@ -35,8 +41,9 @@ from utils.units import deg2Rad
 from webserver.webserver import Webserver
 from AutoSequencerV2.autoSequencer import AutoSequencer
 
-class MyRobot(wpilib.TimedRobot):
-
+#IterativeRobotPy
+#class MyRobot(wpilib.TimedRobot):
+class MyRobot(TimedRobotPy):
     #########################################################
     ## Common init/update for all modes
     def robotInit(self):
@@ -113,6 +120,8 @@ class MyRobot(wpilib.TimedRobot):
         self.logger1 = getNowLogger('now1', 'sec')
         self.logger2 = getNowLogger('now2', 'sec')
         self.logger3 = getNowLogger('now3', 'sec')
+
+        addLog("mode", lambda: self._mode, "int")
 
         gc.freeze()
         self.count=0
