@@ -11,7 +11,7 @@
 
 import math
 from ntcore import NetworkTableInstance
-from phoenix6.unmanaged import feed_enable
+#from phoenix6.unmanaged import feed_enable
 from photonlibpy.simulation.photonCameraSim import PhotonCameraSim
 from photonlibpy.simulation.visionSystemSim import VisionSystemSim
 from photonlibpy.simulation.simCameraProperties import SimCameraProperties
@@ -277,7 +277,7 @@ class PhysicsEngine:
         :param tm_diff: The amount of time that has passed since the last
                         time that this function was called
         """
-        feed_enable(1 / 50)
+        #feed_enable(1 / 50)
 
         if not self.sim_initialized:
             self.sim_initialized = True
