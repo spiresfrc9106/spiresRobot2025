@@ -121,7 +121,7 @@ class MyRobot(TimedRobotPy):
         self.logger2 = getNowLogger('now2', 'sec')
         self.logger3 = getNowLogger('now3', 'sec')
 
-        addLog("mode", lambda: self._mode, "int")
+        addLog("mode", lambda: self._mode.value, "int")
 
         gc.freeze()
         self.count=0
