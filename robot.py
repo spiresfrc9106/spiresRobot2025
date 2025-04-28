@@ -1,9 +1,7 @@
 import sys
 import gc
 
-import hal
 import wpilib
-#import wpilib.timedrobotpy
 from wpilib.timedrobotpy import TimedRobotPy
 from wpilib.shuffleboard import Shuffleboard
 
@@ -44,10 +42,15 @@ from AutoSequencerV2.autoSequencer import AutoSequencer
 #IterativeRobotPy
 #class MyRobot(wpilib.TimedRobot):
 class MyRobot(TimedRobotPy):
+    def __init__(self):
+        super().__init__(period=0.020)
+
     #########################################################
     ## Common init/update for all modes
     def robotInit(self):
         print("robotInit has run")
+        self.watchdog.suppressTimeoutMessage(True)
+        self.watchdog.setTimeout(0.04)
         # Since we're defining a bunch of new things here, tell pylint
         # to ignore these instantiations in a method.
         # pylint: disable=attribute-defined-outside-init
@@ -167,6 +170,9 @@ class MyRobot(TimedRobotPy):
             self.dashboard.resetWidgets()
             self.dashboard = Dashboard()
             self.autoSequencer.acknowledgeDashboardReset()
+
+        if self.watchdog.isExpired():
+            print("Watchdog has expired in RobotPeriodic.")
 
     #########################################################
     ## Autonomous-Specific init and update
@@ -346,6 +352,13 @@ class MyRobot(TimedRobotPy):
 
         destroyAllSingletonInstances()
         super().endCompetition()
+
+    #def printLoopOverrunMessage(self):
+    #    print("REPLACED printLoopOverrunMessage\n\n")
+
+    def printWatchdogEpochs(self):
+        print("REPLACED printWatchdogEpochs\n\n")
+
 
 def remoteRIODebugSupport():
     if __debug__ and "run" in sys.argv:
