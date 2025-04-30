@@ -49,8 +49,9 @@ class MyRobot(TimedRobotPy):
     ## Common init/update for all modes
     def robotInit(self):
         print("robotInit has run")
-        self.watchdog.suppressTimeoutMessage(True)
-        self.watchdog.setTimeout(0.04)
+        if hasattr(self, 'watchdog'):
+            self.watchdog.suppressTimeoutMessage(True)
+            self.watchdog.setTimeout(0.04)
         # Since we're defining a bunch of new things here, tell pylint
         # to ignore these instantiations in a method.
         # pylint: disable=attribute-defined-outside-init
@@ -124,7 +125,8 @@ class MyRobot(TimedRobotPy):
         self.logger2 = getNowLogger('now2', 'sec')
         self.logger3 = getNowLogger('now3', 'sec')
 
-        addLog("mode", lambda: self._mode.value, "int")
+        if hasattr(self, '_mode'):
+            addLog("mode", lambda: self._mode.value, "int")
 
         gc.freeze()
         self.count=0
@@ -171,7 +173,7 @@ class MyRobot(TimedRobotPy):
             self.dashboard = Dashboard()
             self.autoSequencer.acknowledgeDashboardReset()
 
-        if self.watchdog.isExpired():
+        if hasattr(self, 'watchdog') and self.watchdog.isExpired():
             print("Watchdog has expired in RobotPeriodic.")
 
     #########################################################
@@ -358,6 +360,10 @@ class MyRobot(TimedRobotPy):
 
     def printWatchdogEpochs(self):
         print("REPLACED printWatchdogEpochs\n\n")
+
+    #def _simulationPeriodic(self):
+    #    print(f"_simulationPeriodic at {wpilib.Timer.getFPGATimestamp():.3f} count={self.count}")
+
 
 
 def remoteRIODebugSupport():
