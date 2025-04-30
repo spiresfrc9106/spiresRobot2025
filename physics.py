@@ -278,7 +278,7 @@ class PhysicsEngine:
                         time that this function was called
         """
         #feed_enable(1 / 50)
-        print(f"physics update_sim calld at {now:.3f} count={self.bot.count}")
+        print(f"physics update_sim calld at {now:.3f} count={self.bot.count} startTime={self.bot.getLoopStartTime()}")
 
         if not self.sim_initialized:
             self.sim_initialized = True
