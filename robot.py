@@ -1,6 +1,8 @@
 import sys
 import gc
 import wpilib
+from timedrobotpy import TimedRobotPy
+
 import ntcore as nt
 from wpimath.geometry import Translation2d, Pose2d, Rotation2d
 from dashboard import Dashboard
@@ -22,7 +24,7 @@ from humanInterface.ledControl import LEDControl
 from navigation.forceGenerators import PointObstacle
 from ultrasound.ultrasound import Ultrasound
 from utils.segmentTimeTracker import SegmentTimeTracker
-from utils.signalLogging import logUpdate, getNowLogger
+from utils.signalLogging import logUpdate, getNowLogger, addLog
 from utils.calibration import CalibrationWrangler
 from utils.faults import FaultWrangler
 from utils.crashLogger import CrashLogger
@@ -35,12 +37,18 @@ from utils.units import deg2Rad
 from webserver.webserver import Webserver
 from AutoSequencerV2.autoSequencer import AutoSequencer
 
-class MyRobot(wpilib.TimedRobot):
+#class MyRobot(wpilib.TimedRobot):
+class MyRobot(TimedRobotPy):
+    def __init__(self):
+        super().__init__(period=0.040)
 
     #########################################################
     ## Common init/update for all modes
     def robotInit(self):
         print("robotInit has run")
+        if hasattr(self, 'watchdog'):
+            self.watchdog.suppressTimeoutMessage(True)
+            self.watchdog.setTimeout(0.04)
         # Since we're defining a bunch of new things here, tell pylint
         # to ignore these instantiations in a method.
         # pylint: disable=attribute-defined-outside-init
@@ -70,7 +78,7 @@ class MyRobot(wpilib.TimedRobot):
 
         self.autodrive = AutoDrive()
 
-        self.stt = SegmentTimeTracker(longLoopPrintEnable=False, epochTracerEnable=False)
+        self.stt = SegmentTimeTracker(longLoopThresh=self.getPeriod(), longLoopPrintEnable=False, epochTracerEnable=False)
 
         self.dInt = DriverInterface()
         self.oInt = OperatorInterface()
@@ -113,6 +121,9 @@ class MyRobot(wpilib.TimedRobot):
         self.logger1 = getNowLogger('now1', 'sec')
         self.logger2 = getNowLogger('now2', 'sec')
         self.logger3 = getNowLogger('now3', 'sec')
+
+        if hasattr(self, '_mode'):
+            addLog("mode", lambda: self._mode.value, "int")
 
         gc.freeze()
         self.count=0
@@ -337,6 +348,12 @@ class MyRobot(wpilib.TimedRobot):
 
         destroyAllSingletonInstances()
         super().endCompetition()
+
+    def printLoopOverrunMessage(self):
+        print("REPLACED printLoopOverrunMessage")
+
+    def printWatchdogEpochs(self):
+        print("REPLACED printWatchdogEpochs")
 
 def remoteRIODebugSupport():
     if __debug__ and "run" in sys.argv:
