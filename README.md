@@ -103,6 +103,10 @@ OR to get details of what is happening during the tests:
 
 `robotpy test -- --no-header -vvv -s`
 
+OR to get details plus a full trace on a contrl-c:
+
+` robotpy test -- --no-header -vvv -s --full-trace`
+
 OR to run a specific test file from the '.\tests' directory:
 
 `robotpy test autoSequencer_test.py -- --no-header -vvv -s`
