@@ -18,9 +18,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install -r requirements_dev.txt
-        python -m pip install robotpy
         robotpy sync
-        python -m pip install phoenix6
     - name: Run Regression Test Suite
       run: |
         robotpy coverage test -- --no-header -vvv -s --full-trace
