@@ -12,6 +12,7 @@ from utils.robotIdentification import RobotIdentification, RobotTypes
 from utils.signalLogging import  addLog, getNowLogger
 from utils.singleton import Singleton
 from utils.units import sign
+from wrappers.wrapperedRevThroughBoreEncoder import WrapperedRevThroughBoreEncoder
 from wrappers.wrapperedSparkMax import WrapperedSparkMax
 from wrappers.motorStallDetector import MotorPosStallDetector
 
@@ -164,6 +165,10 @@ class ArmControl(metaclass=Singleton):
 
         self.calArmAngleAtCurrentLimitGoingUpDeg = Calibration(name="Arm AngleAtCurrentLimitGoingUpDeg", default=ARM_ANGLE_AT_CURRENT_LIMIT_GOING_UP, units="deg")
 
+        self.calArmAbsEncoderInverted = Calibration(name="Arm Abs Encoder Inverted", default=0, units="count")
+        self.armAbsEncoderOffsetDeg = 0
+
+
         self.stateNowLogger = getNowLogger(f"{self.name}/stateNow", int)
         self.stateNowLogger.logNow(ArmStates.UNINITIALIZED)
         self.poserCmdPosLogger = getNowLogger(f"{self.name}/cmd_pos_deg", "deg")
@@ -181,8 +186,21 @@ class ArmControl(metaclass=Singleton):
 
         self.stallDectector = MotorPosStallDetector(f"{self.name}/stall", self.motor, stallCurrentLimitA=self.motor.currentLimitA, stallTimeLimitS=0.2)
 
+        self.absEncoder = WrapperedRevThroughBoreEncoder(
+            port=4,
+            name="arm",
+            mountOffsetRad=math.radians(self.armAbsEncoderOffsetDeg),
+            dirInverted=self.absEncoderIsInverted()
+        )
+        self.armAbsEncoderAngDeg = None
+
         self._initialized = False
 
+    def absEncoderIsInverted(self):
+        inverted = False
+        if self.calArmAbsEncoderInverted.get() != 0:
+            inverted = True
+        return inverted
 
     def _setActCurDesTrapPStates(self, posDeg, velDegps):
         self.actTrapPState = TrapezoidProfile.State(posDeg, velDegps)
@@ -206,7 +224,8 @@ class ArmControl(metaclass=Singleton):
                   self.calSearchMaxAccelerationDegps2.isChanged() or \
                   self.calArmInitializingCurrentLimitA.isChanged() or \
                   self.calArmOperatingCurrentLimitA.isChanged() or \
-                  self.calArmAngleAtCurrentLimitGoingUpDeg.isChanged()
+                  self.calArmAngleAtCurrentLimitGoingUpDeg.isChanged() or \
+                  self.calArmAbsEncoderInverted.isChanged()
 
         if changed or not self._initialized:
             # Set P gain on motor
@@ -242,6 +261,8 @@ class ArmControl(metaclass=Singleton):
 
             self._largestAngleDeg = -180.0
 
+            self.absEncoder.dirInverted = self.absEncoderIsInverted()
+
             self._loadMaxVelAndAccFromCal()
             addLog(f"{self.name}/_largestAngleDeg", lambda: self._largestAngleDeg, "deg")
             addLog(f"{self.name}/state", lambda: self.state.value, "int")
@@ -256,6 +277,8 @@ class ArmControl(metaclass=Singleton):
             addLog(f"{self.name}/rel_enc_offset", lambda: self.relEncOffsetRad, "rad")
 
             addLog("RParm/pos", lambda: self.actTrapPState.position, "deg")
+
+            addLog(f"{self.name}/absEncoderAngleDeg", lambda: math.degrees(self.absEncoder.getAngleRad()), "deg")
 
             self._changeState(ArmStates.UNINITIALIZED)
 
@@ -315,9 +338,15 @@ class ArmControl(metaclass=Singleton):
     def _getVelocityDegps(self) -> float:
         return self._noOffsetMotorRadToAngleDeg(self.motor.getMotorVelocityRadPerSec())
 
+    def updateAbsEncoder(self):
+        self.absEncoder.update()
+        angleRad = self.absEncoder.getAngleRad()
+        self.armAbsEncoderAngDeg = math.degrees(angleRad)
+
     def update(self) -> None:
         self.motor.getMotorPositionRad()
         self.stallDectector.update()
+        self.updateAbsEncoder()
 
         match self.state:
             case ArmStates.UNINITIALIZED:
@@ -418,7 +447,9 @@ class ArmControl(metaclass=Singleton):
         vFF = 0
 
         if enablePosMove:
-            self.motor.setPosCmd(motorPosCmdRad, vFF)
+            # TODO put me back to move the motor
+            # was: self.motor.setPosCmd(motorPosCmdRad, vFF)
+            self.motor.setVoltage(0) # TODO delete this line to move the motor
         else:
             self.motor.setVoltage(0)
 
@@ -514,7 +545,6 @@ class ArmControl(metaclass=Singleton):
         self.state = newState
         self.stateNowLogger.logNow(self.state)
 
-    # Yavin todo use these:
     def getCurProfilePosDeg(self) -> float:
         return self.actTrapPState.position
 
