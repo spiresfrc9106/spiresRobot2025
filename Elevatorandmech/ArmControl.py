@@ -16,6 +16,9 @@ from wrappers.wrapperedRevThroughBoreEncoder import WrapperedRevThroughBoreEncod
 from wrappers.wrapperedSparkMax import WrapperedSparkMax
 from wrappers.motorStallDetector import MotorPosStallDetector
 
+
+USE_ABS_ENCODER = True
+
 class ArmDependentConstants:
     def __init__(self):
 
@@ -45,7 +48,7 @@ class ArmDependentConstants:
                 "ARM_M_OPERATING_CURRENT_LIMIT_A": 60,
                 "ARM_ANGLE_AT_CURRENT_LIMIT_GOING_UP": 90.9,
                 "MAX_ARM_POS_DEG": 90,
-                "MIN_ARM_POS_DEG": -90,
+                "MIN_ARM_POS_DEG": -88,
                 "MAX_SEARCH_ARM_VEL_DEGPS": 60,
                 "MAX_SEARCH_ARM_ACCEL_DEGPS2": 60*4,
                 "MAX_ARM_VEL_DEGPS": 180*2,  # Was 180*2, 180 before
@@ -127,6 +130,7 @@ class ArmStates(IntEnum):
     UNINITIALIZED = 0
     INIT_GOING_UP = 1
     OPERATING = 2
+    INIT_USING_ABS_ENCODER = 3
     NO_CMD = -1
 
 TIME_STEP_S = 0.02
@@ -166,7 +170,7 @@ class ArmControl(metaclass=Singleton):
         self.calArmAngleAtCurrentLimitGoingUpDeg = Calibration(name="Arm AngleAtCurrentLimitGoingUpDeg", default=ARM_ANGLE_AT_CURRENT_LIMIT_GOING_UP, units="deg")
 
         self.calArmAbsEncoderInverted = Calibration(name="Arm Abs Encoder Inverted", default=0, units="count")
-        self.armAbsEncoderOffsetDeg = 0
+        self.armAbsEncoderOffsetDeg = 23.6 - 90
 
 
         self.stateNowLogger = getNowLogger(f"{self.name}/stateNow", int)
@@ -355,6 +359,8 @@ class ArmControl(metaclass=Singleton):
                 self._updateInitGoingUp()
             case ArmStates.OPERATING:
                 self._updateOperating()
+            case ArmStates.INIT_USING_ABS_ENCODER:
+                self._updateInitUsingAbsEncoder()
             case ArmStates.NO_CMD:
                 pass
             case _:
@@ -367,7 +373,10 @@ class ArmControl(metaclass=Singleton):
         nowS = Timer.getFPGATimestamp()
         if nowS - 1 >= self.timeWhenChangeS:
 
-            self._changeState(ArmStates.INIT_GOING_UP)
+            if USE_ABS_ENCODER:
+                self._changeState(ArmStates.INIT_USING_ABS_ENCODER)
+            else:
+                self._changeState(ArmStates.INIT_GOING_UP)
             self._forceStartAtAngleDeg(0.0)
             self.timeWhenChangeS = Timer.getFPGATimestamp()
 
@@ -403,6 +412,21 @@ class ArmControl(metaclass=Singleton):
                 self._changeState(ArmStates.OPERATING)
             else:
                 self._setMotorPosAndFF()
+
+    def _updateInitUsingAbsEncoder(self):
+        # TODO delete some of this, switch to absEncoder
+        #positionDeg = self._getRelAngleWithOffsetDeg()
+        #self.actualVelDegps = self._getVelocityDegps()
+        #self.actTrapPState = TrapezoidProfile.State(positionDeg, self.actualVelDegps)
+
+        self._forceStartAtAngleDeg(math.degrees(self.absEncoder.getAngleRad()))
+        self._loadNewTrapProfiler()
+        self.desTrapPState = TrapezoidProfile.State(self._getRelAngleWithOffsetDeg(), 0)
+        self.curTrapPState = TrapezoidProfile.State(self._getRelAngleWithOffsetDeg(), 0)
+        self.motor.setSmartCurrentLimit(self.calArmOperatingCurrentLimitA.get())
+        self.stallDectector.stallCurrentLimitA = self.motor.currentLimitA
+        self._changeState(ArmStates.OPERATING)
+
 
     def _setMotorPosAndFF(self, velocityCmd:bool=False, enablePosMove=True) -> None:
         oldVelocityDegps = self.curTrapPState.velocity
