@@ -414,10 +414,6 @@ class ArmControl(metaclass=Singleton):
                 self._setMotorPosAndFF()
 
     def _updateInitUsingAbsEncoder(self):
-        # TODO delete some of this, switch to absEncoder
-        #positionDeg = self._getRelAngleWithOffsetDeg()
-        #self.actualVelDegps = self._getVelocityDegps()
-        #self.actTrapPState = TrapezoidProfile.State(positionDeg, self.actualVelDegps)
 
         self._forceStartAtAngleDeg(math.degrees(self.absEncoder.getAngleRad()))
         self._loadNewTrapProfiler()
@@ -471,9 +467,7 @@ class ArmControl(metaclass=Singleton):
         vFF = 0
 
         if enablePosMove:
-            # TODO put me back to move the motor
-            # was: self.motor.setPosCmd(motorPosCmdRad, vFF)
-            self.motor.setVoltage(0) # TODO delete this line to move the motor
+            self.motor.setPosCmd(motorPosCmdRad, vFF)
         else:
             self.motor.setVoltage(0)
 
