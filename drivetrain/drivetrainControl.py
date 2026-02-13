@@ -3,7 +3,6 @@ from wpimath.geometry import Pose2d, Rotation2d
 from wpilib import Timer
 #from Autonomous.commands.driveForwardSlowCommand import DriveForwardSlowCommand
 from drivetrain.poseEstimation.drivetrainPoseEstimator import DrivetrainPoseEstimator
-from drivetrain.poseEstimation.targetcentricPoseEstimator import TargetCentricPoseEstimator
 from drivetrain.swerveModuleControl import SwerveModuleControl
 from drivetrain.swerveModuleGainSet import SwerveModuleGainSet
 from drivetrain.drivetrainPhysical import (
@@ -108,7 +107,6 @@ class DrivetrainControl(metaclass=Singleton):
         """
         self.curManCmd = cmd
         self.useRobotRelative = robotRel
-
 
     def setCoastCmd(self, coast:bool):
         self.coastCmd = coast

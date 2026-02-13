@@ -3,6 +3,7 @@ import gc
 import wpilib
 import ntcore as nt
 from wpimath.geometry import Translation2d, Pose2d, Rotation2d
+from AutoSequencerV2.autoSequencer import AutoSequencer
 from dashboard import Dashboard
 from Elevatorandmech.ElevatorControl import ElevatorControl, elevDepConstants
 from Elevatorandmech.ArmControl import ArmControl, armDepConstants
@@ -17,29 +18,29 @@ from drivetrain.drivetrainCommand import DrivetrainCommand
 from drivetrain.drivetrainControl import DrivetrainControl
 from drivetrain.DrivetrainDependentConstants import drivetrainDepConstants
 from humanInterface.driverInterface import DriverInterface
-from humanInterface.operatorInterface import OperatorInterface
 from humanInterface.ledControl import LEDControl
+from humanInterface.operatorInterface import OperatorInterface
 from navigation.forceGenerators import PointObstacle
 from ultrasound.ultrasound import Ultrasound
 from utils.segmentTimeTracker import SegmentTimeTracker
 from utils.signalLogging import logUpdate, getNowLogger
 from utils.calibration import CalibrationWrangler
-from utils.faults import FaultWrangler
 from utils.crashLogger import CrashLogger
+from utils.faults import FaultWrangler
+from utils.powerMonitor import PowerMonitor
 from utils.robotIdentification import RobotIdentification
 from utils.singleton import destroyAllSingletonInstances
-from utils.powerMonitor import PowerMonitor
 from utils.allianceTransformUtils import onRed
 from utils.units import deg2Rad
 
 from webserver.webserver import Webserver
-from AutoSequencerV2.autoSequencer import AutoSequencer
+
 
 class MyRobot(wpilib.TimedRobot):
 
     #########################################################
     ## Common init/update for all modes
-    def robotInit(self):
+    def robotInit(self) -> None:
         print("robotInit has run")
         # Since we're defining a bunch of new things here, tell pylint
         # to ignore these instantiations in a method.
@@ -118,7 +119,7 @@ class MyRobot(wpilib.TimedRobot):
         self.count=0
 
 
-    def robotPeriodic(self):
+    def robotPeriodic(self) -> None:
         self.logger1.logNow(nt._now())
 
         self.stt.start()

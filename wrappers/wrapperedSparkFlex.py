@@ -1,5 +1,5 @@
 import time
-from rev import SparkFlex, SparkBase, SparkFlexConfig, REVLibError, ClosedLoopSlot, SparkBaseConfig
+from rev import SparkFlex, SparkBase, SparkFlexConfig, REVLibError, ClosedLoopSlot, SparkBaseConfig, ResetMode, PersistMode
 from rev import SparkClosedLoopController
 from wpilib import TimedRobot
 from utils.signalLogging import addLog
@@ -42,7 +42,7 @@ class WrapperedSparkFlex:
         self.cfg.setIdleMode(SparkBaseConfig.IdleMode.kBrake if brakeMode else SparkBaseConfig.IdleMode.kCoast)
         self.cfg.smartCurrentLimit(self.currentLimitA,0,5700)
 
-        self._spark_config(retries=10, resetMode=SparkBase.ResetMode.kResetSafeParameters, persistMode=SparkBase.PersistMode.kPersistParameters, step="Initial Config")
+        self._spark_config(retries=10, resetMode=ResetMode.kResetSafeParameters, persistMode=PersistMode.kPersistParameters, step="Initial Config")
 
         addLog(self.name + "_outputCurrent", self.ctrl.getOutputCurrent, "A")
         """
@@ -86,17 +86,17 @@ class WrapperedSparkFlex:
     def setFollow(self, leaderCanID, invert=False):
         self.cfg.follow(leaderCanID, invert)
         self.ctrl.configure(self.cfg,
-                                SparkBase.ResetMode.kNoResetSafeParameters, 
-                                SparkBase.PersistMode.kPersistParameters)
+                                ResetMode.kNoResetSafeParameters, 
+                                PersistMode.kPersistParameters)
 
     def setInverted(self, isInverted):
         if self.configSuccess:
             self.cfg.inverted(isInverted)
             self.ctrl.configure(self.cfg,
-                                SparkBase.ResetMode.kNoResetSafeParameters, 
-                                SparkBase.PersistMode.kPersistParameters)
+                                ResetMode.kNoResetSafeParameters, 
+                                PersistMode.kPersistParameters)
 
-    def setPID(self, kP, kI, kD, persist=SparkBase.PersistMode.kPersistParameters):
+    def setPID(self, kP, kI, kD, persist=PersistMode.kPersistParameters):
         if self.configSuccess:
             self.cfg.closedLoop.pid(kP, kI, kD, ClosedLoopSlot.kSlot0)
             # Apply new configuration
@@ -106,7 +106,7 @@ class WrapperedSparkFlex:
             # However, if setPID is getting called in a periodic loop, don't bother persisting the parameters
             # because the persist operation takes a long time on the spark max.
             self.ctrl.configure(self.cfg, 
-                                SparkBase.ResetMode.kNoResetSafeParameters, 
+                                ResetMode.kNoResetSafeParameters, 
                                 persist)
             
     def setPosCmd(self, posCmd, arbFF=0.0):
@@ -191,4 +191,4 @@ class WrapperedSparkFlex:
     def setSmartCurrentLimit(self, currentLimitA: int)->None:
         self.currentLimitA = round(currentLimitA)
         self.cfg.smartCurrentLimit(self.currentLimitA,0,5700)
-        self._sparkmax_config(retries=4, resetMode=SparkBase.ResetMode.kNoResetSafeParameters, persistMode=SparkBase.PersistMode.kNoPersistParameters, printResults=True, step="Current Limit")
+        self._sparkmax_config(retries=4, resetMode=ResetMode.kNoResetSafeParameters, persistMode=PersistMode.kNoPersistParameters, printResults=True, step="Current Limit")

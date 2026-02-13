@@ -1,34 +1,63 @@
 #
 # Use this configuration file to control what RobotPy packages are installed
-# on your RoboRIO
+# in your project.
 #
+[project]
+name = "spiresRobot2025"
+version = "0.1.0"
+description = "FRC9106 - Spires - REBUILT Competioni Robot"
+readme = "README.md"
+requires-python = ">=3.10"
 
+dependencies = [
+    "wpilib>=2026.2.1",
+    "robotpy-pykit==1.0.3",
+    "robotpy-pykit-watch==1.0.0",
+    "robotpy-halsim-gui>=2026.2.1",
+    "robotpy>=2026.2.1",
+    "robotpy-cli",
+    "black>=25.9.8",
+    "pylint>=4.0.2",
+    "robotpy-pathplannerlib>=2026.1.1",
+    "phoenix6>=26.1.0",
+    "robotpy-navx>=2026.0.0",
+    "robotpy-rev>=2026.0.1",
+    "robotpy-commands-v2>=2026.2.1",
+    "robotpy-halsim-ws",
+    "robotpy-native-romi>=2026.2.1",
+    "robotpy-romi>=2026.2.1",
+    "coverage>=7.13.1",
+]
 [tool.robotpy]
-# to see what versions are available: https://pypi.org/pypi/robotpy/json
+
 # Version of robotpy this project depends on
-robotpy_version = "2025.3.2.0"
+# to see what versions are available: https://pypi.org/pypi/robotpy/json
+
+robotpy_version = "2026.2.1"
 
 # Which extra RobotPy components should be installed
 # -> equivalent to `pip install robotpy[extra1, ...]
-robotpy_extras = [
+components = [
     # "all"
     "apriltag",
     # "commands2"
     "cscore",
-    "navx",
+    # "navx"
     # "pathplannerlib"
     # "phoenix5",
-    "phoenix6",
-    # "playingwithfusion"
-    "rev",
+    #"phoenix6",
+    #"playingwithfusion",
+    #"rev",
     # "romi"
     # "sim"
 ]
 
 # Other pip packages to install
 requires = [
-    "photonlibpy==2025.2.1",
-    "debugpy==1.8.11",
-    #"phoenix6==25.1.0",
-    "robotpy-playingwithfusion == 2025.0.0",
+    "photonlibpy==2026.1.1rc4",
+    "debugpy",
+    "phoenix6",
+    "robotpy-rev",
+    "sleipnirgroup-choreolib",
+    "robotpy-playingwithfusion",
 ]
